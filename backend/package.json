@@ -1,0 +1,48 @@
+{
+  "name": "medishare-backend",
+  "version": "1.0.0",
+  "description": "MediShare – Medical Equipment Donation and Request System Backend API",
+  "main": "server.js",
+  "author": "MediShare Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "dev": "nodemon server.js",
+    "start": "node server.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:studio": "prisma studio",
+    "prisma:push": "prisma db push",
+    "prisma:validate": "prisma validate"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "@prisma/client": "^6.19.3",
+    "bcrypt": "^5.1.1",
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.2",
+    "express-rate-limit": "^7.4.1",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.3",
+    "morgan": "^1.10.0",
+    "multer": "^2.0.1",
+    "pg": "8.22.0",
+    "prisma": "^6.19.3",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  },
+  "allowScripts": {
+    "@prisma/engines@7.8.0": true,
+    "@scarf/scarf@1.4.0": true,
+    "bcrypt@5.1.1": true,
+    "prisma@7.8.0": true
+  }
+}
