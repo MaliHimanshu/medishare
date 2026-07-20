@@ -6,6 +6,7 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
 model User {
   id            String         @id @default(cuid())
   name          String
@@ -123,7 +124,7 @@ model Notification {
   userId    String
   title     String
   message   String
-  type      NotificationType @default(INFO)
+  type      NotificationType @default(GENERAL)
   isRead    Boolean          @default(false)
   createdAt DateTime         @default(now())
   user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -132,7 +133,6 @@ model Notification {
   @@index([userId, createdAt])
   @@map("notifications")
 }
-
 model ChatHistory {
   id          String   @id @default(cuid())
   userId      String
@@ -180,10 +180,10 @@ enum RequestStatus {
   COMPLETED
   CANCELLED
 }
-
 enum NotificationType {
-  INFO
-  SUCCESS
-  WARNING
-  ERROR
+  REQUEST
+  DONATION
+  APPROVAL
+  REJECTION
+  GENERAL
 }
