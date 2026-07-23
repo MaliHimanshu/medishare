@@ -66,5 +66,16 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>MediShare needs camera access to capture medical equipment photos for donation/request listings.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>MediShare needs photo library access to upload medical equipment photos for donation/request listings.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>MediShare needs microphone access for capturing equipment videos if needed.</string>
 </dict>
 </plist>

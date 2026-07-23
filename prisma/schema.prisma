@@ -1,0 +1,221 @@
+// =============================================================
+// MediShare – Medical Equipment Donation and Request System
+// Prisma Schema  |  Production-Optimised
+// =============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// =============================================================
+// Enums
+// =============================================================
+
+enum UserRole {
+  ADMIN
+  DONOR
+  NGO
+  RECIPIENT
+}
+
+enum EquipmentCondition {
+  NEW
+  LIKE_NEW
+  GOOD
+  FAIR
+}
+
+enum EquipmentStatus {
+  AVAILABLE
+  REQUESTED
+  DONATED
+  UNAVAILABLE
+}
+
+enum DonationStatus {
+  PENDING
+  APPROVED
+  COMPLETED
+  CANCELLED
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+  CANCELLED
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+}
+
+// =============================================================
+// Models
+// =============================================================
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  password     String
+  phone        String?
+  address      String?
+  role         UserRole @default(DONOR)
+  profileImage String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  equipment     Equipment[]
+  donations     Donation[]
+  requests      Request[]
+  notifications Notification[]
+  chatHistory   ChatHistory[]
+
+  // email is already indexed by @unique – no duplicate @@index needed
+  @@index([role])
+  @@index([createdAt])
+  @@map("users")
+}
+
+model Equipment {
+  id           String             @id @default(cuid())
+  name         String
+  category     String
+  manufacturer String?
+  description  String?
+  quantity     Int                @default(1)
+  condition    EquipmentCondition
+  status       EquipmentStatus    @default(AVAILABLE)
+  image        String?
+  ownerId      String
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
+
+  owner     User       @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  donations Donation[]
+  requests  Request[]
+
+  @@index([ownerId])
+  @@index([status])
+  @@index([category])
+  @@index([condition])
+  // Composite: the most common list query – "available equipment in a category"
+  @@index([status, category])
+  // Composite: owner's equipment filtered by status
+  @@index([ownerId, status])
+  @@index([createdAt])
+  @@map("equipment")
+}
+
+model Donation {
+  id          String         @id @default(cuid())
+  equipmentId String
+  donorId     String
+  status      DonationStatus @default(PENDING)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  equipment Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  // Restrict: keep donation history even if the user account is soft-deleted;
+  // using Cascade here is acceptable for a student FYP – kept as-is.
+  donor     User      @relation(fields: [donorId], references: [id], onDelete: Cascade)
+
+  @@index([equipmentId])
+  @@index([donorId])
+  @@index([status])
+  // Composite: donor's donations by status (dashboard filter)
+  @@index([donorId, status])
+  @@index([createdAt])
+  @@map("donations")
+}
+
+model Request {
+  id          String        @id @default(cuid())
+  equipmentId String
+  requesterId String
+  reason      String?
+  status      RequestStatus @default(PENDING)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  equipment Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  requester User      @relation(fields: [requesterId], references: [id], onDelete: Cascade)
+
+  @@index([equipmentId])
+  @@index([requesterId])
+  @@index([status])
+  // Composite: requester's requests by status (my-requests page)
+  @@index([requesterId, status])
+  // Composite: all pending requests for a specific piece of equipment
+  @@index([equipmentId, status])
+  @@index([createdAt])
+  @@map("requests")
+}
+
+model Hospital {
+  id           String   @id @default(cuid())
+  hospitalName String
+  address      String
+  city         String
+  state        String
+  pincode      String
+  phone        String?
+  email        String?  @unique
+  website      String?
+  description  String?
+  latitude     Float?
+  longitude    Float?
+  image        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([city])
+  @@index([state])
+  @@index([pincode])
+  // Composite: state + city drill-down (common hospital directory filter)
+  @@index([state, city])
+  // Geo bounding-box queries
+  @@index([latitude, longitude])
+  @@map("hospitals")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      NotificationType @default(INFO)
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Single-column indexes dropped in favour of the composites below
+  // which subsume them for every real query pattern
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+  @@map("notifications")
+}
+
+model ChatHistory {
+  id          String   @id @default(cuid())
+  userId      String
+  userMessage String
+  botReply    String
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Composite covers both "all chat for user" and "paginated chat for user"
+  @@index([userId, createdAt])
+  @@map("chat_history")
+}

@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
-import 'register_screen.dart';
-import '../forgot_password/forgot_password_screen.dart';
+import 'package:provider/provider.dart';
+
+import '../../core/constants/app_colors.dart';
+import '../../core/theme/app_page_transitions.dart';
+import '../../providers/auth_provider.dart';
+import '../../shared/widgets/ms_button.dart';
+import '../../shared/widgets/ms_logo.dart';
+import '../../shared/widgets/ms_text_field.dart';
 import '../home/home_screen.dart';
+import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -10,218 +17,289 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+class _LoginScreenState extends State<LoginScreen>
+    with SingleTickerProviderStateMixin {
+  final _formKey   = GlobalKey<FormState>();
+  final _emailCtrl = TextEditingController();
+  final _passCtrl  = TextEditingController();
 
-  bool _obscurePassword = true;
+  String? _emailError;
+  String? _passError;
+
+  late AnimationController _animCtrl;
+  late Animation<double> _logoFade;
+  late Animation<Offset> _formSlide;
+  late Animation<double> _formFade;
+
+  @override
+  void initState() {
+    super.initState();
+    _animCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+
+    _logoFade = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _animCtrl,
+        curve: const Interval(0.0, 0.5, curve: Curves.easeOut),
+      ),
+    );
+
+    _formSlide = Tween<Offset>(
+      begin: const Offset(0, 0.06),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: _animCtrl,
+        curve: const Interval(0.3, 1.0, curve: Curves.easeOutCubic),
+      ),
+    );
+
+    _formFade = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _animCtrl,
+        curve: const Interval(0.3, 1.0, curve: Curves.easeOut),
+      ),
+    );
+
+    _animCtrl.forward();
+  }
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
+    _emailCtrl.dispose();
+    _passCtrl.dispose();
+    _animCtrl.dispose();
     super.dispose();
   }
 
- void login() {
-  Navigator.pushReplacement(
-    context,
-    MaterialPageRoute(
-      builder: (_) => const HomeScreen(),
-    ),
-  );
-}
+  String? _validateEmail(String? v) {
+    if (v == null || v.trim().isEmpty) return 'Email is required';
+    if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(v.trim())) {
+      return 'Enter a valid email address';
+    }
+    return null;
+  }
+
+  String? _validatePassword(String? v) {
+    if (v == null || v.isEmpty) return 'Password is required';
+    if (v.length < 6) return 'Password must be at least 6 characters';
+    return null;
+  }
+
+  Future<void> _submit() async {
+    setState(() {
+      _emailError = _validateEmail(_emailCtrl.text);
+      _passError  = _validatePassword(_passCtrl.text);
+    });
+
+    if (_emailError != null || _passError != null) return;
+
+    final auth = context.read<AuthProvider>();
+    final success = await auth.login(
+      _emailCtrl.text.trim(),
+      _passCtrl.text,
+    );
+
+    if (!mounted) return;
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Welcome back, ${auth.user?.name.split(' ').first ?? 'there'}! 👋'),
+          backgroundColor: AppColors.success,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+      Navigator.pushReplacement(
+        context,
+        AppPageTransitions.slideRight(const HomeScreen()),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(auth.errorMessage ?? 'Login failed'),
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final auth      = context.watch<AuthProvider>();
+    final isLoading = auth.isLoading;
+
     return Scaffold(
-      backgroundColor: const Color(0xffF5F7FA),
+      // Fix: use theme-aware background color
+      backgroundColor: context.scaffoldBg,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 40),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 48),
 
-              const Center(
-                child: Icon(
-                  Icons.local_hospital,
-                  size: 90,
-                  color: Colors.blue,
+                // ── Logo (animated fade) ────────────────────
+                FadeTransition(
+                  opacity: _logoFade,
+                  child: Center(child: MsLogo(height: 44)),
                 ),
-              ),
+                const SizedBox(height: 40),
 
-              const SizedBox(height: 20),
-
-              const Center(
-                child: Text(
-                  "MediShare",
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 10),
-
-              const Center(
-                child: Text(
-                  "Smart Medical Equipment Network",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 50),
-
-              const Text(
-                "Email",
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-
-              const SizedBox(height: 8),
-
-              TextField(
-                controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
-                decoration: InputDecoration(
-                  hintText: "Enter your email",
-                  prefixIcon: const Icon(Icons.email),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              const Text(
-                "Password",
-                style: TextStyle(fontWeight: FontWeight.w600),
-              ),
-
-              const SizedBox(height: 8),
-
-              TextField(
-                controller: _passwordController,
-                obscureText: _obscurePassword,
-                decoration: InputDecoration(
-                  hintText: "Enter your password",
-                  prefixIcon: const Icon(Icons.lock),
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscurePassword
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _obscurePassword = !_obscurePassword;
-                      });
-                    },
-                  ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 10),
-
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const ForgotPasswordScreen(),
-                      ),
-                    );
-                  },
-                  child: const Text("Forgot Password?"),
-                ),
-              ),
-
-              const SizedBox(height: 10),
-
-              SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: ElevatedButton(
-                  onPressed: login,
-                  child: const Text(
-                    "Login",
-                    style: TextStyle(fontSize: 18),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              Row(
-                children: const [
-                  Expanded(child: Divider()),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 10),
-                    child: Text("OR"),
-                  ),
-                  Expanded(child: Divider()),
-                ],
-              ),
-
-              const SizedBox(height: 20),
-
-              SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: OutlinedButton.icon(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Google Login Coming Soon"),
-                      ),
-                    );
-                  },
-                  icon: const Icon(
-                    Icons.g_mobiledata,
-                    size: 32,
-                  ),
-                  label: const Text(
-                    "Continue with Google",
-                    style: TextStyle(fontSize: 16),
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 30),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text("Don't have an account?"),
-
-                  TextButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const RegisterScreen(),
+                // ── Header + Form (animated slide+fade) ────
+                SlideTransition(
+                  position: _formSlide,
+                  child: FadeTransition(
+                    opacity: _formFade,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Welcome back',
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w900,
+                            color: context.textPrimaryColor,
+                          ),
                         ),
-                      );
-                    },
-                    child: const Text("Register"),
-                  ),
-                ],
-              ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'Sign in to your MediShare account',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: context.textSecondaryColor,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        const SizedBox(height: 36),
 
-              const SizedBox(height: 20),
-            ],
+                        // ── Email ──────────────────────────
+                        MsTextField(
+                          label: 'Email Address',
+                          hint: 'you@example.com',
+                          controller: _emailCtrl,
+                          keyboardType: TextInputType.emailAddress,
+                          prefixIcon: Icons.email_outlined,
+                          errorText: _emailError,
+                          textInputAction: TextInputAction.next,
+                          autofocus: true,
+                          onChanged: (_) {
+                            if (_emailError != null) {
+                              setState(() => _emailError = null);
+                            }
+                          },
+                        ),
+                        const SizedBox(height: 20),
+
+                        // ── Password ───────────────────────
+                        MsTextField(
+                          label: 'Password',
+                          hint: 'Enter your password',
+                          controller: _passCtrl,
+                          isPassword: true,
+                          prefixIcon: Icons.lock_outline,
+                          errorText: _passError,
+                          textInputAction: TextInputAction.done,
+                          onChanged: (_) {
+                            if (_passError != null) {
+                              setState(() => _passError = null);
+                            }
+                          },
+                          onSubmitted: (_) => _submit(),
+                        ),
+                        const SizedBox(height: 12),
+
+                        // ── Forgot Password ─────────────────
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                            onPressed: () {},
+                            child: const Text(
+                              'Forgot Password?',
+                              style: TextStyle(
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+
+                        // ── Login Button ────────────────────
+                        MsButton(
+                          label: 'Sign In',
+                          onPressed: isLoading ? null : _submit,
+                          isLoading: isLoading,
+                          icon: Icons.login_rounded,
+                        ),
+                        const SizedBox(height: 20),
+
+                        // ── OR Divider ──────────────────────
+                        Row(
+                          children: [
+                            const Expanded(child: Divider()),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              child: Text(
+                                'OR',
+                                style: TextStyle(
+                                  color: context.textSecondaryColor,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            const Expanded(child: Divider()),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+
+                        // ── Register Link ───────────────────
+                        Center(
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.pushReplacement(
+                                context,
+                                AppPageTransitions.slideRight(
+                                    const RegisterScreen()),
+                              );
+                            },
+                            child: RichText(
+                              text: TextSpan(
+                                text: "Don't have an account? ",
+                                style: TextStyle(
+                                  color: context.textSecondaryColor,
+                                  fontSize: 14,
+                                ),
+                                children: const [
+                                  TextSpan(
+                                    text: 'Register →',
+                                    style: TextStyle(
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

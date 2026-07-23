@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../shared/widgets/ms_button.dart';
+import '../../shared/widgets/ms_logo.dart';
 import '../auth/login_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -8,161 +12,246 @@ class OnboardingScreen extends StatefulWidget {
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
+class _OnboardingScreenState extends State<OnboardingScreen>
+    with SingleTickerProviderStateMixin {
   final PageController _pageController = PageController();
+  int _currentIndex = 0;
+  late AnimationController _animController;
 
-  int currentIndex = 0;
-
-  final List<Map<String, String>> onboardingData = [
-    {
-      "icon": "🏥",
-      "title": "Donate Medical Equipment",
-      "subtitle":
-          "Help hospitals and NGOs by donating unused medical equipment."
-    },
-    {
-      "icon": "🤝",
-      "title": "Connect with Healthcare",
-      "subtitle":
-          "Find donors and recipients quickly across your city."
-    },
-    {
-      "icon": "❤️",
-      "title": "Save Lives Together",
-      "subtitle":
-          "Join MediShare and build a smarter healthcare network."
-    },
+  final List<_OnboardingData> _pages = const [
+    _OnboardingData(
+      emoji: '🏥',
+      gradient: [Color(0xFF3B6CF8), Color(0xFF2855D8)],
+      title: 'Donate Medical\nEquipment',
+      subtitle:
+          'Help hospitals and NGOs by donating unused medical equipment that could save lives.',
+    ),
+    _OnboardingData(
+      emoji: '🤝',
+      gradient: [Color(0xFF2ECFB3), Color(0xFF22A892)],
+      title: 'Connect with\nHealthcare',
+      subtitle:
+          'Find donors and recipients quickly across your city. Build a stronger healthcare network.',
+    ),
+    _OnboardingData(
+      emoji: '❤️',
+      gradient: [Color(0xFF141929), Color(0xFF1E2640)],
+      title: 'Save Lives\nTogether',
+      subtitle:
+          'Join thousands on MediShare and be part of the movement to make healthcare more accessible.',
+    ),
   ];
 
-  void nextPage() {
-    if (currentIndex < onboardingData.length - 1) {
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 400),
+    );
+    _animController.forward();
+  }
+
+  void _nextPage() {
+    if (_currentIndex < _pages.length - 1) {
       _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOut,
       );
     } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const LoginScreen(),
-        ),
-      );
+      _getStarted();
     }
+  }
+
+  Future<void> _getStarted() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('seen_onboarding', true);
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+    );
+  }
+
+  void _onPageChanged(int index) {
+    _animController.reset();
+    setState(() => _currentIndex = index);
+    _animController.forward();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    _animController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final page = _pages[_currentIndex];
+    final isLast = _currentIndex == _pages.length - 1;
+
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-
-            Align(
-              alignment: Alignment.topRight,
-              child: TextButton(
-                onPressed: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const LoginScreen(),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: page.gradient,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // ── Top Bar ───────────────────────────────
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    MsLogo(height: 28, color: Colors.white),
+                    TextButton(
+                      onPressed: _getStarted,
+                      child: Text(
+                        'Skip',
+                        style: TextStyle(
+                          color: Colors.white.withAlpha(180),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
+                        ),
+                      ),
                     ),
-                  );
-                },
-                child: const Text("Skip"),
+                  ],
+                ),
               ),
-            ),
 
-            Expanded(
-              child: PageView.builder(
-                controller: _pageController,
-                itemCount: onboardingData.length,
-                onPageChanged: (index) {
-                  setState(() {
-                    currentIndex = index;
-                  });
-                },
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.all(30),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
+              // ── Page Content ──────────────────────────
+              Expanded(
+                child: PageView.builder(
+                  controller: _pageController,
+                  itemCount: _pages.length,
+                  onPageChanged: _onPageChanged,
+                  itemBuilder: (context, index) {
+                    return _OnboardingPage(data: _pages[index]);
+                  },
+                ),
+              ),
 
-                        Text(
-                          onboardingData[index]["icon"]!,
-                          style: const TextStyle(fontSize: 90),
-                        ),
-
-                        const SizedBox(height: 40),
-
-                        Text(
-                          onboardingData[index]["title"]!,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 30,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        Text(
-                          onboardingData[index]["subtitle"]!,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ],
+              // ── Dots ──────────────────────────────────
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(
+                  _pages.length,
+                  (i) => AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: _currentIndex == i ? 28 : 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: _currentIndex == i
+                          ? Colors.white
+                          : Colors.white.withAlpha(80),
+                      borderRadius: BorderRadius.circular(20),
                     ),
-                  );
-                },
-              ),
-            ),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(
-                onboardingData.length,
-                (index) => AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  margin: const EdgeInsets.all(4),
-                  width: currentIndex == index ? 24 : 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    color: currentIndex == index
-                        ? Colors.blue
-                        : Colors.grey.shade400,
-                    borderRadius: BorderRadius.circular(20),
                   ),
                 ),
               ),
-            ),
 
-            const SizedBox(height: 30),
+              const SizedBox(height: 32),
 
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 25),
-              child: SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: ElevatedButton(
-                  onPressed: nextPage,
-                  child: Text(
-                    currentIndex == onboardingData.length - 1
-                        ? "Get Started"
-                        : "Next",
-                    style: const TextStyle(fontSize: 18),
-                  ),
+              // ── CTA Button ────────────────────────────
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: MsButton(
+                  label: isLast ? 'Get Started' : 'Next',
+                  onPressed: _nextPage,
+                  backgroundColor: Colors.white,
+                  foregroundColor: page.gradient.first,
                 ),
               ),
-            ),
 
-            const SizedBox(height: 30),
-          ],
+              const SizedBox(height: 32),
+            ],
+          ),
         ),
       ),
     );
   }
+}
+
+class _OnboardingPage extends StatelessWidget {
+  final _OnboardingData data;
+  const _OnboardingPage({required this.data});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 32),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Emoji in circle
+          Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              color: Colors.white.withAlpha(20),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.white.withAlpha(50),
+                width: 2,
+              ),
+            ),
+            child: Center(
+              child: Text(
+                data.emoji,
+                style: const TextStyle(fontSize: 60),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 48),
+
+          Text(
+            data.title,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 30,
+              fontWeight: FontWeight.w900,
+              height: 1.2,
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          Text(
+            data.subtitle,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white.withAlpha(180),
+              fontSize: 16,
+              height: 1.6,
+              fontWeight: FontWeight.w400,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _OnboardingData {
+  final String emoji;
+  final List<Color> gradient;
+  final String title;
+  final String subtitle;
+
+  const _OnboardingData({
+    required this.emoji,
+    required this.gradient,
+    required this.title,
+    required this.subtitle,
+  });
 }
