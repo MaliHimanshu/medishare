@@ -7,17 +7,21 @@ class ApiEndpoints {
 
   // ── Base ────────────────────────────────────────────────
   // Android Emulator: 10.0.2.2  |  iOS Simulator: 127.0.0.1
- static String get baseUrl {
-  if (kIsWeb) {
-    return 'http://localhost:5000/api';
-  }
+  // Production Render API: https://medishare-zgmj.onrender.com/api
+  // Local Development: http://192.168.1.7:5000/api
+  static const String _liveUrl = 'https://medishare-zgmj.onrender.com/api';
 
-  if (Platform.isAndroid) {
-    return 'http://192.168.1.7:5000/api';
-  }
+  static String get baseUrl {
+    if (kIsWeb) {
+      return _liveUrl;
+    }
 
-  return 'http://127.0.0.1:5000/api';
-}
+    if (Platform.isAndroid) {
+      return _liveUrl;
+    }
+
+    return _liveUrl;
+  }
 
   // ── Auth ────────────────────────────────────────────────
   static const String register = '/auth/register';
