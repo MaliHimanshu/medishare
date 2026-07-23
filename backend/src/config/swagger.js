@@ -18,8 +18,8 @@ const options = {
 
     servers: [
       {
-        url: "http://localhost:5000",
-        description: "Development Server",
+        url: process.env.RENDER_EXTERNAL_URL || process.env.BASE_URL || "http://localhost:5000",
+        description: "API Server",
       },
     ],
 

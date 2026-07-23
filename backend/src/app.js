@@ -29,11 +29,20 @@ Swagger
 =====================================
 */
 
+const SWAGGER_CSS_URL =
+  "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.8/swagger-ui.min.css";
+const SWAGGER_JS_URLS = [
+  "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.8/swagger-ui-bundle.js",
+  "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.8/swagger-ui-standalone-preset.js",
+];
+
 app.use(
   "/api/docs",
   swaggerUi.serve,
   swaggerUi.setup(swaggerSpec, {
     explorer: true,
+    customCssUrl: SWAGGER_CSS_URL,
+    customJs: SWAGGER_JS_URLS,
   })
 );
 
