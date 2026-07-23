@@ -19,5 +19,5 @@ COPY . .
 # Expose port
 EXPOSE 5000
 
-# Start the server
-CMD ["node", "server.js"]
+# Start the server (sync schema with production DB)
+CMD ["sh", "-c", "npx prisma db push --skip-generate && node server.js"]
