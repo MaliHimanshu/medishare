@@ -71,9 +71,6 @@ class ImageUploadService {
         ApiEndpoints.upload,
         data: formData,
         onSendProgress: onProgress,
-        options: Options(
-          contentType: 'multipart/form-data',
-        ),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {

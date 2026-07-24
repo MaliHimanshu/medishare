@@ -304,10 +304,11 @@ class _AddEquipmentScreenState extends State<AddEquipmentScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-            SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: Form(
+            Positioned.fill(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                child: Form(
                 key: _formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -552,6 +553,7 @@ class _AddEquipmentScreenState extends State<AddEquipmentScreen> {
                     const SizedBox(height: 40),
                   ],
                 ),
+              ),
               ),
             ),
 
