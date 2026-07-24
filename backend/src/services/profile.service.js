@@ -81,7 +81,7 @@ const getUserProfile = async (userId) => {
  */
 const updateProfile = async (userId, data) => {
   // Only pick the allowed fields — an extra safety layer beyond Zod
-  const { name, phone, address } = data;
+  const { name, phone, address, profileImage } = data;
 
   const updatedUser = await prisma.user.update({
     where: { id: userId },
@@ -90,6 +90,7 @@ const updateProfile = async (userId, data) => {
       ...(name !== undefined && { name }),
       ...(phone !== undefined && { phone }),
       ...(address !== undefined && { address }),
+      ...(profileImage !== undefined && { profileImage }),
     },
     select: SAFE_USER_SELECT,
   });
