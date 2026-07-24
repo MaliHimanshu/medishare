@@ -2,12 +2,14 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 // Providers
 import '../../providers/equipment_provider.dart';
 
-// Shared Constants
+// Services
+import '../../services/image_upload_service.dart';
+
+// Shared Constants & Extensions
 import '../../core/constants/app_colors.dart';
 
 class AddEquipmentScreen extends StatefulWidget {
@@ -46,10 +48,11 @@ class _AddEquipmentScreenState extends State<AddEquipmentScreen> {
   ];
 
   bool _isSaving = false;
+  bool _isUploadingImage = false;
+  double _uploadProgress = 0.0;
 
-  // Image upload states
+  // Image upload state
   File? _imageFile;
-  final ImagePicker _picker = ImagePicker();
 
   @override
   void dispose() {
@@ -62,78 +65,26 @@ class _AddEquipmentScreenState extends State<AddEquipmentScreen> {
   }
 
   // ─────────────────────────────────────────────
-  // Permissions & Dialog Helper
-  // ─────────────────────────────────────────────
-  Future<bool> _checkPermission(ImageSource source) async {
-    if (Platform.isAndroid) {
-      if (source == ImageSource.camera) {
-        final status = await Permission.camera.request();
-        if (status.isGranted) return true;
-        _showPermissionDialog("Camera");
-        return false;
-      }
-      // On Android, Photo Picker handles gallery permission natively without manual storage checks
-      return true;
-    } else if (Platform.isIOS) {
-      if (source == ImageSource.camera) {
-        final status = await Permission.camera.request();
-        if (status.isGranted) return true;
-        _showPermissionDialog("Camera");
-        return false;
-      } else {
-        final status = await Permission.photos.request();
-        if (status.isGranted || status.isLimited) return true;
-        _showPermissionDialog("Photos/Gallery");
-        return false;
-      }
-    }
-    return true;
-  }
-
-  void _showPermissionDialog(String serviceName) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text("$serviceName Permission Required"),
-        content: Text("MediShare needs access to your $serviceName to attach equipment photos. Please grant permission in the App Settings."),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text("Cancel"),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              openAppSettings();
-            },
-            child: const Text("Open Settings"),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ─────────────────────────────────────────────
   // Image Selection Handler
   // ─────────────────────────────────────────────
   Future<void> _onPickImage(ImageSource source) async {
     try {
-      final hasPermission = await _checkPermission(source);
-      if (!hasPermission) return;
-
-      // Natively compresses to 1024px maximum dimension with 85% JPEG quality at source
-      final XFile? pickedFile = await _picker.pickImage(
-        source: source,
-        maxWidth: 1024,
-        maxHeight: 1024,
-        imageQuality: 85,
-      );
-
-      if (pickedFile == null) return; // User cancelled
+      final pickedFile = await ImageUploadService.instance.pickImage(source);
+      if (pickedFile == null) return; // User cancelled or permission denied
 
       setState(() {
-        _imageFile = File(pickedFile.path);
+        _imageFile = pickedFile;
       });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Image selected! It will be uploaded on listing submission."),
+            behavior: SnackBarBehavior.floating,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -215,30 +166,6 @@ class _AddEquipmentScreenState extends State<AddEquipmentScreen> {
   }
 
   // ─────────────────────────────────────────────
-  // Isolated Image Upload Logic
-  // ─────────────────────────────────────────────
-  /// Uploads image file using multipart/form-data with Dio if supported,
-  /// otherwise returns mock URL for presentation storage.
-  Future<String> _uploadImage(File file) async {
-    try {
-      // Stubbed multipart file upload code for future API connection:
-      // final formData = FormData.fromMap({
-      //   'file': await MultipartFile.fromFile(file.path, filename: 'equipment.jpg'),
-      // });
-      // final response = await DioClient.instance.post('/api/upload', data: formData);
-      // return response.data['url'];
-
-      // Simulate a small delay for network upload simulation
-      await Future.delayed(const Duration(milliseconds: 600));
-
-      // Return a simulated cloud storage image URL
-      return "https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=600&q=80";
-    } catch (e) {
-      throw Exception("Upload failed: $e");
-    }
-  }
-
-  // ─────────────────────────────────────────────
   // Submit Flow
   // ─────────────────────────────────────────────
   Future<void> submitEquipment() async {
@@ -248,37 +175,56 @@ class _AddEquipmentScreenState extends State<AddEquipmentScreen> {
     final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
 
-    setState(() => _isSaving = true);
+    setState(() {
+      _isSaving = true;
+      _uploadProgress = 0.0;
+    });
 
     String uploadedImageUrl = '';
     if (_imageFile != null) {
+      setState(() => _isUploadingImage = true);
       try {
-        uploadedImageUrl = await _uploadImage(_imageFile!);
+        uploadedImageUrl = await ImageUploadService.instance.uploadImage(
+          _imageFile!,
+          onProgress: (sent, total) {
+            if (total > 0 && mounted) {
+              setState(() {
+                _uploadProgress = sent / total;
+              });
+            }
+          },
+        );
       } catch (e) {
-        setState(() => _isSaving = false);
+        setState(() {
+          _isSaving = false;
+          _isUploadingImage = false;
+        });
         if (mounted) {
           messenger.showSnackBar(
             SnackBar(
-              content: Text(e.toString()),
+              content: Text("Image upload failed: ${e.toString().replaceAll('Exception: ', '')}"),
               behavior: SnackBarBehavior.floating,
               backgroundColor: AppColors.error,
+              duration: const Duration(seconds: 4),
             ),
           );
         }
         return;
+      } finally {
+        if (mounted) setState(() => _isUploadingImage = false);
       }
     }
-    
+
     final success = await provider.addEquipment(
-          name: _nameController.text.trim(),
-          category: selectedCategory,
-          condition: selectedCondition,
-          quantity: int.tryParse(_quantityController.text.trim()) ?? 1,
-          manufacturer: _manufacturerController.text.trim(),
-          description: _descriptionController.text.trim(),
-          location: _locationController.text.trim(),
-          image: uploadedImageUrl,
-        );
+      name: _nameController.text.trim(),
+      category: selectedCategory,
+      condition: selectedCondition,
+      quantity: int.tryParse(_quantityController.text.trim()) ?? 1,
+      manufacturer: _manufacturerController.text.trim(),
+      description: _descriptionController.text.trim(),
+      location: _locationController.text.trim(),
+      image: uploadedImageUrl,
+    );
 
     setState(() => _isSaving = false);
 
@@ -286,11 +232,12 @@ class _AddEquipmentScreenState extends State<AddEquipmentScreen> {
       if (success) {
         messenger.showSnackBar(
           const SnackBar(
-            content: Text("Equipment Listing Created!"),
+            content: Text("Equipment Listing Created Successfully!"),
             behavior: SnackBarBehavior.floating,
+            backgroundColor: AppColors.success,
           ),
         );
-        navigator.pop();
+        navigator.pop(true);
       } else {
         final err = provider.errorMessage;
         messenger.showSnackBar(
@@ -349,250 +296,298 @@ class _AddEquipmentScreenState extends State<AddEquipmentScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: context.scaffoldBg,
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: const Text("List Medical Equipment", style: TextStyle(fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Circular Image Upload UI Section
-                  Center(
-                    child: Stack(
-                      children: [
-                        GestureDetector(
-                          onTap: _showImagePickerSheet,
-                          child: Container(
-                            width: 100,
-                            height: 100,
-                            decoration: BoxDecoration(
-                              color: AppColors.primary.withValues(alpha: 0.15),
-                              shape: BoxShape.circle,
-                              border: Border.all(color: AppColors.primary.withValues(alpha: 0.3), width: 2),
-                            ),
-                            child: _imageFile != null
-                                ? ClipRRect(
-                                    borderRadius: BorderRadius.circular(50),
-                                    child: Image.file(
-                                      _imageFile!,
-                                      fit: BoxFit.cover,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Circular Image Upload UI Section
+                    Center(
+                      child: Stack(
+                        children: [
+                          GestureDetector(
+                            onTap: _showImagePickerSheet,
+                            child: Container(
+                              width: 110,
+                              height: 110,
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(alpha: 0.15),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: AppColors.primary.withValues(alpha: 0.3), width: 2),
+                              ),
+                              child: _imageFile != null
+                                  ? ClipRRect(
+                                      borderRadius: BorderRadius.circular(55),
+                                      child: Image.file(
+                                        _imageFile!,
+                                        fit: BoxFit.cover,
+                                        width: 110,
+                                        height: 110,
+                                      ),
+                                    )
+                                  : Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: const [
+                                        Icon(
+                                          Icons.camera_alt_outlined,
+                                          size: 36,
+                                          color: AppColors.primary,
+                                        ),
+                                        SizedBox(height: 4),
+                                        Text(
+                                          "Add Photo",
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                            color: AppColors.primary,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  )
-                                : const Icon(
-                                    Icons.camera_alt_outlined,
-                                    size: 36,
-                                    color: AppColors.primary,
-                                  ),
+                            ),
                           ),
-                        ),
-                        if (_imageFile != null)
-                          Positioned(
-                            top: 0,
-                            right: 0,
-                            child: GestureDetector(
-                              onTap: _removeImage,
+                          if (_imageFile != null)
+                            Positioned(
+                              top: 0,
+                              right: 0,
+                              child: GestureDetector(
+                                onTap: _removeImage,
+                                child: Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: const BoxDecoration(
+                                    color: AppColors.error,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.close,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
+                                ),
+                              ),
+                            )
+                          else
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
                               child: Container(
-                                padding: const EdgeInsets.all(4),
+                                padding: const EdgeInsets.all(6),
                                 decoration: const BoxDecoration(
-                                  color: AppColors.error,
+                                  color: AppColors.primary,
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(
-                                  Icons.close,
+                                  Icons.add,
                                   color: Colors.white,
-                                  size: 16,
+                                  size: 14,
                                 ),
                               ),
                             ),
-                          )
-                        else
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: Container(
-                              padding: const EdgeInsets.all(6),
-                              decoration: const BoxDecoration(
-                                color: AppColors.primary,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.add,
-                                color: Colors.white,
-                                size: 14,
-                              ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Equipment Name
+                    buildTextField(
+                      controller: _nameController,
+                      label: "Equipment Name *",
+                      icon: Icons.medical_services_outlined,
+                      validator: (val) => val == null || val.trim().isEmpty ? "Name is required" : null,
+                    ),
+
+                    // Category Dropdown
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 18),
+                      child: DropdownButtonFormField<String>(
+                        initialValue: selectedCategory,
+                        dropdownColor: context.cardBg,
+                        style: TextStyle(color: context.textPrimaryColor),
+                        decoration: InputDecoration(
+                          labelText: "Category *",
+                          labelStyle: TextStyle(color: context.textSecondaryColor),
+                          prefixIcon: const Icon(Icons.category_outlined, color: AppColors.primary),
+                          filled: true,
+                          fillColor: context.inputBg,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide(color: context.borderColor, width: 1.5),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide(color: context.borderColor, width: 1.5),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                          ),
+                        ),
+                        items: categories.map((category) {
+                          return DropdownMenuItem(
+                            value: category,
+                            child: Text(category),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() {
+                              selectedCategory = value;
+                            });
+                          }
+                        },
+                      ),
+                    ),
+
+                    // Manufacturer
+                    buildTextField(
+                      controller: _manufacturerController,
+                      label: "Manufacturer (Optional)",
+                      icon: Icons.business_outlined,
+                    ),
+
+                    // Quantity
+                    buildTextField(
+                      controller: _quantityController,
+                      label: "Quantity *",
+                      icon: Icons.inventory_2_outlined,
+                      keyboard: TextInputType.number,
+                      validator: (val) {
+                        if (val == null || val.trim().isEmpty) return "Quantity is required";
+                        final parsed = int.tryParse(val.trim());
+                        if (parsed == null || parsed <= 0) return "Must be a valid positive number";
+                        return null;
+                      },
+                    ),
+
+                    // Condition Dropdown
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 18),
+                      child: DropdownButtonFormField<String>(
+                        initialValue: selectedCondition,
+                        dropdownColor: context.cardBg,
+                        style: TextStyle(color: context.textPrimaryColor),
+                        decoration: InputDecoration(
+                          labelText: "Condition *",
+                          labelStyle: TextStyle(color: context.textSecondaryColor),
+                          prefixIcon: const Icon(Icons.health_and_safety_outlined, color: AppColors.primary),
+                          filled: true,
+                          fillColor: context.inputBg,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide(color: context.borderColor, width: 1.5),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide(color: context.borderColor, width: 1.5),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                          ),
+                        ),
+                        items: conditions.map((cond) {
+                          return DropdownMenuItem(
+                            value: cond,
+                            child: Text(cond.replaceAll('_', ' ')),
+                          );
+                        }).toList(),
+                        onChanged: (value) {
+                          if (value != null) {
+                            setState(() {
+                              selectedCondition = value;
+                            });
+                          }
+                        },
+                      ),
+                    ),
+
+                    // Location
+                    buildTextField(
+                      controller: _locationController,
+                      label: "Location *",
+                      icon: Icons.location_on_outlined,
+                      validator: (val) => val == null || val.trim().isEmpty ? "Location is required" : null,
+                    ),
+
+                    // Description
+                    buildTextField(
+                      controller: _descriptionController,
+                      label: "Description (Optional)",
+                      icon: Icons.description_outlined,
+                      maxLines: 4,
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // Save Button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 55,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          elevation: 3,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        ),
+                        onPressed: _isSaving ? null : submitEquipment,
+                        icon: const Icon(Icons.save_outlined),
+                        label: Text(
+                          _isSaving ? "Saving Listing..." : "Submit Listing",
+                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 40),
+                  ],
+                ),
+              ),
+            ),
+
+            if (_isSaving)
+              Container(
+                color: Colors.black.withValues(alpha: 0.5),
+                child: Center(
+                  child: Card(
+                    margin: const EdgeInsets.symmetric(horizontal: 32),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const CircularProgressIndicator(color: AppColors.primary),
+                          const SizedBox(height: 18),
+                          Text(
+                            _isUploadingImage
+                                ? "Uploading Image (${(_uploadProgress * 100).toInt()}%)..."
+                                : "Submitting Equipment Listing...",
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
                             ),
                           ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 30),
-
-                  // Equipment Name
-                  buildTextField(
-                    controller: _nameController,
-                    label: "Equipment Name",
-                    icon: Icons.medical_services_outlined,
-                    validator: (val) => val == null || val.trim().isEmpty ? "Name is required" : null,
-                  ),
-
-                  // Category Dropdown
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 18),
-                    child: DropdownButtonFormField<String>(
-                      initialValue: selectedCategory,
-                      dropdownColor: context.cardBg,
-                      style: TextStyle(color: context.textPrimaryColor),
-                      decoration: InputDecoration(
-                        labelText: "Category",
-                        labelStyle: TextStyle(color: context.textSecondaryColor),
-                        prefixIcon: const Icon(Icons.category_outlined, color: AppColors.primary),
-                        filled: true,
-                        fillColor: context.inputBg,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(color: context.borderColor, width: 1.5),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(color: context.borderColor, width: 1.5),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: const BorderSide(color: AppColors.primary, width: 2),
-                        ),
-                      ),
-                      items: categories.map((category) {
-                        return DropdownMenuItem(
-                          value: category,
-                          child: Text(category),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedCategory = value!;
-                        });
-                      },
-                    ),
-                  ),
-
-                  // Manufacturer
-                  buildTextField(
-                    controller: _manufacturerController,
-                    label: "Manufacturer (Optional)",
-                    icon: Icons.business_outlined,
-                  ),
-
-                  // Quantity
-                  buildTextField(
-                    controller: _quantityController,
-                    label: "Quantity",
-                    icon: Icons.inventory_2_outlined,
-                    keyboard: TextInputType.number,
-                    validator: (val) {
-                      if (val == null || val.trim().isEmpty) return "Quantity is required";
-                      final parsed = int.tryParse(val.trim());
-                      if (parsed == null || parsed <= 0) return "Must be a valid positive number";
-                      return null;
-                    },
-                  ),
-
-                  // Condition Dropdown
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 18),
-                    child: DropdownButtonFormField<String>(
-                      initialValue: selectedCondition,
-                      dropdownColor: context.cardBg,
-                      style: TextStyle(color: context.textPrimaryColor),
-                      decoration: InputDecoration(
-                        labelText: "Condition",
-                        labelStyle: TextStyle(color: context.textSecondaryColor),
-                        prefixIcon: const Icon(Icons.health_and_safety_outlined, color: AppColors.primary),
-                        filled: true,
-                        fillColor: context.inputBg,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(color: context.borderColor, width: 1.5),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(color: context.borderColor, width: 1.5),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: const BorderSide(color: AppColors.primary, width: 2),
-                        ),
-                      ),
-                      items: conditions.map((cond) {
-                        return DropdownMenuItem(
-                          value: cond,
-                          child: Text(cond.replaceAll('_', ' ')),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedCondition = value!;
-                        });
-                      },
-                    ),
-                  ),
-
-                  // Location
-                  buildTextField(
-                    controller: _locationController,
-                    label: "Location",
-                    icon: Icons.location_on_outlined,
-                    validator: (val) => val == null || val.trim().isEmpty ? "Location is required" : null,
-                  ),
-
-                  // Description
-                  buildTextField(
-                    controller: _descriptionController,
-                    label: "Description (Optional)",
-                    icon: Icons.description_outlined,
-                    maxLines: 4,
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Save Button
-                  SizedBox(
-                    width: double.infinity,
-                    height: 55,
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        elevation: 3,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      ),
-                      onPressed: submitEquipment,
-                      icon: const Icon(Icons.save_outlined),
-                      label: const Text(
-                        "Submit Listing",
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ],
                       ),
                     ),
                   ),
-                  const SizedBox(height: 40),
-                ],
+                ),
               ),
-            ),
-          ),
-          
-          if (_isSaving)
-            Container(
-              color: Colors.black.withValues(alpha: 0.3),
-              child: const Center(
-                child: CircularProgressIndicator(color: AppColors.primary),
-              ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -15,6 +15,7 @@ const hospitalRoutes = require("./routes/hospital.routes");
 const notificationRoutes = require("./routes/notification.routes");
 const dashboardRoutes = require("./routes/dashboard.routes");
 const chatbotRoutes = require("./routes/chatbot.routes");
+const uploadRoutes = require("./routes/upload.routes");
 
 const app = express();
 
@@ -61,6 +62,7 @@ app.use("/api/hospital", hospitalRoutes);
 app.use("/api/notification", notificationRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/chatbot", chatbotRoutes);
+app.use("/api/upload", uploadRoutes);
 
 // ── Health Check (for Railway / Docker) ────────────────────────────
 app.get("/api/health", (req, res) => {

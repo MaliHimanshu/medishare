@@ -55,4 +55,7 @@ class ApiEndpoints {
 
   // ── Chatbot ─────────────────────────────────────────────
   static const String chatbot = '/chatbot';
+
+  // ── Upload ──────────────────────────────────────────────
+  static const String upload = '/upload';
 }
