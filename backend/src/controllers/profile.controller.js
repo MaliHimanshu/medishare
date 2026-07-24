@@ -28,13 +28,11 @@ const getMyProfile = async (req, res, next) => {
  */
 const updateMyProfile = async (req, res, next) => {
   try {
-    const validatedData = updateProfileSchema.parse({
-      body: req.body,
-    });
+    const validatedData = updateProfileSchema.parse(req.body);
 
     const updatedUser = await updateProfile(
       req.user.id,
-      validatedData.body
+      validatedData
     );
 
     return res.status(200).json({

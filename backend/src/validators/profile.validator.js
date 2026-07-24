@@ -42,6 +42,11 @@ const updateProfileSchema = z.object({
     .max(255, "Address must be at most 255 characters")
     .trim()
     .optional(),
+
+  profileImage: z
+    .string()
+    .url("Invalid image URL format")
+    .optional(),
 });
 
 // ─────────────────────────────────────────────
