@@ -425,12 +425,17 @@ class _EquipmentListScreenState extends State<EquipmentListScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              "Qty: ${equipment.quantity} · ${equipment.condition}",
-                              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.textSecondaryColor),
+                            Expanded(
+                              child: Text(
+                                "Qty: ${equipment.quantity} · ${equipment.condition}",
+                                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.textSecondaryColor),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
                             ),
                             if (isOwner)
                               Row(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
                                   IconButton(
                                     icon: const Icon(Icons.edit_outlined, color: AppColors.primary, size: 18),

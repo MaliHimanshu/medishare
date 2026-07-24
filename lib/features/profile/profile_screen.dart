@@ -218,7 +218,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: [
                         ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: Colors.blue.shade50,
+                            backgroundColor: Colors.blue.withAlpha(context.isDarkMode ? 40 : 30),
                             child: const Icon(Icons.person_outline, color: Colors.blue),
                           ),
                           title: Text('Edit Profile', style: TextStyle(color: context.textPrimaryColor)),
@@ -239,7 +239,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Divider(height: 1, color: context.borderColor),
                         ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: Colors.orange.shade50,
+                            backgroundColor: Colors.orange.withAlpha(context.isDarkMode ? 40 : 30),
                             child: const Icon(Icons.lock_outline, color: Colors.orange),
                           ),
                           title: Text('Change Password', style: TextStyle(color: context.textPrimaryColor)),
@@ -255,7 +255,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Divider(height: 1, color: context.borderColor),
                         ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: Colors.purple.shade50,
+                            backgroundColor: Colors.purple.withAlpha(context.isDarkMode ? 40 : 30),
                             child: const Icon(Icons.settings_outlined, color: Colors.purple),
                           ),
                           title: Text('App Settings', style: TextStyle(color: context.textPrimaryColor)),
@@ -271,7 +271,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Divider(height: 1, color: context.borderColor),
                         ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: Colors.teal.shade50,
+                            backgroundColor: Colors.teal.withAlpha(context.isDarkMode ? 40 : 30),
                             child: const Icon(Icons.help_outline, color: Colors.teal),
                           ),
                           title: Text('Help & Support', style: TextStyle(color: context.textPrimaryColor)),
@@ -287,7 +287,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Divider(height: 1, color: context.borderColor),
                         ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: Colors.indigo.shade50,
+                            backgroundColor: Colors.indigo.withAlpha(context.isDarkMode ? 40 : 30),
                             child: const Icon(Icons.info_outline, color: Colors.indigo),
                           ),
                           title: Text('About MediShare', style: TextStyle(color: context.textPrimaryColor)),
@@ -457,9 +457,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         const SizedBox(width: 10),
                         const Icon(Icons.calendar_today, size: 12, color: Colors.grey),
                         const SizedBox(width: 4),
-                        const Text(
-                          'Member since Jul 2026',
-                          style: TextStyle(fontSize: 11, color: Colors.grey),
+                        Expanded(
+                          child: Text(
+                            'Member since Jul 2026',
+                            style: const TextStyle(fontSize: 11, color: Colors.grey),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
                         ),
                       ],
                     ),
@@ -485,9 +489,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const Spacer(),
                   const Icon(Icons.location_on_outlined, size: 16, color: Colors.red),
                   const SizedBox(width: 6),
-                  Text(
-                    user.address!,
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: context.textPrimaryColor),
+                  Expanded(
+                    child: Text(
+                      user.address!,
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: context.textPrimaryColor),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
                   ),
                 ],
               ],

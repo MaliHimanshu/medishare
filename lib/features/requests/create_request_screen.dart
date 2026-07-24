@@ -107,9 +107,10 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Form(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -417,6 +418,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                 ),
               ),
             ],
+          ),
           ),
         ),
       ),

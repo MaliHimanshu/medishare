@@ -54,47 +54,50 @@ class MsLogo extends StatelessWidget {
     // Primary Text Color: White in Dark Mode, Navy Dark in Light Mode
     final textColor = isDark ? Colors.white : AppColors.textPrimary;
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        // Medical Cross Icon (Asset with Vector Badge Fallback)
-        Image.asset(
-          AppAssets.logoIcon,
-          height: iconHeight,
-          fit: BoxFit.contain,
-          errorBuilder: (ctx, err, stack) {
-            return _MedicalCrossBadge(size: iconHeight, iconSize: iconHeight * 0.55);
-          },
-        ),
-        const SizedBox(width: 8),
-
-        // Dynamic High-Contrast MediShare Text
-        RichText(
-          text: TextSpan(
-            children: [
-              TextSpan(
-                text: 'Medi',
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: fontSize,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: -0.5,
-                ),
-              ),
-              TextSpan(
-                text: 'Share',
-                style: TextStyle(
-                  color: AppColors.accent,
-                  fontSize: fontSize,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: -0.5,
-                ),
-              ),
-            ],
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Medical Cross Icon (Asset with Vector Badge Fallback)
+          Image.asset(
+            AppAssets.logoIcon,
+            height: iconHeight,
+            fit: BoxFit.contain,
+            errorBuilder: (ctx, err, stack) {
+              return _MedicalCrossBadge(size: iconHeight, iconSize: iconHeight * 0.55);
+            },
           ),
-        ),
-      ],
+          const SizedBox(width: 8),
+
+          // Dynamic High-Contrast MediShare Text
+          RichText(
+            text: TextSpan(
+              children: [
+                TextSpan(
+                  text: 'Medi',
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: fontSize,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                TextSpan(
+                  text: 'Share',
+                  style: TextStyle(
+                    color: AppColors.accent,
+                    fontSize: fontSize,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

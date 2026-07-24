@@ -176,9 +176,12 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
               child: const Icon(Icons.smart_toy_outlined, color: AppColors.primary, size: 20),
             ),
             const SizedBox(width: 10),
-            Text(
-              AppTranslations.getText(lang, 'ai_assistant_title'),
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: context.textPrimaryColor),
+            Expanded(
+              child: Text(
+                AppTranslations.getText(lang, 'ai_assistant_title'),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: context.textPrimaryColor),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
           ],
         ),

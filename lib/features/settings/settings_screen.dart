@@ -139,7 +139,7 @@ class SettingsScreen extends StatelessWidget {
               ),
               child: SwitchListTile(
                 secondary: CircleAvatar(
-                  backgroundColor: Colors.blue.shade50,
+                  backgroundColor: Colors.blue.withAlpha(context.isDarkMode ? 40 : 30),
                   child: const Icon(Icons.notifications_active_outlined, color: Colors.blue),
                 ),
                 title: Text(
@@ -184,7 +184,7 @@ class SettingsScreen extends StatelessWidget {
               ),
               child: ListTile(
                 leading: CircleAvatar(
-                  backgroundColor: Colors.teal.shade50,
+                  backgroundColor: Colors.teal.withAlpha(context.isDarkMode ? 40 : 30),
                   child: const Icon(Icons.language, color: Colors.teal),
                 ),
                 title: Text(
