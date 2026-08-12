@@ -7,27 +7,37 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ======================================================
+// USER
+// ======================================================
+
 model User {
-  id            String         @id @default(cuid())
-  name          String
-  email         String         @unique
-  password      String
-  phone         String?
-  address       String?
-  role          UserRole       @default(DONOR)
-  profileImage  String?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  password     String
+  phone        String?
+  address      String?
+  role         UserRole @default(DONOR)
+  profileImage String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
   chatHistory   ChatHistory[]
   donations     Donation[]
   equipment     Equipment[]
   notifications Notification[]
   requests      Request[]
+  rentals       Rental[]       @relation("Renter")
 
   @@index([role])
   @@index([createdAt])
   @@map("users")
 }
+
+// ======================================================
+// EQUIPMENT
+// ======================================================
 
 model Equipment {
   id           String             @id @default(cuid())
@@ -37,34 +47,92 @@ model Equipment {
   description  String?
   quantity     Int                @default(1)
   condition    EquipmentCondition
-  status       EquipmentStatus    @default(AVAILABLE)
   image        String?
-  ownerId      String
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
-  donations    Donation[]
-  owner        User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  requests     Request[]
+  images       String[]           @default([])
+  mode         EquipmentMode      @default(DONATE)
+  status       EquipmentStatus    @default(AVAILABLE)
 
-  @@index([ownerId])
-  @@index([status])
+  rentalPricePerDay Decimal? @db.Decimal(10, 2)
+  securityDeposit   Decimal? @db.Decimal(10, 2)
+
+  latitude  Float?
+  longitude Float?
+  address   String?
+
+  ownerId String
+  owner   User   @relation(fields: [ownerId], references: [id])
+
+  rentals   Rental[]
+  donations Donation[]
+  requests  Request[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([category])
   @@index([condition])
-  @@index([status, category])
+  @@index([mode])
+  @@index([status])
+  @@index([ownerId])
   @@index([ownerId, status])
+  @@index([status, category])
+  @@index([latitude, longitude])
   @@index([createdAt])
   @@map("equipment")
 }
+
+// ======================================================
+// RENTAL
+// ======================================================
+
+model Rental {
+  id          String    @id @default(cuid())
+  equipmentId String
+  equipment   Equipment @relation(fields: [equipmentId], references: [id])
+
+  renterId String
+  renter   User   @relation("Renter", fields: [renterId], references: [id])
+
+  startDate    DateTime
+  endDate      DateTime
+  numberOfDays Int
+
+  rentalAmount    Decimal @db.Decimal(10, 2)
+  securityDeposit Decimal @db.Decimal(10, 2)
+  totalAmount     Decimal @db.Decimal(10, 2)
+
+  status        RentalStatus  @default(PENDING)
+  paymentStatus PaymentStatus @default(PENDING)
+
+  razorpayOrderId   String?
+  razorpayPaymentId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([equipmentId])
+  @@index([renterId])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([startDate, endDate])
+  @@map("rentals")
+}
+
+// ======================================================
+// DONATION
+// ======================================================
 
 model Donation {
   id          String         @id @default(cuid())
   equipmentId String
   donorId     String
   status      DonationStatus @default(PENDING)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  donor       User           @relation(fields: [donorId], references: [id], onDelete: Cascade)
-  equipment   Equipment      @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  donor     User      @relation(fields: [donorId], references: [id], onDelete: Cascade)
+  equipment Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
 
   @@index([equipmentId])
   @@index([donorId])
@@ -74,16 +142,22 @@ model Donation {
   @@map("donations")
 }
 
+// ======================================================
+// EQUIPMENT REQUEST
+// ======================================================
+
 model Request {
   id          String        @id @default(cuid())
   equipmentId String
   requesterId String
   reason      String?
   status      RequestStatus @default(PENDING)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  equipment   Equipment     @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
-  requester   User          @relation(fields: [requesterId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  equipment Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  requester User      @relation(fields: [requesterId], references: [id], onDelete: Cascade)
 
   @@index([equipmentId])
   @@index([requesterId])
@@ -94,22 +168,29 @@ model Request {
   @@map("requests")
 }
 
+// ======================================================
+// HOSPITAL
+// ======================================================
+
 model Hospital {
-  id           String   @id @default(cuid())
+  id           String @id @default(cuid())
   hospitalName String
   address      String
   city         String
   state        String
   pincode      String
-  phone        String?
-  email        String?  @unique
-  website      String?
-  description  String?
-  latitude     Float?
-  longitude    Float?
-  image        String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+
+  phone       String?
+  email       String? @unique
+  website     String?
+  description String?
+
+  latitude  Float?
+  longitude Float?
+  image     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([city])
   @@index([state])
@@ -119,6 +200,10 @@ model Hospital {
   @@map("hospitals")
 }
 
+// ======================================================
+// NOTIFICATION
+// ======================================================
+
 model Notification {
   id        String           @id @default(cuid())
   userId    String
@@ -127,23 +212,34 @@ model Notification {
   type      NotificationType @default(GENERAL)
   isRead    Boolean          @default(false)
   createdAt DateTime         @default(now())
-  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, isRead])
   @@index([userId, createdAt])
   @@map("notifications")
 }
+
+// ======================================================
+// AI CHAT HISTORY
+// ======================================================
+
 model ChatHistory {
   id          String   @id @default(cuid())
   userId      String
   userMessage String
   botReply    String
   createdAt   DateTime @default(now())
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
   @@map("chat_history")
 }
+
+// ======================================================
+// ENUMS
+// ======================================================
 
 enum UserRole {
   ADMIN
@@ -159,11 +255,34 @@ enum EquipmentCondition {
   FAIR
 }
 
+enum EquipmentMode {
+  DONATE
+  RENT
+  BOTH
+}
+
 enum EquipmentStatus {
   AVAILABLE
-  REQUESTED
+  RESERVED
+  RENTED
   DONATED
-  UNAVAILABLE
+  MAINTENANCE
+}
+
+enum RentalStatus {
+  PENDING
+  APPROVED
+  ACTIVE
+  RETURNED
+  CANCELLED
+  REJECTED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
 }
 
 enum DonationStatus {
@@ -180,6 +299,7 @@ enum RequestStatus {
   COMPLETED
   CANCELLED
 }
+
 enum NotificationType {
   REQUEST
   DONATION
