@@ -10,6 +10,7 @@ import '../../models/equipment_model.dart';
 
 // Screens
 import 'edit_equipment_screen.dart';
+import '../rental/book_rental_dialog.dart';
 
 // Shared Constants
 import '../../core/constants/app_colors.dart';
@@ -155,6 +156,13 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
           },
         );
       },
+    );
+  }
+
+  void _showBookRentalDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => BookRentalDialog(equipment: widget.equipment),
     );
   }
 
@@ -386,16 +394,33 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
                             height: 48,
                             child: ElevatedButton.icon(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
+                                backgroundColor: widget.equipment.mode == 'RENT'
+                                    ? const Color(0xFF0284C7)
+                                    : AppColors.primary,
                                 foregroundColor: Colors.white,
                                 elevation: 2,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16)),
                               ),
-                              onPressed: () => _showRequestDialog(context),
-                              icon: const Icon(Icons.send_outlined, size: 18),
-                              label: const Text(
-                                "Request Equipment",
-                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                              onPressed: () {
+                                if (widget.equipment.mode == 'RENT') {
+                                  _showBookRentalDialog(context);
+                                } else {
+                                  _showRequestDialog(context);
+                                }
+                              },
+                              icon: Icon(
+                                widget.equipment.mode == 'RENT'
+                                    ? Icons.handshake_outlined
+                                    : Icons.send_outlined,
+                                size: 18,
+                              ),
+                              label: Text(
+                                widget.equipment.mode == 'RENT'
+                                    ? "Rent Equipment"
+                                    : "Request Equipment",
+                                style: const TextStyle(
+                                    fontSize: 14, fontWeight: FontWeight.bold),
                               ),
                             ),
                           ),

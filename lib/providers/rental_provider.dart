@@ -86,7 +86,20 @@ class RentalProvider extends ChangeNotifier {
             response.data?['message'] ?? 'Failed to load rentals.';
       }
     } on DioException catch (e) {
-      _errorMessage = DioClient.handleError(e);
+      if (e.response != null) {
+        final status = e.response!.statusCode;
+        if (status == 401) {
+          _errorMessage = 'Unauthorized (401): Please log in again.';
+        } else if (status == 404) {
+          _errorMessage = 'Rentals service not found (404).';
+        } else if (status == 500) {
+          _errorMessage = 'Internal Server Error (500): Please try again later.';
+        } else {
+          _errorMessage = e.response!.data?['message'] ?? DioClient.handleError(e);
+        }
+      } else {
+        _errorMessage = DioClient.handleError(e);
+      }
     } catch (e) {
       _errorMessage = 'An unexpected error occurred: $e';
     } finally {

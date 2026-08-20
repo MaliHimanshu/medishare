@@ -9,6 +9,7 @@ const swaggerSpec = require("./config/swagger");
 const authRoutes = require("./routes/auth.routes");
 const profileRoutes = require("./routes/profile.routes");
 const equipmentRoutes = require("./routes/equipment.routes");
+const equipmentLocationRoutes = require("./routes/equipmentLocation.routes");
 const donationRoutes = require("./routes/donation.routes");
 const requestRoutes = require("./routes/request.routes");
 const hospitalRoutes = require("./routes/hospital.routes");
@@ -16,6 +17,8 @@ const notificationRoutes = require("./routes/notification.routes");
 const dashboardRoutes = require("./routes/dashboard.routes");
 const chatbotRoutes = require("./routes/chatbot.routes");
 const uploadRoutes = require("./routes/upload.routes");
+const rentalRoutes = require("./routes/rental.routes");
+const trackingRoutes = require("./routes/tracking.routes");
 
 const app = express();
 
@@ -56,6 +59,7 @@ Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/equipment", equipmentRoutes);
+app.use("/api/equipment", equipmentLocationRoutes);
 app.use("/api/donation", donationRoutes);
 app.use("/api/request", requestRoutes);
 app.use("/api/hospital", hospitalRoutes);
@@ -63,6 +67,8 @@ app.use("/api/notification", notificationRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/chatbot", chatbotRoutes);
 app.use("/api/upload", uploadRoutes);
+app.use("/api/rental", rentalRoutes);
+app.use("/api/tracking", trackingRoutes);
 
 // ── Health Check (for Railway / Docker) ────────────────────────────
 app.get("/api/health", (req, res) => {

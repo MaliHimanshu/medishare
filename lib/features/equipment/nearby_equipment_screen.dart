@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:geolocator/geolocator.dart';
@@ -83,7 +84,7 @@ class _NearbyEquipmentScreenState extends State<NearbyEquipmentScreen> {
       setState(() => _locationState = _LocationState.serviceDisabled);
       // Still try last-known cache — Android sometimes has a stale fix
       // even when the location toggle is off (set before it was disabled).
-      await _tryLastKnownOrStop();
+      await _tryLastKnownOrStop(fallbackState: _LocationState.serviceDisabled);
       return;
     }
 
@@ -95,7 +96,7 @@ class _NearbyEquipmentScreenState extends State<NearbyEquipmentScreen> {
       if (!mounted) return;
       if (permission == LocationPermission.denied) {
         setState(() => _locationState = _LocationState.permissionDenied);
-        await _tryLastKnownOrStop();
+        await _tryLastKnownOrStop(fallbackState: _LocationState.permissionDenied);
         return;
       }
     }
@@ -103,19 +104,39 @@ class _NearbyEquipmentScreenState extends State<NearbyEquipmentScreen> {
     if (permission == LocationPermission.deniedForever) {
       if (!mounted) return;
       setState(() => _locationState = _LocationState.permissionDeniedForever);
-      await _tryLastKnownOrStop();
+      await _tryLastKnownOrStop(fallbackState: _LocationState.permissionDeniedForever);
       return;
     }
 
     // ── Step 3: Fresh GPS Fix (30-second timeout) ─────────────────────────
-    // Real Android devices need 20-60 s for a cold-start GPS fix.
-    // 30 s is a reasonable upper bound before falling back to last-known.
+    // ROOT CAUSE FIX: The base LocationSettings class does NOT support
+    // timeLimit in geolocator 13.x. Only AndroidSettings/AppleSettings do.
+    // Without platform-specific settings, getCurrentPosition hangs forever.
     try {
-      final Position position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
+      LocationSettings locationSettings;
+      if (Platform.isAndroid) {
+        locationSettings = AndroidSettings(
           accuracy: LocationAccuracy.high,
-          timeLimit: Duration(seconds: 30),
-        ),
+          timeLimit: const Duration(seconds: 30),
+          forceLocationManager: false,
+        );
+      } else if (Platform.isIOS || Platform.isMacOS) {
+        locationSettings = AppleSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: const Duration(seconds: 30),
+          pauseLocationUpdatesAutomatically: false,
+        );
+      } else {
+        locationSettings = const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        );
+      }
+
+      final Position position = await Geolocator.getCurrentPosition(
+        locationSettings: locationSettings,
+      ).timeout(
+        const Duration(seconds: 35),
+        onTimeout: () => throw TimeoutException('GPS timed out after 35s'),
       );
 
       if (!mounted) return;
@@ -128,21 +149,21 @@ class _NearbyEquipmentScreenState extends State<NearbyEquipmentScreen> {
 
       _fetchNearby();
     } on TimeoutException {
-      // ── Step 4: Timeout → try last-known cache ────────────────────────
+      // ── Step 4: Timeout -> try last-known cache ───────────────────
       if (!mounted) return;
       setState(() => _locationState = _LocationState.timeout);
-      await _tryLastKnownOrStop();
-    } catch (_) {
+      await _tryLastKnownOrStop(fallbackState: _LocationState.timeout);
+    } catch (e) {
       if (!mounted) return;
       setState(() => _locationState = _LocationState.timeout);
-      await _tryLastKnownOrStop();
+      await _tryLastKnownOrStop(fallbackState: _LocationState.timeout);
     }
   }
 
   /// Tries getLastKnownPosition(). If a cached fix exists, uses it and
   /// fetches nearby equipment (with a clear "last known" label in the UI).
-  /// If nothing is available, sets state to unavailable and does NOT call API.
-  Future<void> _tryLastKnownOrStop() async {
+  /// If nothing is available, sets state to fallbackState and does NOT call API.
+  Future<void> _tryLastKnownOrStop({required _LocationState fallbackState}) async {
     try {
       final Position? last = await Geolocator.getLastKnownPosition();
       if (!mounted) return;
@@ -157,13 +178,12 @@ class _NearbyEquipmentScreenState extends State<NearbyEquipmentScreen> {
         });
         _fetchNearby();
       } else {
-        // Nothing to offer — show unavailable, do not make API call with
-        // hardcoded coordinates.
-        setState(() => _locationState = _LocationState.unavailable);
+        // Nothing to offer — show correct error page
+        setState(() => _locationState = fallbackState);
       }
     } catch (_) {
       if (!mounted) return;
-      setState(() => _locationState = _LocationState.unavailable);
+      setState(() => _locationState = fallbackState);
     }
   }
 

@@ -30,6 +30,11 @@ class _AddEquipmentScreenState extends State<AddEquipmentScreen> {
   String selectedCategory = "Mobility";
   String selectedCondition = "GOOD";
 
+  // Mode: DONATE or RENT
+  String _selectedMode = 'DONATE';
+  final _rentalPriceController = TextEditingController();
+  final _securityDepositController = TextEditingController();
+
   final List<String> categories = [
     "Mobility",
     "Respiratory",
@@ -61,6 +66,8 @@ class _AddEquipmentScreenState extends State<AddEquipmentScreen> {
     _quantityController.dispose();
     _locationController.dispose();
     _descriptionController.dispose();
+    _rentalPriceController.dispose();
+    _securityDepositController.dispose();
     super.dispose();
   }
 
@@ -224,6 +231,13 @@ class _AddEquipmentScreenState extends State<AddEquipmentScreen> {
       description: _descriptionController.text.trim(),
       location: _locationController.text.trim(),
       image: uploadedImageUrl,
+      mode: _selectedMode,
+      rentalPricePerDay: _selectedMode == 'RENT'
+          ? double.tryParse(_rentalPriceController.text.trim())
+          : null,
+      securityDeposit: _selectedMode == 'RENT'
+          ? double.tryParse(_securityDepositController.text.trim())
+          : null,
     );
 
     setState(() => _isSaving = false);
@@ -528,6 +542,134 @@ class _AddEquipmentScreenState extends State<AddEquipmentScreen> {
                       icon: Icons.description_outlined,
                       maxLines: 4,
                     ),
+
+                    // ── Listing Mode: DONATE / RENT ──────────────────────
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Text(
+                        'Listing Mode',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: context.textSecondaryColor,
+                        ),
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => setState(() => _selectedMode = 'DONATE'),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              decoration: BoxDecoration(
+                                color: _selectedMode == 'DONATE'
+                                    ? AppColors.primary
+                                    : context.inputBg,
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: _selectedMode == 'DONATE'
+                                      ? AppColors.primary
+                                      : context.borderColor,
+                                  width: 1.5,
+                                ),
+                              ),
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.volunteer_activism,
+                                    color: _selectedMode == 'DONATE'
+                                        ? Colors.white
+                                        : AppColors.primary,
+                                    size: 26,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'DONATE',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                      color: _selectedMode == 'DONATE'
+                                          ? Colors.white
+                                          : context.textPrimaryColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => setState(() => _selectedMode = 'RENT'),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              decoration: BoxDecoration(
+                                color: _selectedMode == 'RENT'
+                                    ? const Color(0xFF0284C7)
+                                    : context.inputBg,
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: _selectedMode == 'RENT'
+                                      ? const Color(0xFF0284C7)
+                                      : context.borderColor,
+                                  width: 1.5,
+                                ),
+                              ),
+                              child: Column(
+                                children: [
+                                  Icon(
+                                    Icons.handshake_outlined,
+                                    color: _selectedMode == 'RENT'
+                                        ? Colors.white
+                                        : const Color(0xFF0284C7),
+                                    size: 26,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'RENT',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 13,
+                                      color: _selectedMode == 'RENT'
+                                          ? Colors.white
+                                          : context.textPrimaryColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 18),
+
+                    // ── Rental Pricing (only shown when mode == RENT) ─────
+                    if (_selectedMode == 'RENT') ...
+                    [
+                      buildTextField(
+                        controller: _rentalPriceController,
+                        label: 'Rental Price per Day (INR) *',
+                        icon: Icons.currency_rupee,
+                        keyboard: TextInputType.numberWithOptions(decimal: true),
+                        validator: (val) {
+                          if (_selectedMode != 'RENT') return null;
+                          if (val == null || val.trim().isEmpty) return 'Price is required for rental';
+                          if (double.tryParse(val.trim()) == null) return 'Enter a valid number';
+                          return null;
+                        },
+                      ),
+                      buildTextField(
+                        controller: _securityDepositController,
+                        label: 'Security Deposit (INR)',
+                        icon: Icons.shield_outlined,
+                        keyboard: TextInputType.numberWithOptions(decimal: true),
+                      ),
+                    ],
 
                     const SizedBox(height: 20),
 

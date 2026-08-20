@@ -288,9 +288,16 @@ class _MyEquipmentScreenState extends State<MyEquipmentScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              equipment.category,
-                              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: context.textSecondaryColor),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  equipment.category,
+                                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: context.textSecondaryColor),
+                                ),
+                                const SizedBox(width: 6),
+                                _buildModeChip(equipment.mode),
+                              ],
                             ),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -374,6 +381,48 @@ class _MyEquipmentScreenState extends State<MyEquipmentScreen> {
         ), // end Card
         ); // end AnimatedListItem
       },
+    );
+  }
+
+  Widget _buildModeChip(String mode) {
+    Color bg;
+    Color fg;
+    IconData icon;
+    switch (mode.toUpperCase()) {
+      case 'RENT':
+        bg = Colors.orange.shade50;
+        fg = Colors.orange.shade700;
+        icon = Icons.currency_rupee;
+        break;
+      case 'BOTH':
+        bg = Colors.purple.shade50;
+        fg = Colors.purple.shade700;
+        icon = Icons.swap_horiz;
+        break;
+      default:
+        bg = Colors.teal.shade50;
+        fg = Colors.teal.shade700;
+        icon = Icons.volunteer_activism;
+    }
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: fg.withAlpha(60), width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 9, color: fg),
+          const SizedBox(width: 2),
+          Text(
+            mode.toUpperCase(),
+            style: TextStyle(
+                fontSize: 8, fontWeight: FontWeight.bold, color: fg),
+          ),
+        ],
+      ),
     );
   }
 }
