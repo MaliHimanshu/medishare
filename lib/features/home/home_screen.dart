@@ -15,6 +15,7 @@ import '../../core/constants/app_colors.dart';
 import '../equipment/equipment_list_screen.dart';
 import '../equipment/add_equipment_screen.dart';
 import '../equipment/my_equipment_screen.dart';
+import '../equipment/nearby_equipment_screen.dart';
 import '../donations/my_donations_screen.dart';
 import '../requests/request_screen.dart';
 import '../hospital/hospital_screen.dart';
@@ -24,6 +25,7 @@ import '../settings/settings_screen.dart';
 import '../chatbot/chatbot_screen.dart';
 import '../search/global_search_screen.dart';
 import '../auth/login_screen.dart';
+import '../rental/my_rentals_screen.dart';
 import '../../core/theme/app_page_transitions.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -269,6 +271,22 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context, AppPageTransitions.slideRight(const RequestScreen()));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.location_on_outlined, color: AppColors.primary),
+              title: Text("Nearby Equipment", style: TextStyle(color: context.textPrimaryColor)),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, AppPageTransitions.slideRight(const NearbyEquipmentScreen()));
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.handshake_outlined, color: AppColors.primary),
+              title: Text("My Rentals", style: TextStyle(color: context.textPrimaryColor)),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context, AppPageTransitions.slideRight(const MyRentalsScreen()));
               },
             ),
             ListTile(

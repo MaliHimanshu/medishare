@@ -12,19 +12,23 @@ class ApiEndpoints {
   static const String _liveUrl = 'https://medishare-zgmj.onrender.com/api';
   
   // NOTE: Change this to your laptop's local IP address if testing on a physical phone!
-  static const String _localDevUrl = 'http://192.168.1.7:5000/api'; 
+  // ignore: unused_field
+  static const String _localDevUrl = 'http://192.168.1.7:5000/api';
 
   static String get baseUrl {
     // If you are testing the backend on your laptop and using a physical phone,
-    // you must change `_liveUrl` to `_localDevUrl` below and ensure your IP is correct.
-    
+    // switch the return value below to `_localDevUrl` and make sure the IP matches
+    // your machine's Wi-Fi address.
+    //
+    // To use local dev server, uncomment the next line and comment out the live returns:
+    // return _localDevUrl;
+
     if (kIsWeb) {
       return _liveUrl;
     }
 
     if (Platform.isAndroid || Platform.isIOS) {
-      // NOTE: Change this to `return _localDevUrl;` if you want to test your local Node.js server!
-      return _liveUrl; 
+      return _liveUrl;
     }
 
     return _liveUrl;
@@ -65,4 +69,17 @@ class ApiEndpoints {
 
   // ── Upload ──────────────────────────────────────────────
   static const String upload = '/upload';
+
+  // ── Equipment Location (Nearby) ─────────────────────────
+  static const String nearbyEquipment = '/equipment/nearby';
+
+  // ── Rental ──────────────────────────────────────────────
+  static const String rental           = '/rental';
+  static const String rentalById       = '/rental';       // append /{id}
+  static const String createRental     = '/rental';
+  static const String updateRentalStatus = '/rental';     // append /{id}/status
+  static const String rentalPayment    = '/rental';       // append /{id}/payment-verify
+
+  // ── Tracking ────────────────────────────────────────────
+  static const String tracking        = '/tracking';      // append /{rentalId}/...
 }

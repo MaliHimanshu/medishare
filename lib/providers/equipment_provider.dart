@@ -19,6 +19,12 @@ class EquipmentProvider extends ChangeNotifier {
   String _selectedStatus = 'All';
   String _selectedSort = 'Newest';
 
+  // ── Nearby Equipment State ──────────────────────────────
+  List<EquipmentModel> _nearbyEquipment = [];
+  Map<String, dynamic>? _nearbyMeta;
+  bool _isLoadingNearby = false;
+  String _nearbyError = '';
+
   // Getters
   List<EquipmentModel> get equipment => _equipment;
   bool get isLoading => _isLoading;
@@ -29,6 +35,12 @@ class EquipmentProvider extends ChangeNotifier {
   String get selectedCondition => _selectedCondition;
   String get selectedStatus => _selectedStatus;
   String get selectedSort => _selectedSort;
+
+  // Nearby getters
+  List<EquipmentModel> get nearbyEquipment => _nearbyEquipment;
+  Map<String, dynamic>? get nearbyMeta => _nearbyMeta;
+  bool get isLoadingNearby => _isLoadingNearby;
+  String get nearbyError => _nearbyError;
 
   // Setters for search and filter (each notifies listeners to redraw catalog instantly)
   void setSearchQuery(String query) {
@@ -292,6 +304,60 @@ class EquipmentProvider extends ChangeNotifier {
       return false;
     } finally {
       _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // ── Fetch Nearby Equipment (GET /api/equipment/nearby) ─────────────
+  Future<void> fetchNearbyEquipment({
+    required double latitude,
+    required double longitude,
+    double radius = 20,
+    String? category,
+    String? mode,
+  }) async {
+    _isLoadingNearby = true;
+    _nearbyError = '';
+    _nearbyEquipment = [];
+    _nearbyMeta = null;
+    notifyListeners();
+
+    try {
+      final queryParams = <String, dynamic>{
+        'latitude': latitude,
+        'longitude': longitude,
+        'radius': radius,
+        if (category != null && category != 'All') 'category': category,
+        if (mode != null && mode != 'All') 'mode': mode,
+      };
+
+      final response = await _dio.get(
+        ApiEndpoints.nearbyEquipment,
+        queryParameters: queryParams,
+      );
+
+      if (response.data != null && response.data['success'] == true) {
+        final listData = response.data['equipment'] as List<dynamic>? ?? [];
+        _nearbyEquipment = listData
+            .map((item) =>
+                EquipmentModel.fromJson(item as Map<String, dynamic>))
+            .toList();
+        _nearbyMeta = {
+          'count': response.data['count'] ?? _nearbyEquipment.length,
+          'location': response.data['location'],
+          'radius': response.data['radius'] ?? radius,
+          'radiusUnit': response.data['radiusUnit'] ?? 'km',
+        };
+      } else {
+        _nearbyError =
+            response.data?['message'] ?? 'Failed to load nearby equipment.';
+      }
+    } on DioException catch (e) {
+      _nearbyError = DioClient.handleError(e);
+    } catch (e) {
+      _nearbyError = 'An unexpected error occurred: $e';
+    } finally {
+      _isLoadingNearby = false;
       notifyListeners();
     }
   }

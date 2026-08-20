@@ -6,10 +6,15 @@
     <!-- Camera Permission -->
     <uses-permission android:name="android.permission.CAMERA"/>
 
+    <!-- Location Permissions -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
     <application
         android:name="${applicationName}"
         android:label="medishare"
         android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/launcher_icon"
         android:usesCleartextTraffic="true">
 
         <activity

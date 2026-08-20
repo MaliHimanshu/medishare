@@ -14,6 +14,8 @@ import '../providers/chatbot_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/theme_provider.dart';
 import '../providers/global_search_provider.dart';
+import '../providers/rental_provider.dart';
+import '../providers/tracking_provider.dart';
 import '../features/splash/splash_screen.dart';
 
 class MediShareApp extends StatelessWidget {
@@ -34,6 +36,8 @@ class MediShareApp extends StatelessWidget {
         ChangeNotifierProvider<ProfileProvider>(create: (_) => ProfileProvider()),
         ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
         ChangeNotifierProvider<GlobalSearchProvider>(create: (_) => GlobalSearchProvider()),
+        ChangeNotifierProvider<RentalProvider>(create: (_) => RentalProvider()),
+        ChangeNotifierProvider<TrackingProvider>(create: (_) => TrackingProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProv, child) {
