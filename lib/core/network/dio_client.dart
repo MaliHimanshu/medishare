@@ -37,17 +37,21 @@ class DioClient {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          final token = await _storage.read(key: 'medishare_token');
-          if (token != null && token.isNotEmpty) {
-            options.headers['Authorization'] = 'Bearer $token';
-          }
+          try {
+            final token = await _storage.read(key: 'medishare_token');
+            if (token != null && token.isNotEmpty) {
+              options.headers['Authorization'] = 'Bearer $token';
+            }
+          } catch (_) {}
           return handler.next(options);
         },
-        onError: (error, handler) {
+        onError: (error, handler) async {
           // Handle 401 globally
           if (error.response?.statusCode == 401) {
-            _storage.delete(key: 'medishare_token');
-            _storage.delete(key: 'medishare_user');
+            try {
+              await _storage.delete(key: 'medishare_token');
+              await _storage.delete(key: 'medishare_user');
+            } catch (_) {}
           }
           return handler.next(error);
         },

@@ -152,12 +152,12 @@ class TrackingProvider extends ChangeNotifier {
     double? heading,
   }) async {
     try {
-      final payload = {
+      final payload = <String, dynamic>{
         'latitude': latitude,
         'longitude': longitude,
-        'accuracy': ?accuracy,
-        'speed': ?speed,
-        'heading': ?heading,
+        if (accuracy != null) 'accuracy': accuracy,
+        if (speed != null) 'speed': speed,
+        if (heading != null) 'heading': heading,
       };
 
       final response = await _dio.post(

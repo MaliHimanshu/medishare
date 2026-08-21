@@ -5,13 +5,16 @@ import 'app/app.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Catch Flutter framework errors gracefully
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.presentError(details);
+  };
+
   // Portrait-only orientation
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-
-  // Status bar will be handled by the AppBarTheme automatically
 
   runApp(const MediShareApp());
 }

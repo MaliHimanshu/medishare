@@ -82,16 +82,26 @@ class AuthService {
 
   // ── Storage Helpers ───────────────────────────────────
   Future<void> _persistAuth(String token, UserModel user) async {
-    await _storage.write(key: _tokenKey, value: token);
-    await _storage.write(key: _userKey,  value: jsonEncode(user.toJson()));
+    try {
+      await _storage.write(key: _tokenKey, value: token);
+      await _storage.write(key: _userKey,  value: jsonEncode(user.toJson()));
+    } catch (e) {
+      // Log storage error safely
+    }
   }
 
-  Future<String?> getToken() => _storage.read(key: _tokenKey);
+  Future<String?> getToken() async {
+    try {
+      return await _storage.read(key: _tokenKey);
+    } catch (_) {
+      return null;
+    }
+  }
 
   Future<UserModel?> getCachedUser() async {
-    final raw = await _storage.read(key: _userKey);
-    if (raw == null) return null;
     try {
+      final raw = await _storage.read(key: _userKey);
+      if (raw == null) return null;
       return UserModel.fromJson(jsonDecode(raw) as Map<String, dynamic>);
     } catch (_) {
       return null;
@@ -99,8 +109,10 @@ class AuthService {
   }
 
   Future<void> clearAuth() async {
-    await _storage.delete(key: _tokenKey);
-    await _storage.delete(key: _userKey);
+    try {
+      await _storage.delete(key: _tokenKey);
+      await _storage.delete(key: _userKey);
+    } catch (_) {}
   }
 
   Future<bool> hasToken() async {
