@@ -65,8 +65,8 @@ const findNearbyEquipment = async ({
   const sql = `
     SELECT e.*, u.name AS "ownerName", u.phone AS "ownerPhone", u.address AS "ownerAddress",
       ${haversine} AS distance
-    FROM "Equipment" e
-    JOIN "User" u ON e."ownerId" = u.id
+    FROM "equipment" e
+    JOIN "users" u ON e."ownerId" = u.id
     ${whereSql}
     AND ${haversine} <= $3
     ORDER BY distance ASC;

@@ -304,25 +304,28 @@ class _NearbyEquipmentScreenState extends State<NearbyEquipmentScreen> {
           const SizedBox(height: 10),
 
           // ── Radius Selector ────────────────────────────────────────────
-          Row(
-            children: [
-              Text(
-                'Search Radius:',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: context.textPrimaryColor,
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                Text(
+                  'Search Radius:',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: context.textPrimaryColor,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              _buildRadiusChip(5),
-              const SizedBox(width: 6),
-              _buildRadiusChip(10),
-              const SizedBox(width: 6),
-              _buildRadiusChip(20),
-              const SizedBox(width: 6),
-              _buildRadiusChip(50),
-            ],
+                const SizedBox(width: 8),
+                _buildRadiusChip(5),
+                const SizedBox(width: 6),
+                _buildRadiusChip(10),
+                const SizedBox(width: 6),
+                _buildRadiusChip(20),
+                const SizedBox(width: 6),
+                _buildRadiusChip(50),
+              ],
+            ),
           ),
         ],
       ),
