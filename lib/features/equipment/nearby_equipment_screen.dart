@@ -850,7 +850,7 @@ class _NearbyEquipmentScreenState extends State<NearbyEquipmentScreen> {
                     ),
                     const SizedBox(height: 6),
 
-                    // Condition + Mode chip
+                    // Condition + Mode chip + Distance
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -865,7 +865,29 @@ class _NearbyEquipmentScreenState extends State<NearbyEquipmentScreen> {
                             maxLines: 1,
                           ),
                         ),
-                        _buildModeChip(equipment.mode),
+                        Row(
+                          children: [
+                            if (equipment.distance != null)
+                              Container(
+                                margin: const EdgeInsets.only(right: 6),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 7, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withAlpha(20),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  '${equipment.distance!.toStringAsFixed(1)} km',
+                                  style: const TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                              ),
+                            _buildModeChip(equipment.mode),
+                          ],
+                        ),
                       ],
                     ),
                   ],

@@ -11,7 +11,7 @@ const prisma = require("../lib/prisma");
  *   longitude – user longitude (decimal degrees)
  *   radiusKm  – radius in kilometres (default 20)
  *   mode      – optional equipment mode filter (DONATE, RENT, BOTH)
- *   category  – optional equipment category filter (case‑insensitive)
+ *   category  – optional equipment category filter (case-insensitive)
  */
 const findNearbyEquipment = async ({
   latitude,
@@ -24,55 +24,68 @@ const findNearbyEquipment = async ({
     throw new Error("Latitude and longitude must be provided");
   }
 
-  const whereClauses = [];
-  const params = [latitude, longitude, radiusKm]; // $1 $2 $3
+  // Base params: $1=lat, $2=lng, $3=radiusKm
+  const params = [Number(latitude), Number(longitude), Number(radiusKm)];
 
-  // Equipment must be AVAILABLE – use exact enum value from Prisma schema.
-  whereClauses.push("e.status = 'AVAILABLE'");
-  whereClauses.push("e.latitude IS NOT NULL");
-  whereClauses.push("e.longitude IS NOT NULL");
+  // Build optional extra WHERE conditions (applied AFTER distance is computed)
+  const extraClauses = [];
 
-  // Mode filter respecting schema enum values.
+  // Mode filter – DONATE/RENT items are included if mode is BOTH
   if (mode) {
     const allowed = ["DONATE", "RENT", "BOTH"];
-    if (!allowed.includes(mode)) {
-      throw new Error("Invalid equipment mode");
+    if (!allowed.includes(mode.toUpperCase())) {
+      throw new Error("Invalid equipment mode. Allowed: DONATE, RENT, BOTH");
     }
-    if (mode === "DONATE") {
-      whereClauses.push("e.mode IN ('DONATE','BOTH')");
-    } else if (mode === "RENT") {
-      whereClauses.push("e.mode IN ('RENT','BOTH')");
-    } else {
-      whereClauses.push("e.mode = 'BOTH'");
+    const m = mode.toUpperCase();
+    if (m === "DONATE") {
+      extraClauses.push(`mode IN ('DONATE','BOTH')`);
+    } else if (m === "RENT") {
+      extraClauses.push(`mode IN ('RENT','BOTH')`);
     }
+    // BOTH = no extra filter (already included by default)
   }
 
-  // Category filter – case‑insensitive exact match.
+  // Category filter – case-insensitive
   if (category) {
-    whereClauses.push(`LOWER(e.category) = LOWER($${params.length + 1})`);
     params.push(category);
+    extraClauses.push(`LOWER(category) = LOWER($${params.length})`);
   }
 
-  const whereSql = whereClauses.length ? "WHERE " + whereClauses.join(" AND ") : "";
+  const extraWhere =
+    extraClauses.length > 0 ? `AND ${extraClauses.join(" AND ")}` : "";
 
-  // Haversine expression (Earth radius ≈ 6371 km).
-  const haversine = `
-    (6371 * acos(
-      cos(radians($1)) * cos(radians(e.latitude)) * cos(radians(e.longitude) - radians($2)) +
-      sin(radians($1)) * sin(radians(e.latitude))
-    ))`;
-
+  // Haversine formula (Earth radius ≈ 6371 km)
   const sql = `
-    SELECT e.*, u.name AS "ownerName", u.phone AS "ownerPhone", u.address AS "ownerAddress",
-      ${haversine} AS distance
-    FROM "equipment" e
-    JOIN "users" u ON e."ownerId" = u.id
-    ${whereSql}
-    AND ${haversine} <= $3
-    ORDER BY distance ASC;
+    WITH cte AS (
+      SELECT
+        e.*,
+        u.name        AS "ownerName",
+        u.phone       AS "ownerPhone",
+        u.address     AS "ownerAddress",
+        (6371 * acos(
+          LEAST(1.0,
+            cos(radians($1)) * cos(radians(e.latitude))
+              * cos(radians(e.longitude) - radians($2))
+            + sin(radians($1)) * sin(radians(e.latitude))
+          )
+        )) AS distance
+      FROM "equipment" e
+      JOIN "users" u ON e."ownerId" = u.id
+      WHERE
+        e.status    = 'AVAILABLE'
+        AND e.latitude  IS NOT NULL
+        AND e.longitude IS NOT NULL
+        ${extraWhere}
+    )
+    SELECT *
+    FROM   cte
+    WHERE  distance <= $3
+    ORDER  BY distance ASC;
   `;
 
+  console.log("[NearbyEquipment] SQL params:", params);
   const rows = await prisma.$queryRawUnsafe(sql, ...params);
+  console.log(`[NearbyEquipment] Found ${rows.length} result(s) within ${radiusKm} km`);
 
   return rows.map((item) => ({
     id: item.id,
@@ -83,10 +96,14 @@ const findNearbyEquipment = async ({
     images: item.images,
     mode: item.mode,
     status: item.status,
-    rentalPricePerDay: item.rentalPricePerDay ? item.rentalPricePerDay.toString() : null,
-    securityDeposit: item.securityDeposit ? item.securityDeposit.toString() : null,
-    latitude: item.latitude,
-    longitude: item.longitude,
+    rentalPricePerDay: item.rentalPricePerDay
+      ? item.rentalPricePerDay.toString()
+      : null,
+    securityDeposit: item.securityDeposit
+      ? item.securityDeposit.toString()
+      : null,
+    latitude: item.latitude ? Number(item.latitude) : null,
+    longitude: item.longitude ? Number(item.longitude) : null,
     address: item.address,
     owner: {
       id: item.ownerId,
@@ -94,7 +111,7 @@ const findNearbyEquipment = async ({
       phone: item.ownerPhone,
       address: item.ownerAddress,
     },
-    distance: Number(item.distance.toFixed(2)),
+    distance: Number(Number(item.distance).toFixed(2)),
     distanceUnit: "km",
   }));
 };
