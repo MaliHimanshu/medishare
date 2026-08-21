@@ -1,21 +1,21 @@
 const Razorpay = require("razorpay");
 
+/**
+ * Returns a configured Razorpay instance.
+ * Throws an error if required environment variables are not set.
+ */
 const getRazorpayInstance = () => {
   const key_id = process.env.RAZORPAY_KEY_ID;
   const key_secret = process.env.RAZORPAY_KEY_SECRET;
 
   if (!key_id || !key_secret) {
-    console.warn(
-      "⚠️ Razorpay Key ID or Key Secret is not set in environment variables."
-    );
+    throw new Error("Razorpay Key ID and Key Secret must be set in environment variables.");
   }
 
   return new Razorpay({
-    key_id: key_id || "rzp_test_dummy",
-    key_secret: key_secret || "dummy_secret",
+    key_id,
+    key_secret,
   });
 };
 
-module.exports = {
-  getRazorpayInstance,
-};
+module.exports = { getRazorpayInstance };
