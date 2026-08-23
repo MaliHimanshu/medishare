@@ -20,6 +20,9 @@ class EquipmentModel {
   final String ownerId;
   final String createdAt;
   final String updatedAt;
+  // Nearby search extras
+  final double? distance;       // kilometres from search origin
+  final String? distanceUnit;  // always "km"
 
   EquipmentModel({
     required this.id,
@@ -43,6 +46,8 @@ class EquipmentModel {
     required this.ownerId,
     required this.createdAt,
     required this.updatedAt,
+    this.distance,
+    this.distanceUnit,
   });
 
   static double? _parseDouble(dynamic val) {
@@ -92,6 +97,8 @@ class EquipmentModel {
       ownerId: json['ownerId']?.toString() ?? owner?['id']?.toString() ?? '',
       createdAt: json['createdAt']?.toString() ?? '',
       updatedAt: json['updatedAt']?.toString() ?? '',
+      distance: _parseDouble(json['distance']),
+      distanceUnit: json['distanceUnit']?.toString(),
     );
   }
 
@@ -118,6 +125,8 @@ class EquipmentModel {
       'ownerId': ownerId,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
+      if (distance != null) 'distance': distance,
+      if (distanceUnit != null) 'distanceUnit': distanceUnit,
     };
   }
 }

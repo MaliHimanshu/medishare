@@ -34,34 +34,34 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
     final rentalProvider = context.read<RentalProvider>();
 
     try {
-      // 1. Create Razorpay Order on the Backend
-      final orderData =
-          await rentalProvider.createPaymentOrder(widget.rental.id);
+      // Step 1: Create Razorpay Order on Backend
+      final orderData = await rentalProvider.createPaymentOrder(widget.rental.id);
 
       if (orderData == null) {
         setState(() {
           _isProcessing = false;
           _errorMessage = rentalProvider.errorMessage.isNotEmpty
               ? rentalProvider.errorMessage
-              : "Failed to initialize Razorpay order.";
+              : 'Failed to initialize payment order.';
         });
         return;
       }
 
       final orderId = orderData['orderId']?.toString() ?? '';
-      final keySecret = "dummy_secret"; // For client test signature simulation fallback
 
-      // Simulate payment capture on client (e.g. Test / Sandbox Checkout flow)
-      await Future.delayed(const Duration(milliseconds: 1200));
+      // Step 2: Simulate test payment processing (Sandbox/Test Mode)
+      // In production: open Razorpay SDK with keyId and orderId
+      await Future.delayed(const Duration(milliseconds: 1500));
+      final paymentId = 'pay_test_${DateTime.now().millisecondsSinceEpoch}';
 
-      final paymentId = "pay_test_${DateTime.now().millisecondsSinceEpoch}";
-      
-      // Calculate HMAC-SHA256 signature for server verification
-      final hmac = Hmac(sha256, utf8.encode(keySecret));
-      final digest = hmac.convert(utf8.encode("$orderId|$paymentId"));
+      // Step 3: Generate HMAC-SHA256 signature using same dummy_secret as backend
+      // Backend uses: process.env.RAZORPAY_KEY_SECRET || "dummy_secret"
+      const keySecretForTest = 'dummy_secret';
+      final hmac = Hmac(sha256, utf8.encode(keySecretForTest));
+      final digest = hmac.convert(utf8.encode('$orderId|$paymentId'));
       final signature = digest.toString();
 
-      // 2. Submit payment signature to backend for strict server-side verification
+      // Step 4: Submit to backend for strict server-side HMAC verification
       final isVerified = await rentalProvider.verifyPayment(
         rentalId: widget.rental.id,
         razorpayOrderId: orderId,
@@ -74,25 +74,22 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
           _isProcessing = false;
           _isSuccess = true;
         });
-
-        await Future.delayed(const Duration(milliseconds: 1000));
-        if (mounted) {
-          Navigator.pop(context, true);
-        }
+        await Future.delayed(const Duration(milliseconds: 1200));
+        if (mounted) Navigator.pop(context, true);
       } else {
         await rentalProvider.recordPaymentFailure(widget.rental.id);
         setState(() {
           _isProcessing = false;
           _errorMessage = rentalProvider.errorMessage.isNotEmpty
               ? rentalProvider.errorMessage
-              : "Server-side payment verification failed.";
+              : 'Server-side payment verification failed.';
         });
       }
     } catch (e) {
       await rentalProvider.recordPaymentFailure(widget.rental.id);
       setState(() {
         _isProcessing = false;
-        _errorMessage = "Payment error: ${e.toString().replaceAll("Exception: ", "")}";
+        _errorMessage = 'Payment error: ${e.toString().replaceAll("Exception: ", "")}';
       });
     }
   }

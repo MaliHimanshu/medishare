@@ -155,10 +155,10 @@ class TrackingProvider extends ChangeNotifier {
       final payload = <String, dynamic>{
         'latitude': latitude,
         'longitude': longitude,
-        if (accuracy != null) 'accuracy': accuracy,
-        if (speed != null) 'speed': speed,
-        if (heading != null) 'heading': heading,
-      };
+        'accuracy': accuracy,
+        'speed': speed,
+        'heading': heading,
+      }..removeWhere((_, v) => v == null);
 
       final response = await _dio.post(
         '${ApiEndpoints.tracking}/$rentalId/ping',

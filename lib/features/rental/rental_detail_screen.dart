@@ -438,6 +438,118 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
               ),
             ),
 
+            const SizedBox(height: 16),
+
+            // Pickup Location Card (dummy example)
+            Card(
+              elevation: 0,
+              color: AppColors.surface,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(color: Colors.grey.shade200),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.location_on_rounded, color: Colors.redAccent, size: 20),
+                        SizedBox(width: 8),
+                        Text(
+                          'Pickup Location',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade50,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.red.shade100),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(Icons.home_work_outlined, size: 18, color: Colors.redAccent),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: const [
+                                    Text(
+                                      '12, MG Road, Indiranagar',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 14,
+                                        color: AppColors.textPrimary,
+                                      ),
+                                    ),
+                                    SizedBox(height: 2),
+                                    Text(
+                                      'Bengaluru, Karnataka — 560 038',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: AppColors.textSecondary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              const Icon(Icons.access_time_rounded, size: 14, color: AppColors.textSecondary),
+                              const SizedBox(width: 4),
+                              const Text(
+                                'Available: 9:00 AM – 6:00 PM',
+                                style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                              ),
+                              const Spacer(),
+                              GestureDetector(
+                                onTap: () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Opening Maps…')),
+                                  );
+                                },
+                                child: const Row(
+                                  children: [
+                                    Icon(Icons.map_rounded, size: 14, color: Colors.redAccent),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      'View on Map',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.redAccent,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
             if (_currentRental.status.toUpperCase() == 'ACTIVE') ...[
               const SizedBox(height: 16),
               SizedBox(
