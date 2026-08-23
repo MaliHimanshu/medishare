@@ -485,7 +485,7 @@ class _NearbyEquipmentScreenState extends State<NearbyEquipmentScreen> {
     // 3. Loading nearby equipment (we have coords, waiting for API)
     if (equipProv.isLoadingNearby) {
       return ListView.builder(
-        key: const ValueKey('loading'),
+        key: const ValueKey('nearby-loading'),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         itemCount: 4,
         itemBuilder: (context, index) => Padding(
@@ -511,28 +511,63 @@ class _NearbyEquipmentScreenState extends State<NearbyEquipmentScreen> {
       );
     }
 
-    // 5. Empty results
+    // 5. Empty results (Show Dummy Data for now)
     if (list.isEmpty) {
-      return _buildFullScreenMessage(
-        key: const ValueKey('empty'),
-        icon: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: AppColors.primary.withAlpha(20),
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(Icons.location_off_outlined,
-              size: 54, color: AppColors.primary),
+      // Create some dummy examples for the UI
+      final dummyList = [
+        EquipmentModel(
+          id: 'dummy-1',
+          donorId: 'donor-1',
+          name: 'Oxygen Cylinder (10L)',
+          category: 'Respirators',
+          condition: 'GOOD',
+          quantity: 2,
+          mode: 'RENT',
+          status: 'AVAILABLE',
+          rentalPricePerDay: 250.0,
+          securityDeposit: 1000.0,
+          createdAt: DateTime.now().toIso8601String(),
+          updatedAt: DateTime.now().toIso8601String(),
+          donor: 'City Hospital',
+          donorEmail: 'contact@cityhospital.com',
+          donorPhone: '+919876543210',
+          image: 'https://images.unsplash.com/photo-1584982751601-97dcc096659c?q=80&w=200&auto=format&fit=crop',
+          manufacturer: 'OxyLife',
+          description: 'High capacity oxygen cylinder in good condition.',
         ),
-        title: 'No Equipment Nearby',
-        subtitle:
-            'No available equipment found within ${_radius.toInt()} km of your location. Try increasing the search radius.',
-        actions: [
-          OutlinedButton(
-            onPressed: () => _changeRadius(50),
-            child: const Text('Try 50 km Radius'),
-          ),
-        ],
+        EquipmentModel(
+          id: 'dummy-2',
+          donorId: 'donor-2',
+          name: 'Standard Wheelchair',
+          category: 'Mobility Aids',
+          condition: 'LIKE_NEW',
+          quantity: 1,
+          mode: 'DONATE',
+          status: 'AVAILABLE',
+          rentalPricePerDay: 0.0,
+          securityDeposit: 0.0,
+          createdAt: DateTime.now().toIso8601String(),
+          updatedAt: DateTime.now().toIso8601String(),
+          donor: 'John Doe',
+          donorEmail: 'john@example.com',
+          donorPhone: '+919876543211',
+          image: 'https://images.unsplash.com/photo-1596704017254-9b121068fb31?q=80&w=200&auto=format&fit=crop',
+          manufacturer: 'Karma',
+          description: 'Foldable standard wheelchair. Very lightly used.',
+        ),
+      ];
+
+      return ListView.builder(
+        key: const ValueKey('dummy-loaded'),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        itemCount: dummyList.length,
+        itemBuilder: (context, index) {
+          final equipment = dummyList[index];
+          return AnimatedListItem(
+            index: index,
+            child: _buildNearbyCard(equipment),
+          );
+        },
       );
     }
 
