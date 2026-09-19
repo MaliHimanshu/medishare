@@ -3,6 +3,9 @@ import 'package:provider/provider.dart';
 
 // Providers
 import '../../providers/auth_provider.dart';
+import '../../providers/chat_provider.dart';
+import '../../models/chat_user_model.dart';
+import '../chat/private_chat_screen.dart';
 import '../../providers/equipment_provider.dart';
 
 // Models
@@ -374,6 +377,34 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
                       ),
                       const SizedBox(width: 12),
                       
+                      if (!isOwner) ...[
+                        // Message Owner Button
+                        IconButton.outlined(
+                          icon: const Icon(Icons.forum_outlined, color: AppColors.primary),
+                          onPressed: () async {
+                            final chatProv = context.read<ChatProvider>();
+                            try {
+                              // We use the owner ID directly; in a real app, you might want to fetch owner details
+                              // But for now, chat API gets/creates a conversation by ID
+                              final conv = await chatProv.getOrCreateConversation(widget.equipment.ownerId);
+                              if (context.mounted) {
+                                Navigator.push(context, MaterialPageRoute(
+                                  builder: (_) => PrivateChatScreen(
+                                    conversationId: conv.id,
+                                    // otherUser could be passed if we had the full user object
+                                  )
+                                ));
+                              }
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Could not start chat: $e'))
+                              );
+                            }
+                          },
+                        ),
+                        const SizedBox(width: 12),
+                      ],
+                      
                       // Share Action Button
                       IconButton.outlined(
                         icon: const Icon(Icons.share_outlined, color: AppColors.primary),
@@ -428,6 +459,7 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
                       ],
                     ],
                   ),
+                  const SizedBox(height: 20),
                 ],
               ),
             ),

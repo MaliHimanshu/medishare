@@ -23,6 +23,7 @@ import '../profile/profile_screen.dart';
 import '../notifications/notification_screen.dart';
 import '../settings/settings_screen.dart';
 import '../chatbot/chat_home_screen.dart';
+import '../chat/messages_screen.dart';
 import '../search/global_search_screen.dart';
 import '../auth/login_screen.dart';
 import '../rental/my_rentals_screen.dart';
@@ -99,8 +100,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       case "Add Equipment":
         Navigator.push(context, AppPageTransitions.slideUp(const AddEquipmentScreen()));
         break;
-      case "MediShare Chat":
-      case "AI Chat":
+      case "Messages":
+        Navigator.push(context, AppPageTransitions.slideUp(const MessagesScreen()));
+        break;
+      case "Assistant":
         Navigator.push(context, AppPageTransitions.slideUp(const ChatHomeScreen()));
         break;
       default:
@@ -160,11 +163,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             icon: const Icon(Icons.search, color: AppColors.primary),
             onPressed: () => Navigator.push(context, AppPageTransitions.slideRight(const GlobalSearchScreen())),
           ),
-          // MediShare Chat Shortcut
+          // Messages Shortcut
           IconButton(
-            icon: const Icon(Icons.chat_bubble_outline_rounded, color: AppColors.primary),
-            tooltip: "MediShare Chat",
-            onPressed: () => Navigator.push(context, AppPageTransitions.slideUp(const ChatHomeScreen())),
+            icon: const Icon(Icons.forum_outlined, color: AppColors.primary),
+            tooltip: "Messages",
+            onPressed: () => Navigator.push(context, AppPageTransitions.slideUp(const MessagesScreen())),
           ),
           // Animated Notifications Icon Badge
           Stack(
@@ -641,8 +644,8 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     final actions = [
       {"title": "Donate", "icon": Icons.favorite_border_outlined, "color": Colors.pink, "action": () => openFeature("Donate")},
       {"title": "Request", "icon": Icons.assignment_outlined, "color": Colors.orange, "action": () => openFeature("Request")},
-      {"title": "Add Equipment", "icon": Icons.add_circle_outline, "color": Colors.blue, "action": () => openFeature("Add Equipment")},
-      {"title": "MediShare Chat", "icon": Icons.chat_bubble_outline_rounded, "color": Colors.teal, "action": () => openFeature("MediShare Chat")},
+      {"title": "Messages", "icon": Icons.forum_outlined, "color": Colors.blue, "action": () => openFeature("Messages")},
+      {"title": "Assistant", "icon": Icons.smart_toy_outlined, "color": Colors.teal, "action": () => openFeature("Assistant")},
     ];
 
     return Row(

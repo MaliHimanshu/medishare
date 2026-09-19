@@ -4,6 +4,9 @@ import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
 import '../../models/request_model.dart';
 import '../../providers/request_provider.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/chat_provider.dart';
+import '../chat/private_chat_screen.dart';
 import '../../shared/widgets/ms_image.dart';
 import 'edit_request_dialog.dart';
 
@@ -234,6 +237,10 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final auth = context.watch<AuthProvider>();
+    final user = auth.user;
+    final bool isMyRequest = user?.id == _currentRequest.requesterId;
+    
     final equip = _currentRequest.equipment;
     final statusColor = _getStatusColor(_currentRequest.status);
 
@@ -442,7 +449,39 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
             // Actions Row
             Row(
               children: [
-                if (_isPending) ...[
+                if (!isMyRequest) ...[
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () async {
+                        final chatProv = context.read<ChatProvider>();
+                        try {
+                          final conv = await chatProv.getOrCreateConversation(_currentRequest.requesterId);
+                          if (context.mounted) {
+                            Navigator.push(context, MaterialPageRoute(
+                              builder: (_) => PrivateChatScreen(
+                                conversationId: conv.id,
+                              )
+                            ));
+                          }
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Could not start chat: $e'))
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.forum_outlined),
+                      label: const Text('Message User'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                ],
+                if (_isPending && isMyRequest) ...[
                   Expanded(
                     child: OutlinedButton.icon(
                       onPressed: _openEditDialog,
@@ -458,34 +497,36 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                   ),
                   const SizedBox(width: 10),
                 ],
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: _showStatusDialog,
-                    icon: const Icon(Icons.sync_alt),
-                    label: const Text('Status'),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                if (isMyRequest) ...[
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _showStatusDialog,
+                      icon: const Icon(Icons.sync_alt),
+                      label: const Text('Status'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: FilledButton.icon(
-                    onPressed: _confirmDelete,
-                    icon: const Icon(Icons.delete_outline),
-                    label: const Text('Delete'),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: Colors.red,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: FilledButton.icon(
+                      onPressed: _confirmDelete,
+                      icon: const Icon(Icons.delete_outline),
+                      label: const Text('Delete'),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                     ),
                   ),
-                ),
+                ],
               ],
             ),
             const SizedBox(height: 20),
