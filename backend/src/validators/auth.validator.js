@@ -19,16 +19,18 @@ const registerSchema = z.object({
     .max(128, "Password must be at most 128 characters"),
 
   phone: z
-    .string({ required_error: "Phone number is required" })
+    .string()
     .min(7, "Phone number must be at least 7 digits")
     .max(20, "Phone number must be at most 20 digits")
-    .trim(),
+    .trim()
+    .optional(),
 
   address: z
-    .string({ required_error: "Address is required" })
+    .string()
     .min(5, "Address must be at least 5 characters")
     .max(255, "Address must be at most 255 characters")
-    .trim(),
+    .trim()
+    .optional(),
 
   role: z.enum(["ADMIN", "DONOR", "NGO", "RECIPIENT"], {
     required_error: "Role is required",

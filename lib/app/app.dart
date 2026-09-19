@@ -10,7 +10,7 @@ import '../providers/donation_provider.dart';
 import '../providers/request_provider.dart';
 import '../providers/hospital_provider.dart';
 import '../providers/notification_provider.dart';
-import '../providers/chatbot_provider.dart';
+import '../providers/menu_chatbot_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/theme_provider.dart';
 import '../providers/global_search_provider.dart';
@@ -32,7 +32,7 @@ class MediShareApp extends StatelessWidget {
         ChangeNotifierProvider<RequestProvider>(create: (_) => RequestProvider()),
         ChangeNotifierProvider<HospitalProvider>(create: (_) => HospitalProvider()),
         ChangeNotifierProvider<NotificationProvider>(create: (_) => NotificationProvider()),
-        ChangeNotifierProvider<ChatbotProvider>(create: (_) => ChatbotProvider()),
+        ChangeNotifierProvider<MenuChatbotProvider>(create: (_) => MenuChatbotProvider()),
         ChangeNotifierProvider<ProfileProvider>(create: (_) => ProfileProvider()),
         ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
         ChangeNotifierProvider<GlobalSearchProvider>(create: (_) => GlobalSearchProvider()),

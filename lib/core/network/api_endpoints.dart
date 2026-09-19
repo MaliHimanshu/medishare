@@ -8,30 +8,27 @@ class ApiEndpoints {
   // ── Base ────────────────────────────────────────────────
   // Android Emulator: 10.0.2.2  |  iOS Simulator: 127.0.0.1
   // Production Render API: https://medishare-zgmj.onrender.com/api
-  // Local Development (Physical Phone): Replace with your laptop's Wi-Fi IPv4 address (e.g., http://192.168.1.7:5000/api)
-  static const String _liveUrl = 'https://medishare-zgmj.onrender.com/api';
-  
-  // NOTE: Change this to your laptop's local IP address if testing on a physical phone!
-  // ignore: unused_field
+  // Local Dev (Physical Phone): change _localDevUrl to your laptop's Wi-Fi IPv4 (e.g., http://192.168.1.7:5000/api)
+  static const String _liveUrl     = 'https://medishare-zgmj.onrender.com/api';
   static const String _localDevUrl = 'http://192.168.1.7:5000/api';
 
+  // Set to true to use the live Render API (physical device without local backend)
+  static const bool _useLiveApi = false;
+
   static String get baseUrl {
-    // If you are testing the backend on your laptop and using a physical phone,
-    // switch the return value below to `_localDevUrl` and make sure the IP matches
-    // your machine's Wi-Fi address.
-    //
-    // To use local dev server, uncomment the next line and comment out the live returns:
-    // return _localDevUrl;
+    if (_useLiveApi) return _liveUrl;
 
     if (kIsWeb) {
-      return _liveUrl;
+      return 'http://localhost:5000/api';
     }
 
-    if (Platform.isAndroid || Platform.isIOS) {
-      return _liveUrl;
+    if (Platform.isAndroid) {
+      // Android emulator uses 10.0.2.2; for physical device change _localDevUrl above
+      return kDebugMode ? 'http://10.0.2.2:5000/api' : _liveUrl;
     }
 
-    return _liveUrl;
+    // iOS Simulator / macOS
+    return _localDevUrl.replaceAll('192.168.1.7', '127.0.0.1');
   }
 
   // ── Auth ────────────────────────────────────────────────

@@ -8,6 +8,7 @@ import '../../shared/widgets/ms_button.dart';
 import '../../shared/widgets/ms_logo.dart';
 import '../../shared/widgets/ms_text_field.dart';
 import '../home/home_screen.dart';
+import '../forgot_password/forgot_password_screen.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -84,7 +85,7 @@ class _LoginScreenState extends State<LoginScreen>
 
   String? _validatePassword(String? v) {
     if (v == null || v.isEmpty) return 'Password is required';
-    if (v.length < 6) return 'Password must be at least 6 characters';
+    if (v.length < 8) return 'Password must be at least 8 characters';
     return null;
   }
 
@@ -221,7 +222,11 @@ class _LoginScreenState extends State<LoginScreen>
                         Align(
                           alignment: Alignment.centerRight,
                           child: TextButton(
-                            onPressed: () {},
+                            onPressed: () => Navigator.push(
+                              context,
+                              AppPageTransitions.slideRight(
+                                  const ForgotPasswordScreen()),
+                            ),
                             child: const Text(
                               'Forgot Password?',
                               style: TextStyle(

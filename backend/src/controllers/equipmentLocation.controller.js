@@ -8,13 +8,14 @@ const getNearbyEquipment = async (req, res) => {
             latitude,
             longitude,
             radius = "20",
+            radiusKm,
             mode,
             category,
         } = req.query;
 
         const parsedLatitude = Number(latitude);
         const parsedLongitude = Number(longitude);
-        const parsedRadius = Number(radius);
+        const parsedRadius = Number(radiusKm !== undefined ? radiusKm : radius);
 
         if (
             latitude === undefined ||

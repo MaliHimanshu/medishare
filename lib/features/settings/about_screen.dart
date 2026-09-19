@@ -160,7 +160,7 @@ class AboutScreen extends StatelessWidget {
                     Text("✅ Nearby Hospitals"),
                     SizedBox(height: 10),
 
-                    Text("✅ AI Chatbot Assistance"),
+                    Text("✅ MediShare In-App Chat Support"),
                     SizedBox(height: 10),
 
                     Text("✅ User Profile Management"),

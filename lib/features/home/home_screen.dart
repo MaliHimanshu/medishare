@@ -22,7 +22,7 @@ import '../hospital/hospital_screen.dart';
 import '../profile/profile_screen.dart';
 import '../notifications/notification_screen.dart';
 import '../settings/settings_screen.dart';
-import '../chatbot/chatbot_screen.dart';
+import '../chatbot/chat_home_screen.dart';
 import '../search/global_search_screen.dart';
 import '../auth/login_screen.dart';
 import '../rental/my_rentals_screen.dart';
@@ -99,8 +99,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       case "Add Equipment":
         Navigator.push(context, AppPageTransitions.slideUp(const AddEquipmentScreen()));
         break;
+      case "MediShare Chat":
       case "AI Chat":
-        Navigator.push(context, AppPageTransitions.slideUp(const ChatbotScreen()));
+        Navigator.push(context, AppPageTransitions.slideUp(const ChatHomeScreen()));
         break;
       default:
         break;
@@ -159,10 +160,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             icon: const Icon(Icons.search, color: AppColors.primary),
             onPressed: () => Navigator.push(context, AppPageTransitions.slideRight(const GlobalSearchScreen())),
           ),
-          // AI Chatbot Shortcut
+          // MediShare Chat Shortcut
           IconButton(
-            icon: const Icon(Icons.smart_toy_outlined, color: AppColors.primary),
-            onPressed: () => Navigator.push(context, AppPageTransitions.slideUp(const ChatbotScreen())),
+            icon: const Icon(Icons.chat_bubble_outline_rounded, color: AppColors.primary),
+            tooltip: "MediShare Chat",
+            onPressed: () => Navigator.push(context, AppPageTransitions.slideUp(const ChatHomeScreen())),
           ),
           // Animated Notifications Icon Badge
           Stack(
@@ -634,13 +636,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     );
   }
 
-  // ── Quick Actions Row (Donate, Request, Add Equipment, AI Chat) ────────
+  // ── Quick Actions Row (Donate, Request, Add Equipment, MediShare Chat) ────────
   Widget _buildQuickActions() {
     final actions = [
       {"title": "Donate", "icon": Icons.favorite_border_outlined, "color": Colors.pink, "action": () => openFeature("Donate")},
       {"title": "Request", "icon": Icons.assignment_outlined, "color": Colors.orange, "action": () => openFeature("Request")},
       {"title": "Add Equipment", "icon": Icons.add_circle_outline, "color": Colors.blue, "action": () => openFeature("Add Equipment")},
-      {"title": "AI Chat", "icon": Icons.smart_toy_outlined, "color": Colors.teal, "action": () => openFeature("AI Chat")},
+      {"title": "MediShare Chat", "icon": Icons.chat_bubble_outline_rounded, "color": Colors.teal, "action": () => openFeature("MediShare Chat")},
     ];
 
     return Row(
