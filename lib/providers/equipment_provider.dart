@@ -131,11 +131,14 @@ class EquipmentProvider extends ChangeNotifier {
 
     try {
       final response = await _dio.get(ApiEndpoints.equipment);
-      if (response.data != null && response.data['success'] == true) {
+      if (response.data is List) {
+        final listData = response.data as List<dynamic>;
+        _equipment = listData.map((item) => EquipmentModel.fromJson(item as Map<String, dynamic>)).toList();
+      } else if (response.data is Map && response.data['data'] is List) {
         final listData = response.data['data'] as List<dynamic>;
         _equipment = listData.map((item) => EquipmentModel.fromJson(item as Map<String, dynamic>)).toList();
       } else {
-        _errorMessage = response.data?['message'] ?? 'Failed to load equipment catalog.';
+        _errorMessage = (response.data is Map ? response.data['message'] : null) ?? 'Failed to load equipment catalog.';
       }
     } on DioException catch (e) {
       _errorMessage = DioClient.handleError(e);

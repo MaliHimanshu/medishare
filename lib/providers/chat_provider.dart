@@ -23,8 +23,8 @@ class ChatProvider with ChangeNotifier {
   String? currentUserId;
 
   // Real-time events
-  Map<String, List<ChatMessage>> _activeChatMessages = {};
-  Map<String, bool> _typingStatus = {};
+  final Map<String, List<ChatMessage>> _activeChatMessages = {};
+  final Map<String, bool> _typingStatus = {};
 
   List<ChatMessage> getMessages(String conversationId) => 
       _activeChatMessages[conversationId] ?? [];

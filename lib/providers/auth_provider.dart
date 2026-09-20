@@ -134,6 +134,40 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  // ── Forgot Password Flow ──────────────────────────────
+  Future<bool> sendForgotPasswordOtp(String target, String type) async {
+    _errorMessage = null;
+    try {
+      return await _authService.sendForgotPasswordOtp(target, type);
+    } catch (e) {
+      _errorMessage = e.toString().replaceAll('Exception: ', '');
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<String?> verifyForgotPasswordOtp(String target, String type, String otp) async {
+    _errorMessage = null;
+    try {
+      return await _authService.verifyForgotPasswordOtp(target, type, otp);
+    } catch (e) {
+      _errorMessage = e.toString().replaceAll('Exception: ', '');
+      notifyListeners();
+      return null;
+    }
+  }
+
+  Future<bool> resetPassword(String target, String type, String resetToken, String newPassword) async {
+    _errorMessage = null;
+    try {
+      return await _authService.resetPassword(target, type, resetToken, newPassword);
+    } catch (e) {
+      _errorMessage = e.toString().replaceAll('Exception: ', '');
+      notifyListeners();
+      return false;
+    }
+  }
+
   // ── Logout ────────────────────────────────────────────
   Future<void> logout() async {
     _setStatus(AuthStatus.loading);

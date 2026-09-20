@@ -11,6 +11,9 @@ const {
   loginSchema,
   otpSendSchema,
   otpVerifySchema,
+  forgotPasswordSendSchema,
+  forgotPasswordVerifySchema,
+  resetPasswordSchema,
 } = require("../validators/auth.validator");
 
 const {
@@ -18,6 +21,9 @@ const {
   loginUser,
   sendOtp,
   verifyOtp,
+  sendForgotPasswordOtp,
+  verifyForgotPasswordOtp,
+  resetForgotPassword,
 } = require("../services/auth.service");
 
 /**
@@ -114,9 +120,76 @@ const verifyOtpController = async (req, res) => {
   }
 };
 
+/**
+ * Forgot Password - Send OTP Controller
+ * POST /api/auth/forgot-password/send-otp
+ */
+const forgotPasswordSendController = async (req, res) => {
+  try {
+    const data = forgotPasswordSendSchema.parse(req.body);
+    await sendForgotPasswordOtp(data.target, data.type);
+
+    return res.status(200).json({
+      success: true,
+      message: `OTP sent successfully to your ${data.type}`,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/**
+ * Forgot Password - Verify OTP Controller
+ * POST /api/auth/forgot-password/verify-otp
+ */
+const forgotPasswordVerifyController = async (req, res) => {
+  try {
+    const data = forgotPasswordVerifySchema.parse(req.body);
+    const result = await verifyForgotPasswordOtp(data.target, data.type, data.otp);
+
+    return res.status(200).json({
+      success: true,
+      message: "OTP verified successfully",
+      resetToken: result.resetToken,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/**
+ * Forgot Password - Reset Password Controller
+ * POST /api/auth/forgot-password/reset-password
+ */
+const resetPasswordController = async (req, res) => {
+  try {
+    const data = resetPasswordSchema.parse(req.body);
+    await resetForgotPassword(data.target, data.type, data.resetToken, data.newPassword);
+
+    return res.status(200).json({
+      success: true,
+      message: "Password reset successfully",
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   register,
   login,
   sendOtpController,
   verifyOtpController,
+  forgotPasswordSendController,
+  forgotPasswordVerifyController,
+  resetPasswordController,
 };

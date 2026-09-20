@@ -8,12 +8,15 @@ class ApiEndpoints {
   // ── Base ────────────────────────────────────────────────
   // Android Emulator: 10.0.2.2  |  iOS Simulator: 127.0.0.1
   // Production Render API: https://medishare-zgmj.onrender.com/api
-  // Local Dev (Physical Phone): change _localDevUrl to your laptop's Wi-Fi IPv4 (e.g., http://192.168.1.7:5000/api)
+  // Local Dev (Physical Phone): laptop's Wi-Fi IPv4 address
   static const String _liveUrl     = 'https://medishare-zgmj.onrender.com/api';
-  static const String _localDevUrl = 'http://192.168.1.7:5000/api';
+  static const String _localDevUrl = 'http://10.124.196.70:5000/api';
 
-  // Set to true to use the live Render API (physical device without local backend)
+  // Set to true to use the live Render API on physical device or emulator
   static const bool _useLiveApi = false;
+
+  // Set to true if testing on a physical mobile phone connected to local backend via Wi-Fi
+  static const bool _usePhysicalPhoneLocal = false;
 
   static String get baseUrl {
     if (_useLiveApi) return _liveUrl;
@@ -23,21 +26,27 @@ class ApiEndpoints {
     }
 
     if (Platform.isAndroid) {
-      // Android emulator uses 10.0.2.2; for physical device change _localDevUrl above
+      if (_usePhysicalPhoneLocal) {
+        return _localDevUrl;
+      }
+      // Android emulator uses 10.0.2.2
       return kDebugMode ? 'http://10.0.2.2:5000/api' : _liveUrl;
     }
 
-    // iOS Simulator / macOS
-    return _localDevUrl.replaceAll('192.168.1.7', '127.0.0.1');
+    // iOS Simulator / macOS / physical iOS
+    return _localDevUrl;
   }
 
   // ── Auth ────────────────────────────────────────────────
-  static const String register = '/auth/register';
-  static const String login    = '/auth/login';
-  static const String me       = '/auth/me';
-  static const String sendOtp  = '/auth/send-otp';
-  static const String verifyOtp= '/auth/verify-otp';
-  static const String resendOtp= '/auth/resend-otp';
+  static const String register               = '/auth/register';
+  static const String login                  = '/auth/login';
+  static const String me                     = '/auth/me';
+  static const String sendOtp                = '/auth/send-otp';
+  static const String verifyOtp              = '/auth/verify-otp';
+  static const String resendOtp              = '/auth/resend-otp';
+  static const String forgotPasswordSendOtp  = '/auth/forgot-password/send-otp';
+  static const String forgotPasswordVerifyOtp= '/auth/forgot-password/verify-otp';
+  static const String resetPassword          = '/auth/forgot-password/reset-password';
 
   // ── Equipment ───────────────────────────────────────────
   static const String equipment = '/equipment';

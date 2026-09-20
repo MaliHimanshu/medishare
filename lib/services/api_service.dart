@@ -104,6 +104,49 @@ class AuthService {
     }
   }
 
+  // ── Forgot Password Flow ──────────────────────────────
+  Future<bool> sendForgotPasswordOtp(String target, String type) async {
+    try {
+      await _dio.post(
+        ApiEndpoints.forgotPasswordSendOtp,
+        data: {'target': target, 'type': type},
+      );
+      return true;
+    } on DioException catch (e) {
+      throw Exception(DioClient.handleError(e));
+    }
+  }
+
+  Future<String> verifyForgotPasswordOtp(String target, String type, String otp) async {
+    try {
+      final response = await _dio.post(
+        ApiEndpoints.forgotPasswordVerifyOtp,
+        data: {'target': target, 'type': type, 'otp': otp},
+      );
+      final data = response.data as Map<String, dynamic>;
+      return data['resetToken'] as String;
+    } on DioException catch (e) {
+      throw Exception(DioClient.handleError(e));
+    }
+  }
+
+  Future<bool> resetPassword(String target, String type, String resetToken, String newPassword) async {
+    try {
+      await _dio.post(
+        ApiEndpoints.resetPassword,
+        data: {
+          'target': target,
+          'type': type,
+          'resetToken': resetToken,
+          'newPassword': newPassword,
+        },
+      );
+      return true;
+    } on DioException catch (e) {
+      throw Exception(DioClient.handleError(e));
+    }
+  }
+
   // ── Get Me ────────────────────────────────────────────
   /// GET /api/auth/me (requires token in header)
   Future<UserModel?> getMe() async {

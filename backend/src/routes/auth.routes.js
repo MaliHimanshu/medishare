@@ -109,6 +109,9 @@ const {
   login,
   sendOtpController,
   verifyOtpController,
+  forgotPasswordSendController,
+  forgotPasswordVerifyController,
+  resetPasswordController,
 } = require("../controllers/auth.controller");
 
 const protect = require("../middleware/auth.middleware");
@@ -129,6 +132,11 @@ router.post("/resend-otp", sendOtpController);
 
 // Verify OTP
 router.post("/verify-otp", verifyOtpController);
+
+// Forgot Password Flow
+router.post("/forgot-password/send-otp", forgotPasswordSendController);
+router.post("/forgot-password/verify-otp", forgotPasswordVerifyController);
+router.post("/forgot-password/reset-password", resetPasswordController);
 
 // ==========================
 // Protected Routes

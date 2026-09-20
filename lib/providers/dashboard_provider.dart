@@ -56,8 +56,9 @@ class DashboardProvider extends ChangeNotifier {
     notifyListeners();
     try {
       final response = await _dio.get(ApiEndpoints.summary);
-      if (response.data != null && response.data['success'] == true) {
-        _summary = response.data['data'] as Map<String, dynamic>;
+      final rawData = response.data;
+      if (rawData is Map && rawData['success'] == true && rawData['data'] is Map) {
+        _summary = Map<String, dynamic>.from(rawData['data'] as Map);
       }
     } catch (e) {
       DioClient.debugLog('fetchSummary error: $e');
@@ -73,8 +74,14 @@ class DashboardProvider extends ChangeNotifier {
     notifyListeners();
     try {
       final response = await _dio.get(ApiEndpoints.recentRequests);
-      if (response.data != null && response.data['success'] == true) {
-        _recentRequests = response.data['data'] as List<dynamic>;
+      final rawData = response.data;
+      if (rawData is Map && rawData['success'] == true) {
+        final listData = rawData['data'];
+        _recentRequests = listData is List ? listData : <dynamic>[];
+      } else if (rawData is List) {
+        _recentRequests = rawData;
+      } else {
+        _recentRequests = <dynamic>[];
       }
     } catch (e) {
       DioClient.debugLog('fetchRecentRequests error: $e');
@@ -90,8 +97,14 @@ class DashboardProvider extends ChangeNotifier {
     notifyListeners();
     try {
       final response = await _dio.get(ApiEndpoints.recentDonations);
-      if (response.data != null && response.data['success'] == true) {
-        _recentDonations = response.data['data'] as List<dynamic>;
+      final rawData = response.data;
+      if (rawData is Map && rawData['success'] == true) {
+        final listData = rawData['data'];
+        _recentDonations = listData is List ? listData : <dynamic>[];
+      } else if (rawData is List) {
+        _recentDonations = rawData;
+      } else {
+        _recentDonations = <dynamic>[];
       }
     } catch (e) {
       DioClient.debugLog('fetchRecentDonations error: $e');
@@ -107,16 +120,19 @@ class DashboardProvider extends ChangeNotifier {
     notifyListeners();
     try {
       final response = await _dio.get(ApiEndpoints.notifications);
-      if (response.data != null) {
-        // Response can be { success: true, data: [...] } or list direct
-        final Object? data = response.data;
-        if (data is Map && data['success'] == true) {
-          _notifications = data['data'] as List<dynamic>;
-        } else if (data is Map && data['notifications'] != null) {
-          _notifications = data['notifications'] as List<dynamic>;
-        } else if (data is List) {
-          _notifications = data;
+      final rawData = response.data;
+      if (rawData is Map) {
+        if (rawData['notifications'] is List) {
+          _notifications = rawData['notifications'] as List<dynamic>;
+        } else if (rawData['data'] is List) {
+          _notifications = rawData['data'] as List<dynamic>;
+        } else {
+          _notifications = <dynamic>[];
         }
+      } else if (rawData is List) {
+        _notifications = rawData;
+      } else {
+        _notifications = <dynamic>[];
       }
     } catch (e) {
       DioClient.debugLog('fetchNotifications error: $e');
@@ -139,8 +155,14 @@ class DashboardProvider extends ChangeNotifier {
         ApiEndpoints.hospital,
         queryParameters: queryParams,
       );
-      if (response.data != null && response.data['success'] == true) {
-        _hospitals = response.data['hospitals'] as List<dynamic>;
+      final rawData = response.data;
+      if (rawData is Map && rawData['success'] == true) {
+        final listData = rawData['hospitals'] ?? rawData['data'];
+        _hospitals = listData is List ? listData : <dynamic>[];
+      } else if (rawData is List) {
+        _hospitals = rawData;
+      } else {
+        _hospitals = <dynamic>[];
       }
     } catch (e) {
       DioClient.debugLog('fetchHospitals error: $e');
@@ -156,10 +178,18 @@ class DashboardProvider extends ChangeNotifier {
     notifyListeners();
     try {
       final response = await _dio.get(ApiEndpoints.equipment);
-      if (response.data != null && response.data['success'] == true) {
-        final list = response.data['data'] as List<dynamic>;
-        _equipmentList = list.map((item) => EquipmentModel.fromJson(item as Map<String, dynamic>)).toList();
+      final rawData = response.data;
+      List<dynamic> list = <dynamic>[];
+      if (rawData is Map && rawData['success'] == true) {
+        final listData = rawData['data'];
+        list = listData is List ? listData : <dynamic>[];
+      } else if (rawData is List) {
+        list = rawData;
       }
+      _equipmentList = list
+          .whereType<Map<String, dynamic>>()
+          .map((item) => EquipmentModel.fromJson(item))
+          .toList();
     } catch (e) {
       DioClient.debugLog('fetchEquipment error: $e');
     } finally {

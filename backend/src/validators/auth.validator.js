@@ -66,9 +66,44 @@ const otpVerifySchema = z.object({
     .length(6, "OTP must be exactly 6 digits"),
 });
 
+const forgotPasswordSendSchema = z.object({
+  target: z
+    .string({ required_error: "Target is required" })
+    .trim(),
+  type: z.enum(["email", "phone"], {
+    required_error: "Type must be either email or phone",
+  }),
+});
+
+const forgotPasswordVerifySchema = z.object({
+  target: z
+    .string({ required_error: "Target is required" })
+    .trim(),
+  type: z.enum(["email", "phone"]),
+  otp: z
+    .string({ required_error: "OTP is required" })
+    .length(6, "OTP must be exactly 6 digits"),
+});
+
+const resetPasswordSchema = z.object({
+  target: z
+    .string({ required_error: "Target is required" })
+    .trim(),
+  type: z.enum(["email", "phone"]),
+  resetToken: z
+    .string({ required_error: "Reset token is required" }),
+  newPassword: z
+    .string({ required_error: "New password is required" })
+    .min(8, "Password must be at least 8 characters")
+    .max(128, "Password must be at most 128 characters"),
+});
+
 module.exports = {
   registerSchema,
   loginSchema,
   otpSendSchema,
   otpVerifySchema,
+  forgotPasswordSendSchema,
+  forgotPasswordVerifySchema,
+  resetPasswordSchema,
 };

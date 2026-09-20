@@ -1017,25 +1017,29 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               ],
             ),
           ),
-          const SizedBox(width: 8),
-          ElevatedButton(
-            onPressed: () {
-              context.read<AuthProvider>().sendOtp(phone);
-              Navigator.push(
-                context,
-                AppPageTransitions.slideRight(OtpVerificationScreen(phone: phone)),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFF97316),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              elevation: 0,
-            ),
-            child: const Text(
-              "Verify Now",
-              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+          SizedBox(
+            height: 36,
+            child: ElevatedButton(
+              onPressed: () {
+                context.read<AuthProvider>().sendOtp(phone);
+                Navigator.push(
+                  context,
+                  AppPageTransitions.slideRight(OtpVerificationScreen(phone: phone)),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFF97316),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                elevation: 0,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                minimumSize: Size.zero,
+              ),
+              child: const Text(
+                "Verify Now",
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+              ),
             ),
           ),
         ],
