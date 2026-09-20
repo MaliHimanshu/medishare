@@ -68,6 +68,42 @@ class AuthService {
     }
   }
 
+  // ── OTP ───────────────────────────────────────────────
+  Future<bool> sendOtp(String phone) async {
+    try {
+      await _dio.post(ApiEndpoints.sendOtp, data: {'phone': phone});
+      return true;
+    } on DioException catch (e) {
+      throw Exception(DioClient.handleError(e));
+    }
+  }
+
+  Future<bool> verifyOtp(String phone, String otp) async {
+    try {
+      await _dio.post(ApiEndpoints.verifyOtp, data: {'phone': phone, 'otp': otp});
+      // After verification, refresh the user profile to get phoneVerified = true
+      final user = await getMe();
+      if (user != null) {
+        final token = await getToken();
+        if (token != null) {
+          await _persistAuth(token, user);
+        }
+      }
+      return true;
+    } on DioException catch (e) {
+      throw Exception(DioClient.handleError(e));
+    }
+  }
+
+  Future<bool> resendOtp(String phone) async {
+    try {
+      await _dio.post(ApiEndpoints.resendOtp, data: {'phone': phone});
+      return true;
+    } on DioException catch (e) {
+      throw Exception(DioClient.handleError(e));
+    }
+  }
+
   // ── Get Me ────────────────────────────────────────────
   /// GET /api/auth/me (requires token in header)
   Future<UserModel?> getMe() async {

@@ -9,11 +9,15 @@
 const {
   registerSchema,
   loginSchema,
+  otpSendSchema,
+  otpVerifySchema,
 } = require("../validators/auth.validator");
 
 const {
   registerUser,
   loginUser,
+  sendOtp,
+  verifyOtp,
 } = require("../services/auth.service");
 
 /**
@@ -67,7 +71,52 @@ const login = async (req, res) => {
   }
 };
 
+/**
+ * Send OTP Controller
+ * POST /api/auth/send-otp
+ * POST /api/auth/resend-otp
+ */
+const sendOtpController = async (req, res) => {
+  try {
+    const data = otpSendSchema.parse(req.body);
+    await sendOtp(data.phone);
+
+    return res.status(200).json({
+      success: true,
+      message: "OTP sent successfully",
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/**
+ * Verify OTP Controller
+ * POST /api/auth/verify-otp
+ */
+const verifyOtpController = async (req, res) => {
+  try {
+    const data = otpVerifySchema.parse(req.body);
+    await verifyOtp(data.phone, data.otp);
+
+    return res.status(200).json({
+      success: true,
+      message: "Mobile verified successfully",
+    });
+  } catch (error) {
+    return res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 module.exports = {
   register,
   login,
+  sendOtpController,
+  verifyOtpController,
 };

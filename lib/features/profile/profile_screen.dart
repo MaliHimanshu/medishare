@@ -13,6 +13,7 @@ import '../settings/help_support_screen.dart';
 import '../settings/about_screen.dart';
 import 'edit_profile_screen.dart';
 import 'change_password_screen.dart';
+import '../auth/otp_verification_screen.dart';
 import '../../core/theme/app_page_transitions.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -473,34 +474,108 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ],
           ),
 
-          if (user?.phone != null && user!.phone!.isNotEmpty) ...[
-            const SizedBox(height: 14),
-            Divider(height: 1, color: context.borderColor),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                const Icon(Icons.phone_outlined, size: 16, color: AppColors.primary),
-                const SizedBox(width: 8),
-                Text(
-                  user.phone!,
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: context.textPrimaryColor),
+          const SizedBox(height: 14),
+          Divider(height: 1, color: context.borderColor),
+          const SizedBox(height: 12),
+
+          // ── Phone Number & Verification Badge ─────────────────
+          Row(
+            children: [
+              const Icon(Icons.phone_outlined, size: 16, color: AppColors.primary),
+              const SizedBox(width: 8),
+              Text(
+                (user?.phone != null && user!.phone!.isNotEmpty) ? user.phone! : 'Phone not provided',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: context.textPrimaryColor,
                 ),
-                if (user.address != null && user.address!.isNotEmpty) ...[
-                  const Spacer(),
-                  const Icon(Icons.location_on_outlined, size: 16, color: Colors.red),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      user.address!,
-                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: context.textPrimaryColor),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
+              ),
+              const SizedBox(width: 8),
+              if (user?.phone != null && user!.phone!.isNotEmpty) ...[
+                if (user.phoneVerified)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.check_circle, size: 12, color: Colors.green),
+                        SizedBox(width: 4),
+                        Text(
+                          'Verified',
+                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.green),
+                        ),
+                      ],
+                    ),
+                  )
+                else
+                  GestureDetector(
+                    onTap: () {
+                      context.read<AuthProvider>().sendOtp(user.phone!);
+                      Navigator.push(
+                        context,
+                        AppPageTransitions.slideRight(OtpVerificationScreen(phone: user.phone!)),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.orange.withValues(alpha: 0.4)),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.warning_amber_rounded, size: 12, color: Colors.orange),
+                          SizedBox(width: 3),
+                          Text(
+                            'Verify Now',
+                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.orange),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ],
+              ] else ...[
+                GestureDetector(
+                  onTap: () async {
+                    if (user != null) {
+                      final res = await Navigator.push(
+                        context,
+                        AppPageTransitions.slideRight(EditProfileScreen(user: user)),
+                      );
+                      if (res == true && mounted) {
+                        context.read<ProfileProvider>().fetchProfile();
+                      }
+                    }
+                  },
+                  child: const Text(
+                    '+ Add Phone',
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary),
+                  ),
+                ),
               ],
-            ),
-          ],
+              if (user?.address != null && user!.address!.isNotEmpty) ...[
+                const Spacer(),
+                const Icon(Icons.location_on_outlined, size: 16, color: Colors.red),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    user.address!,
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: context.textSecondaryColor),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ),
+              ],
+            ],
+          ),
         ],
       ),
     );

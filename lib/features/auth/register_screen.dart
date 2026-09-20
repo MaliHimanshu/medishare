@@ -7,8 +7,8 @@ import '../../providers/auth_provider.dart';
 import '../../shared/widgets/ms_button.dart';
 import '../../shared/widgets/ms_logo.dart';
 import '../../shared/widgets/ms_text_field.dart';
-import '../home/home_screen.dart';
 import 'login_screen.dart';
+import 'otp_verification_screen.dart';
 
 // Role option data
 class _Role {
@@ -100,8 +100,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       }
 
       final phone = _phoneCtrl.text.trim();
-      if (phone.isNotEmpty && phone.replaceAll(RegExp(r'\D'), '').length != 10) {
-        _phoneError = 'Enter a valid 10-digit number';
+      if (phone.isEmpty) {
+        _phoneError = 'Mobile number is required';
+      } else if (phone.replaceAll(RegExp(r'\D'), '').length != 10) {
+        _phoneError = 'Enter a valid 10-digit mobile number';
       } else {
         _phoneError = null;
       }
@@ -132,13 +134,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Future<void> _submit() async {
     if (!_validate()) return;
 
+    final phone = _phoneCtrl.text.trim();
     final auth = context.read<AuthProvider>();
     final success = await auth.register(
       name:     _nameCtrl.text.trim(),
       email:    _emailCtrl.text.trim(),
       password: _passCtrl.text,
       role:     _selectedRole,
-      phone:    _phoneCtrl.text.trim().isEmpty ? null : _phoneCtrl.text.trim(),
+      phone:    phone,
       address:  _addressCtrl.text.trim().isEmpty ? null : _addressCtrl.text.trim(),
     );
 
@@ -147,7 +150,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Account created! Welcome to MediShare 🎉'),
+          content: const Text('Account created! Verification code sent 📲'),
           backgroundColor: AppColors.success,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -155,7 +158,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
       Navigator.pushReplacement(
         context,
-        AppPageTransitions.slideRight(const HomeScreen()),
+        AppPageTransitions.slideRight(OtpVerificationScreen(phone: phone)),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -351,35 +354,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
               const SizedBox(height: 16),
 
-              // ── Phone & Address ───────────────────────
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
-                    child: MsTextField(
-                      label: 'Phone (Optional)',
-                      hint: '9876543210',
-                      controller: _phoneCtrl,
-                      keyboardType: TextInputType.phone,
-                      prefixIcon: Icons.phone_outlined,
-                      errorText: _phoneError,
-                      textInputAction: TextInputAction.next,
-                      onChanged: (_) {
-                        if (_phoneError != null) setState(() => _phoneError = null);
-                      },
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: MsTextField(
-                      label: 'City (Optional)',
-                      hint: 'Ahmedabad',
-                      controller: _addressCtrl,
-                      prefixIcon: Icons.location_on_outlined,
-                      textInputAction: TextInputAction.next,
-                    ),
-                  ),
-                ],
+              // ── Phone Field ──────────────────────────
+              MsTextField(
+                label: 'Mobile Number *',
+                hint: '10-digit mobile number',
+                controller: _phoneCtrl,
+                keyboardType: TextInputType.phone,
+                prefixIcon: Icons.phone_outlined,
+                errorText: _phoneError,
+                textInputAction: TextInputAction.next,
+                onChanged: (_) {
+                  if (_phoneError != null) setState(() => _phoneError = null);
+                },
+              ),
+              const SizedBox(height: 16),
+
+              // ── City / Address Field ──────────────────
+              MsTextField(
+                label: 'City / Address (Optional)',
+                hint: 'e.g. Ahmedabad, Gujarat',
+                controller: _addressCtrl,
+                prefixIcon: Icons.location_on_outlined,
+                textInputAction: TextInputAction.next,
               ),
               const SizedBox(height: 16),
 

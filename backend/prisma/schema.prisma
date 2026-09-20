@@ -12,16 +12,21 @@ datasource db {
 // ======================================================
 
 model User {
-  id           String   @id @default(cuid())
-  name         String
-  email        String   @unique
-  password     String
-  phone        String?
-  address      String?
-  role         UserRole @default(DONOR)
-  profileImage String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id                 String    @id @default(cuid())
+  name               String
+  email              String    @unique
+  password           String
+  phone              String?
+  phoneVerified      Boolean   @default(false)
+  phoneOtpHash       String?
+  phoneOtpExpiresAt  DateTime?
+  phoneOtpAttempts   Int       @default(0)
+  phoneOtpLastSentAt DateTime?
+  address            String?
+  role               UserRole  @default(DONOR)
+  profileImage       String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   chatHistory   ChatHistory[]
   donations     Donation[]

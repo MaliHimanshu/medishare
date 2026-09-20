@@ -10,6 +10,7 @@ import '../../shared/widgets/ms_text_field.dart';
 import '../home/home_screen.dart';
 import '../forgot_password/forgot_password_screen.dart';
 import 'register_screen.dart';
+import 'otp_verification_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -114,6 +115,13 @@ class _LoginScreenState extends State<LoginScreen>
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
+
+      // Check if user has an unverified phone number
+      if (auth.user != null && !auth.user!.phoneVerified && auth.user!.phone != null && auth.user!.phone!.isNotEmpty) {
+        _showUnverifiedPhoneBottomSheet(context, auth.user!.phone!);
+        return;
+      }
+
       Navigator.pushReplacement(
         context,
         AppPageTransitions.slideRight(const HomeScreen()),
@@ -128,6 +136,103 @@ class _LoginScreenState extends State<LoginScreen>
         ),
       );
     }
+  }
+
+  void _showUnverifiedPhoneBottomSheet(BuildContext context, String phone) {
+    showModalBottomSheet(
+      context: context,
+      isDismissible: false,
+      enableDrag: false,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (ctx) {
+        return Container(
+          padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppColors.accent.withAlpha(25),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.phonelink_lock_rounded,
+                  color: AppColors.accent,
+                  size: 36,
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Mobile Verification Required',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Your account has an unverified mobile number ($phone). Verify now to secure your account and unlock all MediShare features.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey.shade600,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 24),
+              MsButton(
+                label: 'Verify Now',
+                icon: Icons.verified_user_outlined,
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  final auth = context.read<AuthProvider>();
+                  auth.sendOtp(phone);
+                  Navigator.pushReplacement(
+                    context,
+                    AppPageTransitions.slideRight(OtpVerificationScreen(phone: phone)),
+                  );
+                },
+              ),
+              const SizedBox(height: 10),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  Navigator.pushReplacement(
+                    context,
+                    AppPageTransitions.slideRight(const HomeScreen()),
+                  );
+                },
+                child: Text(
+                  'Skip for now',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey.shade600,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override

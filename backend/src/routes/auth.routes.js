@@ -107,6 +107,8 @@ const router = express.Router();
 const {
   register,
   login,
+  sendOtpController,
+  verifyOtpController,
 } = require("../controllers/auth.controller");
 
 const protect = require("../middleware/auth.middleware");
@@ -120,6 +122,13 @@ router.post("/register", register);
 
 // Login User
 router.post("/login", login);
+
+// Send OTP (also for resend)
+router.post("/send-otp", sendOtpController);
+router.post("/resend-otp", sendOtpController);
+
+// Verify OTP
+router.post("/verify-otp", verifyOtpController);
 
 // ==========================
 // Protected Routes

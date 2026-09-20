@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 
 // Providers
 import '../../providers/equipment_provider.dart';
@@ -43,7 +45,7 @@ class NearbyEquipmentScreen extends StatefulWidget {
 }
 
 class _NearbyEquipmentScreenState extends State<NearbyEquipmentScreen> {
-  double _radius = 20;
+double _radius = 20;
 
   double? _latitude;
   double? _longitude;
@@ -53,6 +55,10 @@ class _NearbyEquipmentScreenState extends State<NearbyEquipmentScreen> {
   /// True when the displayed coordinates come from getLastKnownPosition()
   /// rather than a fresh getCurrentPosition() fix.
   bool _isLastKnown = false;
+
+  final MapController _mapController = MapController();
+  final ScrollController _scrollController = ScrollController();
+  String? _selectedEquipmentId;
 
   // ── Lifecycle ──────────────────────────────────────────────────────────────
 
@@ -205,10 +211,11 @@ class _NearbyEquipmentScreenState extends State<NearbyEquipmentScreen> {
 
   // ── Build ──────────────────────────────────────────────────────────────────
 
-  @override
+@override
   Widget build(BuildContext context) {
     final equipProv = context.watch<EquipmentProvider>();
     final nearbyList = equipProv.nearbyEquipment;
+    final displayList = nearbyList.isEmpty ? _getDummyList() : nearbyList;
 
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -231,13 +238,17 @@ class _NearbyEquipmentScreenState extends State<NearbyEquipmentScreen> {
           // Location & Radius Header
           _buildHeader(equipProv),
 
+          // Map Section (Only show if we have location or loading)
+          if (_latitude != null || _locationState == _LocationState.loading)
+            _buildMapSection(displayList),
+
           // Results
           Expanded(
             child: RefreshIndicator(
               onRefresh: () async => _fetchNearby(),
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 300),
-                child: _buildBody(equipProv, nearbyList),
+                child: _buildBody(equipProv, displayList),
               ),
             ),
           ),
@@ -246,7 +257,139 @@ class _NearbyEquipmentScreenState extends State<NearbyEquipmentScreen> {
     );
   }
 
-  // ── Header ─────────────────────────────────────────────────────────────────
+  // ── Map Section ────────────────────────────────────────────────────────────
+
+  Widget _buildMapSection(List<EquipmentModel> list) {
+    if (_latitude == null) return const SizedBox.shrink();
+
+    return Container(
+      height: 250,
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: context.borderColor, width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(22),
+        child: FlutterMap(
+          mapController: _mapController,
+          options: MapOptions(
+            initialCenter: LatLng(_latitude!, _longitude!),
+            initialZoom: 13.0,
+            onTap: (tapPosition, point) {
+              setState(() => _selectedEquipmentId = null);
+            },
+          ),
+          children: [
+            TileLayer(
+              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+              userAgentPackageName: 'com.example.medishare',
+            ),
+            MarkerLayer(
+              markers: [
+                // User Location
+                Marker(
+                  point: LatLng(_latitude!, _longitude!),
+                  width: 120,
+                  height: 60,
+                  alignment: Alignment.topCenter,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          'Your location',
+                          style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                      const Icon(Icons.location_on, color: AppColors.primary, size: 30),
+                    ],
+                  ),
+                ),
+                // Equipment Markers
+                ...list.map((e) {
+                  final lat = e.latitude ?? _latitude!;
+                  final lng = e.longitude ?? _longitude!;
+                  final isSelected = e.id == _selectedEquipmentId;
+
+                  return Marker(
+                    point: LatLng(lat, lng),
+                    width: 40,
+                    height: 40,
+                    alignment: Alignment.topCenter,
+                    child: GestureDetector(
+                      onTap: () => _onMarkerTapped(e, list.indexOf(e)),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        width: isSelected ? 40 : 30,
+                        height: isSelected ? 40 : 30,
+                        decoration: BoxDecoration(
+                          color: isSelected ? Colors.orange : Colors.teal,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                          boxShadow: [
+                            if (isSelected)
+                              BoxShadow(
+                                color: Colors.orange.withOpacity(0.4),
+                                blurRadius: 8,
+                                spreadRadius: 2,
+                              ),
+                          ],
+                        ),
+                        child: const Icon(Icons.medical_services, color: Colors.white, size: 18),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _onMarkerTapped(EquipmentModel equipment, int index) {
+    setState(() {
+      _selectedEquipmentId = equipment.id;
+    });
+    // Pan map
+    if (equipment.latitude != null && equipment.longitude != null) {
+      _mapController.move(LatLng(equipment.latitude!, equipment.longitude!), 14.0);
+    }
+    // Scroll list
+    if (_scrollController.hasClients) {
+      // rough estimation of card height
+      final targetOffset = index * 160.0;
+      _scrollController.animateTo(
+        targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
+  }
+
+  void _onCardTapped(EquipmentModel equipment) {
+    setState(() {
+      _selectedEquipmentId = equipment.id;
+    });
+    // Pan map
+    if (equipment.latitude != null && equipment.longitude != null) {
+      _mapController.move(LatLng(equipment.latitude!, equipment.longitude!), 14.0);
+    }
+  }
 
   Widget _buildHeader(EquipmentProvider equipProv) {
     return Container(
@@ -464,9 +607,126 @@ class _NearbyEquipmentScreenState extends State<NearbyEquipmentScreen> {
     );
   }
 
+
+  List<EquipmentModel> _getDummyList() {
+    return [
+      EquipmentModel(
+        id: 'dummy-1',
+        ownerId: 'donor-1',
+        name: 'Oxygen Cylinder (10L)',
+        category: 'Respirators',
+        condition: 'GOOD',
+        quantity: 2,
+        mode: 'RENT',
+        status: 'AVAILABLE',
+        rentalPricePerDay: 250.0,
+        securityDeposit: 1000.0,
+        createdAt: DateTime.now().toIso8601String(),
+        updatedAt: DateTime.now().toIso8601String(),
+        donor: 'City Hospital',
+        location: 'City Hospital, 4th Block',
+        latitude: 37.4225,
+        longitude: -122.0830,
+        image: 'https://images.unsplash.com/photo-1584982751601-97dcc096659c?q=80&w=200&auto=format&fit=crop',
+        images: [],
+        manufacturer: 'OxyLife',
+        description: 'High capacity oxygen cylinder in good condition.',
+      ),
+      EquipmentModel(
+        id: 'dummy-2',
+        ownerId: 'donor-2',
+        name: 'Standard Wheelchair',
+        category: 'Mobility Aids',
+        condition: 'LIKE_NEW',
+        quantity: 1,
+        mode: 'DONATE',
+        status: 'AVAILABLE',
+        rentalPricePerDay: 0.0,
+        securityDeposit: 0.0,
+        createdAt: DateTime.now().toIso8601String(),
+        updatedAt: DateTime.now().toIso8601String(),
+        donor: 'John Doe',
+        location: 'MG Road, Indiranagar',
+        latitude: 37.4240,
+        longitude: -122.0810,
+        image: 'https://images.unsplash.com/photo-1596704017254-9b121068fb31?q=80&w=200&auto=format&fit=crop',
+        images: [],
+        manufacturer: 'Karma',
+        description: 'Foldable standard wheelchair. Very lightly used.',
+      ),
+      EquipmentModel(
+        id: 'dummy-3',
+        ownerId: 'donor-3',
+        name: 'Digital BP Monitor',
+        category: 'Diagnostic Equipment',
+        condition: 'EXCELLENT',
+        quantity: 3,
+        mode: 'RENT',
+        status: 'AVAILABLE',
+        rentalPricePerDay: 50.0,
+        securityDeposit: 500.0,
+        createdAt: DateTime.now().toIso8601String(),
+        updatedAt: DateTime.now().toIso8601String(),
+        donor: 'Apollo Medical Center',
+        location: 'Apollo Medical Center',
+        latitude: 37.4205,
+        longitude: -122.0850,
+        image: 'https://images.unsplash.com/photo-1631549916768-4119b2e5f926?q=80&w=200&auto=format&fit=crop',
+        images: [],
+        manufacturer: 'Omron',
+        description: 'Digital BP monitor in excellent condition.',
+      ),
+      EquipmentModel(
+        id: 'dummy-4',
+        ownerId: 'donor-4',
+        name: 'Patient Walker',
+        category: 'Mobility Aids',
+        condition: 'GOOD',
+        quantity: 2,
+        mode: 'DONATE',
+        status: 'AVAILABLE',
+        rentalPricePerDay: 0.0,
+        securityDeposit: 0.0,
+        createdAt: DateTime.now().toIso8601String(),
+        updatedAt: DateTime.now().toIso8601String(),
+        donor: 'Community Health Center',
+        location: 'Community Health Center',
+        latitude: 37.4260,
+        longitude: -122.0870,
+        image: 'https://images.unsplash.com/photo-1590749629168-15f532ec7e5f?q=80&w=200&auto=format&fit=crop',
+        images: [],
+        manufacturer: 'Standard',
+        description: 'Sturdy patient walker.',
+      ),
+      EquipmentModel(
+        id: 'dummy-5',
+        ownerId: 'donor-5',
+        name: 'Nebulizer Machine',
+        category: 'Respiratory Care',
+        condition: 'LIKE_NEW',
+        quantity: 1,
+        mode: 'RENT',
+        status: 'AVAILABLE',
+        rentalPricePerDay: 100.0,
+        securityDeposit: 800.0,
+        createdAt: DateTime.now().toIso8601String(),
+        updatedAt: DateTime.now().toIso8601String(),
+        donor: 'MediCare Clinic',
+        location: 'MediCare Clinic',
+        latitude: 37.4190,
+        longitude: -122.0800,
+        image: 'https://images.unsplash.com/photo-1615461066841-6116e61058f4?q=80&w=200&auto=format&fit=crop',
+        images: [],
+        manufacturer: 'Philips',
+        description: 'Nebulizer machine.',
+      ),
+    ];
+  }
+
+
   // ── Body ───────────────────────────────────────────────────────────────────
 
-  Widget _buildBody(EquipmentProvider equipProv, List<EquipmentModel> list) {
+Widget _buildBody(EquipmentProvider equipProv, List<EquipmentModel> list) {
     // 1. Acquiring location (no coords yet)
     if (_locationState == _LocationState.loading && _latitude == null) {
       return _buildFullScreenMessage(
@@ -511,69 +771,10 @@ class _NearbyEquipmentScreenState extends State<NearbyEquipmentScreen> {
       );
     }
 
-    // 5. Empty results (Show Dummy Data for now)
-    if (list.isEmpty) {
-      // Create some dummy examples for the UI
-      final dummyList = [
-        EquipmentModel(
-          id: 'dummy-1',
-          ownerId: 'donor-1',
-          name: 'Oxygen Cylinder (10L)',
-          category: 'Respirators',
-          condition: 'GOOD',
-          quantity: 2,
-          mode: 'RENT',
-          status: 'AVAILABLE',
-          rentalPricePerDay: 250.0,
-          securityDeposit: 1000.0,
-          createdAt: DateTime.now().toIso8601String(),
-          updatedAt: DateTime.now().toIso8601String(),
-          donor: 'City Hospital',
-          location: 'City Hospital, 4th Block',
-          image: 'https://images.unsplash.com/photo-1584982751601-97dcc096659c?q=80&w=200&auto=format&fit=crop',
-          images: [],
-          manufacturer: 'OxyLife',
-          description: 'High capacity oxygen cylinder in good condition.',
-        ),
-        EquipmentModel(
-          id: 'dummy-2',
-          ownerId: 'donor-2',
-          name: 'Standard Wheelchair',
-          category: 'Mobility Aids',
-          condition: 'LIKE_NEW',
-          quantity: 1,
-          mode: 'DONATE',
-          status: 'AVAILABLE',
-          rentalPricePerDay: 0.0,
-          securityDeposit: 0.0,
-          createdAt: DateTime.now().toIso8601String(),
-          updatedAt: DateTime.now().toIso8601String(),
-          donor: 'John Doe',
-          location: 'MG Road, Indiranagar',
-          image: 'https://images.unsplash.com/photo-1596704017254-9b121068fb31?q=80&w=200&auto=format&fit=crop',
-          images: [],
-          manufacturer: 'Karma',
-          description: 'Foldable standard wheelchair. Very lightly used.',
-        ),
-      ];
-
-      return ListView.builder(
-        key: const ValueKey('dummy-loaded'),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        itemCount: dummyList.length,
-        itemBuilder: (context, index) {
-          final equipment = dummyList[index];
-          return AnimatedListItem(
-            index: index,
-            child: _buildNearbyCard(equipment),
-          );
-        },
-      );
-    }
-
-    // 6. Success — list of nearby equipment
+    // 5 & 6. Success / Fallback
     return ListView.builder(
       key: const ValueKey('loaded'),
+      controller: _scrollController,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       itemCount: list.length,
       itemBuilder: (context, index) {
@@ -754,7 +955,7 @@ class _NearbyEquipmentScreenState extends State<NearbyEquipmentScreen> {
 
   // ── Nearby Equipment Card ──────────────────────────────────────────────────
 
-  Widget _buildNearbyCard(EquipmentModel equipment) {
+Widget _buildNearbyCard(EquipmentModel equipment) {
     Color statusColor = Colors.teal;
     if (equipment.status == 'REQUESTED') {
       statusColor = Colors.orange;
@@ -764,170 +965,194 @@ class _NearbyEquipmentScreenState extends State<NearbyEquipmentScreen> {
       statusColor = Colors.grey;
     }
 
+    final isSelected = _selectedEquipmentId == equipment.id;
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      elevation: 2,
-      color: context.cardBg,
+      elevation: isSelected ? 4 : 2,
+      color: isSelected ? AppColors.primary.withOpacity(0.05) : context.cardBg,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
-        side: BorderSide(color: context.borderColor, width: 1.5),
+        side: BorderSide(
+            color: isSelected ? AppColors.primary : context.borderColor,
+            width: isSelected ? 2.0 : 1.5),
       ),
       child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            AppPageTransitions.slideUp(
-              EquipmentDetailScreen(equipment: equipment),
-            ),
-          );
-        },
+        onTap: () => _onCardTapped(equipment),
         borderRadius: BorderRadius.circular(18),
         child: Padding(
           padding: const EdgeInsets.all(12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Column(
             children: [
-              // Equipment Image
-              Container(
-                width: 90,
-                height: 100,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withAlpha(15),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: equipment.image.isNotEmpty
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(14),
-                        child: Image.network(
-                          equipment.image,
-                          fit: BoxFit.cover,
-                          errorBuilder: (ctx, err, stack) => const Icon(
-                            Icons.medical_services_outlined,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Equipment Image
+                  Container(
+                    width: 90,
+                    height: 100,
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withAlpha(15),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: equipment.image.isNotEmpty
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(14),
+                            child: Image.network(
+                              equipment.image,
+                              fit: BoxFit.cover,
+                              errorBuilder: (ctx, err, stack) => const Icon(
+                                Icons.medical_services_outlined,
+                                color: AppColors.primary,
+                                size: 30,
+                              ),
+                            ),
+                          )
+                        : const Icon(
+                            Icons.medical_services,
                             color: AppColors.primary,
-                            size: 30,
+                            size: 32,
                           ),
-                        ),
-                      )
-                    : const Icon(
-                        Icons.medical_services,
-                        color: AppColors.primary,
-                        size: 32,
-                      ),
-              ),
-              const SizedBox(width: 14),
+                  ),
+                  const SizedBox(width: 14),
 
-              // Equipment Details
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Category + Status
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  // Equipment Details
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          equipment.category,
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: context.textSecondaryColor,
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: statusColor.withAlpha(25),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            equipment.status,
-                            style: TextStyle(
-                                color: statusColor,
-                                fontSize: 8,
-                                fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-
-                    // Name
-                    Text(
-                      equipment.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                        color: context.textPrimaryColor,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-
-                    // Location
-                    Row(
-                      children: [
-                        const Icon(Icons.location_on_outlined,
-                            size: 11, color: Colors.grey),
-                        const SizedBox(width: 2),
-                        Expanded(
-                          child: Text(
-                            equipment.location,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                                fontSize: 11,
-                                color: context.textSecondaryColor),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-
-                    // Condition + Mode chip + Distance
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            'Qty: ${equipment.quantity} · ${equipment.condition}',
-                            style: TextStyle(
-                                fontSize: 11,
+                        // Category + Status
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              equipment.category,
+                              style: TextStyle(
+                                fontSize: 10,
                                 fontWeight: FontWeight.bold,
-                                color: context.textSecondaryColor),
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
+                                color: context.textSecondaryColor,
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: statusColor.withAlpha(25),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                equipment.status,
+                                style: TextStyle(
+                                    color: statusColor,
+                                    fontSize: 8,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+
+                        // Name
+                        Text(
+                          equipment.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: context.textPrimaryColor,
                           ),
                         ),
+                        const SizedBox(height: 2),
+
+                        // Location
                         Row(
                           children: [
-                            if (equipment.distance != null)
-                              Container(
-                                margin: const EdgeInsets.only(right: 6),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 7, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary.withAlpha(20),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  '${equipment.distance!.toStringAsFixed(1)} km',
-                                  style: const TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.primary,
-                                  ),
-                                ),
+                            const Icon(Icons.location_on_outlined,
+                                size: 11, color: Colors.grey),
+                            const SizedBox(width: 2),
+                            Expanded(
+                              child: Text(
+                                equipment.location,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                    fontSize: 11,
+                                    color: context.textSecondaryColor),
                               ),
-                            _buildModeChip(equipment.mode),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+
+                        // Condition + Mode chip + Distance
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                'Qty: ${equipment.quantity} · ${equipment.condition}',
+                                style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: context.textSecondaryColor),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                if (equipment.distance != null)
+                                  Container(
+                                    margin: const EdgeInsets.only(right: 6),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 7, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary.withAlpha(20),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      '${equipment.distance!.toStringAsFixed(1)} km',
+                                      style: const TextStyle(
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.primary,
+                                      ),
+                                    ),
+                                  ),
+                                _buildModeChip(equipment.mode),
+                              ],
+                            ),
                           ],
                         ),
                       ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
+              if (isSelected) ...[
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  height: 36,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        AppPageTransitions.slideUp(
+                          EquipmentDetailScreen(equipment: equipment),
+                        ),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: const Text('View Details'),
+                  ),
+                ),
+              ],
             ],
           ),
         ),

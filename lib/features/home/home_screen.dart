@@ -26,6 +26,7 @@ import '../chatbot/chat_home_screen.dart';
 import '../chat/messages_screen.dart';
 import '../search/global_search_screen.dart';
 import '../auth/login_screen.dart';
+import '../auth/otp_verification_screen.dart';
 import '../rental/my_rentals_screen.dart';
 import '../../core/theme/app_page_transitions.dart';
 
@@ -343,7 +344,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  
+                  // ── Unverified Phone Banner ────────────────────────
+                  if (user != null && !user.phoneVerified && user.phone != null && user.phone!.isNotEmpty) ...[
+                    _buildUnverifiedPhoneCard(context, user.phone!),
+                    const SizedBox(height: 16),
+                  ],
+
                   // ── Hero Banner ───────────────────────────────────
                   Container(
                     width: double.infinity,
@@ -965,6 +971,75 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           ),
         );
       }).toList(),
+    );
+  }
+
+  Widget _buildUnverifiedPhoneCard(BuildContext context, String phone) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF7ED),
+        border: Border.all(color: const Color(0xFFFED7AA), width: 1.5),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF97316).withAlpha(30),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.warning_amber_rounded, color: Color(0xFFF97316), size: 22),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  "Mobile number not verified",
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF9A3412),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  "Verify $phone to secure your account",
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFFC2410C),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          ElevatedButton(
+            onPressed: () {
+              context.read<AuthProvider>().sendOtp(phone);
+              Navigator.push(
+                context,
+                AppPageTransitions.slideRight(OtpVerificationScreen(phone: phone)),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFF97316),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              elevation: 0,
+            ),
+            child: const Text(
+              "Verify Now",
+              style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -19,11 +19,10 @@ const registerSchema = z.object({
     .max(128, "Password must be at most 128 characters"),
 
   phone: z
-    .string()
-    .min(7, "Phone number must be at least 7 digits")
+    .string({ required_error: "Phone is required" })
+    .min(10, "Phone number must be at least 10 digits")
     .max(20, "Phone number must be at most 20 digits")
-    .trim()
-    .optional(),
+    .trim(),
 
   address: z
     .string()
@@ -52,7 +51,24 @@ const loginSchema = z.object({
     .max(128, "Password must be at most 128 characters"),
 });
 
+const otpSendSchema = z.object({
+  phone: z
+    .string({ required_error: "Phone is required" })
+    .trim(),
+});
+
+const otpVerifySchema = z.object({
+  phone: z
+    .string({ required_error: "Phone is required" })
+    .trim(),
+  otp: z
+    .string({ required_error: "OTP is required" })
+    .length(6, "OTP must be exactly 6 digits"),
+});
+
 module.exports = {
   registerSchema,
   loginSchema,
+  otpSendSchema,
+  otpVerifySchema,
 };

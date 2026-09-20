@@ -91,6 +91,49 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  // ── OTP ───────────────────────────────────────────────
+  Future<bool> sendOtp(String phone) async {
+    _setStatus(AuthStatus.loading);
+    _errorMessage = null;
+    try {
+      final success = await _authService.sendOtp(phone);
+      _setStatus(AuthStatus.authenticated);
+      return success;
+    } catch (e) {
+      _errorMessage = e.toString().replaceAll('Exception: ', '');
+      _setStatus(AuthStatus.authenticated); // don't move to error state just for otp failure
+      return false;
+    }
+  }
+
+  Future<bool> verifyOtp(String phone, String otp) async {
+    _setStatus(AuthStatus.loading);
+    _errorMessage = null;
+    try {
+      final success = await _authService.verifyOtp(phone, otp);
+      if (success) {
+        _user = await _authService.getCachedUser();
+      }
+      _setStatus(AuthStatus.authenticated);
+      return success;
+    } catch (e) {
+      _errorMessage = e.toString().replaceAll('Exception: ', '');
+      _setStatus(AuthStatus.authenticated);
+      return false;
+    }
+  }
+
+  Future<bool> resendOtp(String phone) async {
+    _errorMessage = null;
+    try {
+      return await _authService.resendOtp(phone);
+    } catch (e) {
+      _errorMessage = e.toString().replaceAll('Exception: ', '');
+      notifyListeners();
+      return false;
+    }
+  }
+
   // ── Logout ────────────────────────────────────────────
   Future<void> logout() async {
     _setStatus(AuthStatus.loading);
