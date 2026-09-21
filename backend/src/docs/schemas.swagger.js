@@ -31,9 +31,11 @@
  *         role:
  *           type: string
  *           enum:
- *             - DONOR
- *             - HOSPITAL
  *             - ADMIN
+ *             - DONOR
+ *             - NGO
+ *             - HOSPITAL
+ *             - RECIPIENT
  *         createdAt:
  *           type: string
  *           format: date-time
@@ -68,9 +70,11 @@
  *         role:
  *           type: string
  *           enum:
- *             - DONOR
- *             - HOSPITAL
  *             - ADMIN
+ *             - DONOR
+ *             - NGO
+ *             - HOSPITAL
+ *             - RECIPIENT
  *           example: DONOR
  *
  *     Login:

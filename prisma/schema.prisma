@@ -19,6 +19,7 @@ enum UserRole {
   ADMIN
   DONOR
   NGO
+  HOSPITAL
   RECIPIENT
 }
 

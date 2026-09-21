@@ -59,7 +59,8 @@ class UserModel {
       case 'ADMIN':     return 'Administrator';
       case 'DONOR':     return 'Donor';
       case 'NGO':       return 'NGO Partner';
-      case 'RECIPIENT': return 'Healthcare Recipient';
+      case 'HOSPITAL':  return 'Hospital';
+      case 'RECIPIENT': return 'Recipient';
       default:          return role;
     }
   }

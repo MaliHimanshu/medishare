@@ -31,10 +31,10 @@ const registerSchema = z.object({
     .trim()
     .optional(),
 
-  role: z.enum(["ADMIN", "DONOR", "NGO", "RECIPIENT"], {
+  role: z.enum(["ADMIN", "DONOR", "NGO", "HOSPITAL", "RECIPIENT"], {
     required_error: "Role is required",
     invalid_type_error:
-      "Role must be one of: ADMIN, DONOR, NGO, RECIPIENT",
+      "Role must be one of: ADMIN, DONOR, NGO, HOSPITAL, RECIPIENT",
   }),
 });
 

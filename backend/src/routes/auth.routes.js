@@ -45,6 +45,7 @@
  *                   - ADMIN
  *                   - DONOR
  *                   - NGO
+ *                   - HOSPITAL
  *                   - RECIPIENT
  *                 example: DONOR
  *     responses:

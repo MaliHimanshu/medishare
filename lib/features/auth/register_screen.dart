@@ -13,41 +13,42 @@ import 'otp_verification_screen.dart';
 // Role option data
 class _Role {
   final String value;
-  final String label;
-  final String emoji;
-  final String desc;
-  final Color color;
+  final String title;
+  final String subtitle;
+  final IconData icon;
 
   const _Role({
     required this.value,
-    required this.label,
-    required this.emoji,
-    required this.desc,
-    required this.color,
+    required this.title,
+    required this.subtitle,
+    required this.icon,
   });
 }
 
 const _roles = [
   _Role(
     value: 'DONOR',
-    label: 'Donor',
-    emoji: '🤲',
-    desc: 'Donate equipment',
-    color: AppColors.primary,
+    title: 'Donor',
+    subtitle: 'Donate or rent medical equipment',
+    icon: Icons.volunteer_activism_rounded,
   ),
   _Role(
     value: 'NGO',
-    label: 'NGO',
-    emoji: '🏢',
-    desc: 'Partner NGO',
-    color: AppColors.accent,
+    title: 'NGO',
+    subtitle: 'Manage and distribute equipment',
+    icon: Icons.diversity_3_rounded,
+  ),
+  _Role(
+    value: 'HOSPITAL',
+    title: 'Hospital',
+    subtitle: 'Request and manage equipment',
+    icon: Icons.local_hospital_rounded,
   ),
   _Role(
     value: 'RECIPIENT',
-    label: 'Hospital',
-    emoji: '🏥',
-    desc: 'Healthcare org',
-    color: Color(0xFF7C3AED),
+    title: 'Recipient',
+    subtitle: 'Request equipment for personal use',
+    icon: Icons.personal_injury_rounded,
   ),
 ];
 
@@ -265,62 +266,126 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(height: 28),
 
               // ── Role Selector ─────────────────────────
-              const Text(
+              Text(
                 'I am joining as',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  color: context.textPrimaryColor,
                 ),
               ),
               const SizedBox(height: 12),
-              Row(
-                children: _roles.map((role) {
-                  final isSelected = _selectedRole == role.value;
-                  return Expanded(
-                    child: GestureDetector(
-                      onTap: () => setState(() => _selectedRole = role.value),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        margin: const EdgeInsets.only(right: 8),
-                        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 4),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? role.color.withAlpha(20)
-                              : AppColors.surface,
-                          border: Border.all(
-                            color: isSelected ? role.color : AppColors.border,
-                            width: isSelected ? 2 : 1.5,
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Column(
-                          children: [
-                            Text(role.emoji, style: const TextStyle(fontSize: 24)),
-                            const SizedBox(height: 6),
-                            Text(
-                              role.label,
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                                color: isSelected ? role.color : AppColors.textPrimary,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              role.desc,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 9,
-                                color: AppColors.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final isWide = constraints.maxWidth >= 540;
+                  return GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: _roles.length,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: isWide ? 4 : 2,
+                      crossAxisSpacing: 10,
+                      mainAxisSpacing: 10,
+                      childAspectRatio: isWide ? 1.0 : 1.12,
                     ),
+                    itemBuilder: (context, index) {
+                      final role = _roles[index];
+                      final isSelected = _selectedRole == role.value;
+                      return GestureDetector(
+                        onTap: () => setState(() => _selectedRole = role.value),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          curve: Curves.easeInOut,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 10,
+                            horizontal: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? AppColors.primary.withAlpha(20)
+                                : (context.isDarkMode
+                                    ? context.cardBg
+                                    : AppColors.surface),
+                            border: Border.all(
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : context.borderColor,
+                              width: isSelected ? 2.0 : 1.2,
+                            ),
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: [
+                              BoxShadow(
+                                color: isSelected
+                                    ? AppColors.primary.withAlpha(25)
+                                    : Colors.black.withAlpha(
+                                        context.isDarkMode ? 15 : 4,
+                                      ),
+                                blurRadius: isSelected ? 8 : 4,
+                                offset: Offset(0, isSelected ? 2 : 1),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                curve: Curves.easeInOut,
+                                width: 38,
+                                height: 38,
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? AppColors.primary.withAlpha(35)
+                                      : (context.isDarkMode
+                                          ? Colors.white10
+                                          : AppColors.surface2),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  role.icon,
+                                  size: 20,
+                                  color: isSelected
+                                      ? AppColors.primary
+                                      : context.textSecondaryColor,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                role.title,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: isSelected
+                                      ? FontWeight.w700
+                                      : FontWeight.w600,
+                                  color: isSelected
+                                      ? AppColors.primary
+                                      : context.textPrimaryColor,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                role.subtitle,
+                                textAlign: TextAlign.center,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 9.5,
+                                  height: 1.2,
+                                  color: isSelected
+                                      ? AppColors.primary.withAlpha(220)
+                                      : context.textSecondaryColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   );
-                }).toList(),
+                },
               ),
 
               const SizedBox(height: 24),

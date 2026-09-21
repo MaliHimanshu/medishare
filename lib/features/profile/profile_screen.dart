@@ -356,9 +356,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _buildProfileHeader(BuildContext context, UserModel? user) {
     final role = user?.role ?? 'DONOR';
-    final roleColor = role == 'ADMIN'
-        ? Colors.purple
-        : (role == 'DONOR' ? Colors.green : Colors.blue);
+    final roleColor = switch (role) {
+      'ADMIN' => Colors.purple,
+      'DONOR' => Colors.green,
+      'NGO' => Colors.teal,
+      'HOSPITAL' => const Color(0xFF7C3AED),
+      'RECIPIENT' => AppColors.primary,
+      _ => AppColors.primary,
+    };
 
     return Container(
       width: double.infinity,

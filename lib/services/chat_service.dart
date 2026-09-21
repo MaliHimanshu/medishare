@@ -33,7 +33,7 @@ class ChatService {
     final response = await _dio.get(
       '${ApiEndpoints.baseUrl}/chat/conversations/$conversationId/messages',
       queryParameters: {
-        ?'cursor': cursor,
+        if (cursor != null) 'cursor': cursor,
         'limit': 50,
       },
     );
