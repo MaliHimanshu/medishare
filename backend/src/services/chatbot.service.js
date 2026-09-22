@@ -57,6 +57,67 @@ const askAI = async (message, user) => {
       return `There are ${total} donations in the system.`;
     }
 
+    // My Equipment (for Donor / Hospital)
+    if (
+      question.includes("my equipment") ||
+      question.includes("show my equipment")
+    ) {
+      const items = await prisma.equipment.findMany({
+        where: { ownerId: user.id },
+        select: { name: true, status: true, mode: true },
+      });
+
+      if (items.length === 0) {
+        return "You have not listed any equipment yet.";
+      }
+
+      return `Your equipment listings (${items.length}):\n` +
+        items.map((e) => `• ${e.name} (${e.mode}) - ${e.status}`).join("\n");
+    }
+
+    // Rental Requests (for Donor / Hospital)
+    if (
+      question.includes("rental request") ||
+      question.includes("rental requests")
+    ) {
+      const rentals = await prisma.rental.findMany({
+        where: { equipment: { ownerId: user.id } },
+        include: { equipment: true, renter: true },
+      });
+
+      if (rentals.length === 0) {
+        return "You have no rental requests for your equipment.";
+      }
+
+      return `Rental requests for your equipment (${rentals.length}):\n` +
+        rentals
+          .map(
+            (r) =>
+              `• ${r.equipment.name} requested by ${r.renter.name} - ${r.status}`
+          )
+          .join("\n");
+    }
+
+    // My Rentals (for Recipient / Hospital)
+    if (
+      question.includes("my rental") ||
+      question.includes("my rentals")
+    ) {
+      const rentals = await prisma.rental.findMany({
+        where: { renterId: user.id },
+        include: { equipment: true },
+      });
+
+      if (rentals.length === 0) {
+        return "You have no active or previous rentals.";
+      }
+
+      return `Your rentals (${rentals.length}):\n` +
+        rentals
+          .map((r) => `• ${r.equipment.name} - Status: ${r.status}`)
+          .join("\n");
+    }
+
     // My Requests
     if (
       question.includes("my request") ||
@@ -72,7 +133,7 @@ const askAI = async (message, user) => {
       });
 
       if (requests.length === 0) {
-        return "You have no requests.";
+        return "You have no equipment requests.";
       }
 
       return requests

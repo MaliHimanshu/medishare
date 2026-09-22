@@ -3,7 +3,7 @@ const dashboardService = require("../services/dashboard.service");
 // Dashboard Summary
 const getDashboardSummary = async (req, res) => {
   try {
-    const summary = await dashboardService.getDashboardSummary();
+    const summary = await dashboardService.getDashboardSummary(req.user);
 
     return res.status(200).json({
       success: true,
@@ -20,7 +20,7 @@ const getDashboardSummary = async (req, res) => {
 // Recent Requests
 const getRecentRequests = async (req, res) => {
   try {
-    const requests = await dashboardService.getRecentRequests();
+    const requests = await dashboardService.getRecentRequests(req.user);
 
     return res.status(200).json({
       success: true,

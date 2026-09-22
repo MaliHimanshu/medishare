@@ -20,6 +20,10 @@ class FakeAuthProvider extends AuthProvider {
     required String role,
     String? phone,
     String? address,
+    String? organizationName,
+    String? registrationNumber,
+    String? contactPerson,
+    String? equipmentPreference,
   }) async {
     lastRegisteredRole = role;
     lastRegisteredName = name;

@@ -39,7 +39,9 @@ const createEquipmentSchema = z.object({
     quantity: z
       .number()
       .int()
-      .min(1, "Quantity must be at least 1."),
+      .min(1, "Quantity must be at least 1.")
+      .default(1)
+      .optional(),
 
     condition: z.enum(equipmentCondition),
 
@@ -50,6 +52,13 @@ const createEquipmentSchema = z.object({
     image: z
       .string()
       .optional(),
+
+    mode: z.enum(["DONATE", "RENT", "BOTH"]).optional(),
+    rentalPricePerDay: z.number().optional(),
+    securityDeposit: z.number().optional(),
+    location: z.string().max(255).optional(),
+    latitude: z.number().optional(),
+    longitude: z.number().optional(),
   }),
 });
 
@@ -76,6 +85,13 @@ const updateEquipmentSchema = z.object({
     image: z
       .string()
       .optional(),
+
+    mode: z.enum(["DONATE", "RENT", "BOTH"]).optional(),
+    rentalPricePerDay: z.number().optional(),
+    securityDeposit: z.number().optional(),
+    location: z.string().max(255).optional(),
+    latitude: z.number().optional(),
+    longitude: z.number().optional(),
   }),
 });
 

@@ -33,7 +33,7 @@ const getAllDonations = async (req, res) => {
   try {
     donationQuerySchema.parse(req.query);
 
-    const donations = await donationService.getAllDonations();
+    const donations = await donationService.getAllDonations(req.user);
 
     return res.status(200).json({
       success: true,
@@ -51,7 +51,10 @@ const getAllDonations = async (req, res) => {
 // Get Donation By ID
 const getDonationById = async (req, res) => {
   try {
-    const donation = await donationService.getDonationById(req.params.id);
+    const donation = await donationService.getDonationById(
+      req.params.id,
+      req.user
+    );
 
     return res.status(200).json({
       success: true,
@@ -72,7 +75,8 @@ const updateDonationStatus = async (req, res) => {
 
     const donation = await donationService.updateDonationStatus(
       req.params.id,
-      status
+      status,
+      req.user
     );
 
     return res.status(200).json({
@@ -91,7 +95,10 @@ const updateDonationStatus = async (req, res) => {
 // Delete Donation
 const deleteDonation = async (req, res) => {
   try {
-    const result = await donationService.deleteDonation(req.params.id);
+    const result = await donationService.deleteDonation(
+      req.params.id,
+      req.user
+    );
 
     return res.status(200).json(result);
   } catch (error) {

@@ -25,6 +25,11 @@ model User {
   address            String?
   role               UserRole  @default(DONOR)
   profileImage       String?
+  organizationName   String?
+  registrationNumber String?
+  contactPerson      String?
+  equipmentPreference String?
+  verificationStatus String?   @default("PENDING")
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 

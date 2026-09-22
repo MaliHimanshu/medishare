@@ -32,6 +32,11 @@ const protect = async (req, res, next) => {
         phone: true,
         address: true,
         role: true,
+        organizationName: true,
+        registrationNumber: true,
+        contactPerson: true,
+        equipmentPreference: true,
+        verificationStatus: true,
       },
     });
 

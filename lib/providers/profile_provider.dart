@@ -93,18 +93,26 @@ class ProfileProvider extends ChangeNotifier {
     required String phone,
     required String address,
     String? profileImage,
+    String? organizationName,
+    String? registrationNumber,
+    String? contactPerson,
+    String? equipmentPreference,
   }) async {
     _isLoading = true;
     _errorMessage = '';
     notifyListeners();
 
     try {
-      final payload = {
+      final payload = <String, dynamic>{
         'name': name,
         'phone': phone,
         'address': address,
         if (profileImage != null && profileImage.isNotEmpty) 'profileImage': profileImage,
       };
+      if (organizationName != null) payload['organizationName'] = organizationName;
+      if (registrationNumber != null) payload['registrationNumber'] = registrationNumber;
+      if (contactPerson != null) payload['contactPerson'] = contactPerson;
+      if (equipmentPreference != null) payload['equipmentPreference'] = equipmentPreference;
 
       final response = await _dio.put(ApiEndpoints.profile, data: payload);
       if (response.data != null && response.data['success'] == true) {

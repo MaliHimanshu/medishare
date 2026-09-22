@@ -31,7 +31,7 @@ const getAllRentals = async (req, res) => {
   try {
     rentalQuerySchema.parse(req.query);
 
-    const rentals = await rentalService.getAllRentals();
+    const rentals = await rentalService.getAllRentals(req.user);
 
     return res.status(200).json({
       success: true,
@@ -49,7 +49,7 @@ const getAllRentals = async (req, res) => {
 // Get Rental By ID
 const getRentalById = async (req, res) => {
   try {
-    const rental = await rentalService.getRentalById(req.params.id);
+    const rental = await rentalService.getRentalById(req.params.id, req.user);
 
     return res.status(200).json({
       success: true,
@@ -70,7 +70,8 @@ const updateRentalStatus = async (req, res) => {
 
     const rental = await rentalService.updateRentalStatus(
       req.params.id,
-      status
+      status,
+      req.user
     );
 
     return res.status(200).json({
@@ -89,7 +90,7 @@ const updateRentalStatus = async (req, res) => {
 // Delete Rental
 const deleteRental = async (req, res) => {
   try {
-    const result = await rentalService.deleteRental(req.params.id);
+    const result = await rentalService.deleteRental(req.params.id, req.user);
 
     return res.status(200).json(result);
   } catch (error) {

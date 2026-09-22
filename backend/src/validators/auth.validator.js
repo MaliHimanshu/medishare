@@ -36,6 +36,11 @@ const registerSchema = z.object({
     invalid_type_error:
       "Role must be one of: ADMIN, DONOR, NGO, HOSPITAL, RECIPIENT",
   }),
+
+  organizationName: z.string().trim().max(150).optional(),
+  registrationNumber: z.string().trim().max(100).optional(),
+  contactPerson: z.string().trim().max(100).optional(),
+  equipmentPreference: z.string().trim().max(150).optional(),
 });
 
 const loginSchema = z.object({

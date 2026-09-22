@@ -47,6 +47,11 @@ const updateProfileSchema = z.object({
     .string()
     .url("Invalid image URL format")
     .optional(),
+
+  organizationName: z.string().max(150).trim().optional(),
+  registrationNumber: z.string().max(100).trim().optional(),
+  contactPerson: z.string().max(100).trim().optional(),
+  equipmentPreference: z.string().max(150).trim().optional(),
 });
 
 // ─────────────────────────────────────────────

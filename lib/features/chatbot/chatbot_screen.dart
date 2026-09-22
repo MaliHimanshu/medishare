@@ -6,6 +6,7 @@ import '../../core/constants/app_colors.dart';
 import '../../core/theme/app_page_transitions.dart';
 import '../../models/chat_message_model.dart';
 import '../../models/equipment_model.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/menu_chatbot_provider.dart';
 import '../../providers/theme_provider.dart';
 import '../../shared/widgets/ms_image.dart';
@@ -13,6 +14,8 @@ import '../../shared/widgets/ms_image.dart';
 // Related Feature Screens
 import '../equipment/equipment_detail_screen.dart';
 import '../equipment/add_equipment_screen.dart';
+import '../equipment/my_equipment_screen.dart';
+import '../search/global_search_screen.dart';
 import '../hospital/hospital_screen.dart';
 import '../requests/request_screen.dart';
 import '../rental/my_rentals_screen.dart';
@@ -35,7 +38,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      final auth = context.read<AuthProvider>();
       final lang = context.read<ThemeProvider>().selectedLanguage;
+      final role = auth.user?.role ?? 'DONOR';
+      context.read<MenuChatbotProvider>().setRole(role, auth.user?.id);
       context.read<MenuChatbotProvider>().updateLanguage(lang);
       _scrollToBottom();
     });
@@ -722,14 +728,18 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             onTap: () {
               if (opt == "Open Hospital Directory") {
                 Navigator.push(context, AppPageTransitions.slideRight(const HospitalScreen()));
-              } else if (opt == "View All Requests") {
+              } else if (opt == "View All Requests" || opt == "View Requests" || opt == "My Requests") {
                 Navigator.push(context, AppPageTransitions.slideRight(const RequestScreen()));
-              } else if (opt == "Open Rentals & Tracking") {
+              } else if (opt == "Open Rentals & Tracking" || opt == "Open Rentals" || opt == "My Rentals" || opt == "Rental Requests" || opt == "Open Rental Requests") {
                 Navigator.push(context, AppPageTransitions.slideRight(const MyRentalsScreen()));
-              } else if (opt == "Start a Donation") {
+              } else if (opt == "Start a Donation" || opt == "Add Equipment" || opt == "Open Add Equipment Form" || opt == "List Equipment to Donate") {
                 Navigator.push(context, AppPageTransitions.slideUp(const AddEquipmentScreen()));
-              } else if (opt == "View My Donations") {
+              } else if (opt == "View My Donations" || opt == "View Donations") {
                 Navigator.push(context, AppPageTransitions.slideRight(const MyDonationsScreen()));
+              } else if (opt == "View My Equipment" || opt == "Hospital Equipment") {
+                Navigator.push(context, AppPageTransitions.slideRight(const MyEquipmentScreen()));
+              } else if (opt == "Open Search Screen" || opt == "Browse Equipment to Request" || opt == "View Equipment to Rent" || opt == "Browse Equipment") {
+                Navigator.push(context, AppPageTransitions.slideRight(const GlobalSearchScreen()));
               } else if (opt == "Contact Support") {
                 Navigator.push(context, AppPageTransitions.slideRight(const HelpSupportScreen()));
               } else if (opt == "Grant Permission / Retry" || opt == "View All Equipment") {

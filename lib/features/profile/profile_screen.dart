@@ -14,6 +14,11 @@ import '../settings/about_screen.dart';
 import 'edit_profile_screen.dart';
 import 'change_password_screen.dart';
 import '../auth/otp_verification_screen.dart';
+import '../equipment/my_equipment_screen.dart';
+import '../donations/my_donations_screen.dart';
+import '../rental/my_rentals_screen.dart';
+import '../requests/request_screen.dart';
+import '../equipment/equipment_list_screen.dart';
 import '../../core/theme/app_page_transitions.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -196,6 +201,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _buildStatsGrid(context, profileProvider),
 
                   const SizedBox(height: 24),
+
+                  // ── Role-Specific Workspace Hub ───────────────────
+                  _buildRoleSpecificSection(context, user),
 
                   // ── Account & General Options ─────────────────────
                   Text(
@@ -661,6 +669,233 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildRoleSpecificSection(BuildContext context, UserModel? user) {
+    final role = user?.role ?? 'DONOR';
+
+    String title;
+    List<Widget> items = [];
+
+    switch (role) {
+      case 'DONOR':
+        title = 'Donor Workspace';
+        items = [
+          _buildRoleTile(
+            context,
+            icon: Icons.medical_services_outlined,
+            color: Colors.teal,
+            title: 'My Equipment',
+            subtitle: 'Manage your listed equipment & availability',
+            onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const MyEquipmentScreen())),
+          ),
+          _buildRoleTile(
+            context,
+            icon: Icons.volunteer_activism_outlined,
+            color: Colors.pink,
+            title: 'Donations',
+            subtitle: 'View donated items & community contributions',
+            onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const MyDonationsScreen())),
+          ),
+          _buildRoleTile(
+            context,
+            icon: Icons.handshake_outlined,
+            color: Colors.blue,
+            title: 'Rentals & Requests',
+            subtitle: 'Manage equipment rentals and approve requests',
+            onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const MyRentalsScreen())),
+          ),
+        ];
+        break;
+
+      case 'RECIPIENT':
+        title = 'Recipient Workspace';
+        items = [
+          _buildRoleTile(
+            context,
+            icon: Icons.receipt_long_outlined,
+            color: Colors.orange,
+            title: 'My Requests',
+            subtitle: 'Track status of your medical equipment requests',
+            onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const RequestScreen())),
+          ),
+          _buildRoleTile(
+            context,
+            icon: Icons.handshake_outlined,
+            color: Colors.blue,
+            title: 'My Rentals',
+            subtitle: 'View active rentals, return dates & security deposits',
+            onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const MyRentalsScreen())),
+          ),
+          _buildRoleTile(
+            context,
+            icon: Icons.medical_services_outlined,
+            color: Colors.teal,
+            title: 'Equipment Catalog & Needs',
+            subtitle: user?.equipmentPreference != null && user!.equipmentPreference!.isNotEmpty
+                ? 'Preference: ${user.equipmentPreference}'
+                : 'Browse and search available equipment',
+            onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const EquipmentListScreen())),
+          ),
+        ];
+        break;
+
+      case 'NGO':
+        title = 'NGO Organization Hub';
+        items = [
+          _buildRoleTile(
+            context,
+            icon: Icons.business_outlined,
+            color: Colors.teal,
+            title: 'NGO Details',
+            subtitle: '${user?.organizationName ?? "Partner NGO"} • Reg: ${user?.registrationNumber ?? "N/A"}',
+            onTap: () async {
+              if (user != null) {
+                final res = await Navigator.push(
+                  context,
+                  AppPageTransitions.slideRight(EditProfileScreen(user: user)),
+                );
+                if (res == true && mounted) {
+                  context.read<ProfileProvider>().fetchProfile();
+                }
+              }
+            },
+          ),
+          _buildRoleTile(
+            context,
+            icon: Icons.people_outline,
+            color: Colors.purple,
+            title: 'Beneficiaries & Requests',
+            subtitle: 'Manage community equipment requests & distributions',
+            onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const RequestScreen())),
+          ),
+          _buildRoleTile(
+            context,
+            icon: Icons.volunteer_activism_outlined,
+            color: Colors.pink,
+            title: 'Donations',
+            subtitle: 'Receive & facilitate equipment donations',
+            onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const MyDonationsScreen())),
+          ),
+        ];
+        break;
+
+      case 'HOSPITAL':
+        title = 'Hospital Medical Hub';
+        items = [
+          _buildRoleTile(
+            context,
+            icon: Icons.local_hospital_outlined,
+            color: const Color(0xFF7C3AED),
+            title: 'Hospital Details',
+            subtitle: '${user?.organizationName ?? "Hospital"} • License: ${user?.registrationNumber ?? "N/A"}',
+            onTap: () async {
+              if (user != null) {
+                final res = await Navigator.push(
+                  context,
+                  AppPageTransitions.slideRight(EditProfileScreen(user: user)),
+                );
+                if (res == true && mounted) {
+                  context.read<ProfileProvider>().fetchProfile();
+                }
+              }
+            },
+          ),
+          _buildRoleTile(
+            context,
+            icon: Icons.medical_services_outlined,
+            color: Colors.teal,
+            title: 'Hospital Equipment',
+            subtitle: 'Manage institution equipment & clinical devices',
+            onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const MyEquipmentScreen())),
+          ),
+          _buildRoleTile(
+            context,
+            icon: Icons.receipt_long_outlined,
+            color: Colors.orange,
+            title: 'Equipment Requests',
+            subtitle: 'View hospital procurement & urgent requests',
+            onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const RequestScreen())),
+          ),
+          _buildRoleTile(
+            context,
+            icon: Icons.handshake_outlined,
+            color: Colors.blue,
+            title: 'Rentals',
+            subtitle: 'Manage institutional rentals and leased units',
+            onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const MyRentalsScreen())),
+          ),
+        ];
+        break;
+
+      default:
+        return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: context.textPrimaryColor,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Card(
+          elevation: 0,
+          color: context.cardBg,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(color: context.borderColor),
+          ),
+          child: Column(
+            children: [
+              for (int i = 0; i < items.length; i++) ...[
+                items[i],
+                if (i < items.length - 1)
+                  Divider(height: 1, color: context.borderColor),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(height: 24),
+      ],
+    );
+  }
+
+  Widget _buildRoleTile(
+    BuildContext context, {
+    required IconData icon,
+    required Color color,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: CircleAvatar(
+        backgroundColor: color.withAlpha(context.isDarkMode ? 40 : 30),
+        child: Icon(icon, color: color),
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          color: context.textPrimaryColor,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: TextStyle(
+          color: context.textSecondaryColor,
+          fontSize: 12,
+        ),
+      ),
+      trailing: const Icon(Icons.chevron_right, size: 20),
+      onTap: onTap,
     );
   }
 }

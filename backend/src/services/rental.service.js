@@ -20,6 +20,10 @@ const createRental = async (userId, data) => {
   const diffTime = end.getTime() - start.getTime();
   const numberOfDays = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
 
+  if (numberOfDays <= 0 || numberOfDays > 365) {
+    throw new Error("Rental duration must be between 1 and 365 days.");
+  }
+
   // Check equipment exists
   const equipment = await prisma.equipment.findUnique({
     where: { id: equipmentId },
@@ -51,6 +55,26 @@ const createRental = async (userId, data) => {
   // Prevent owner from renting own equipment
   if (equipment.ownerId === userId) {
     throw new Error("You cannot rent your own equipment.");
+  }
+
+  // Check for overlapping active, approved, or pending rentals
+  const overlappingRental = await prisma.rental.findFirst({
+    where: {
+      equipmentId,
+      status: {
+        in: ["PENDING", "APPROVED", "ACTIVE"],
+      },
+      startDate: {
+        lte: end,
+      },
+      endDate: {
+        gte: start,
+      },
+    },
+  });
+
+  if (overlappingRental) {
+    throw new Error("Equipment is already booked or requested for overlapping dates.");
   }
 
   const rentalPricePerDay = Number(equipment.rentalPricePerDay) || 0;
@@ -113,9 +137,29 @@ const createRental = async (userId, data) => {
   return rental;
 };
 
-// Get All Rentals
-const getAllRentals = async () => {
+// Get All Rentals (scoped by role)
+const getAllRentals = async (user) => {
+  let where = {};
+  if (user && user.role !== "ADMIN") {
+    if (user.role === "DONOR") {
+      // Donors only see rentals for their owned equipment
+      where = { equipment: { ownerId: user.id } };
+    } else if (user.role === "RECIPIENT") {
+      // Recipients only see their own rentals
+      where = { renterId: user.id };
+    } else if (user.role === "HOSPITAL" || user.role === "NGO") {
+      // Hospitals and NGOs see rentals they created or for equipment they own
+      where = {
+        OR: [
+          { equipment: { ownerId: user.id } },
+          { renterId: user.id },
+        ],
+      };
+    }
+  }
+
   return prisma.rental.findMany({
+    where,
     include: {
       renter: {
         select: {
@@ -145,7 +189,7 @@ const getAllRentals = async () => {
 };
 
 // Get Rental By ID
-const getRentalById = async (id) => {
+const getRentalById = async (id, user) => {
   const rental = await prisma.rental.findUnique({
     where: { id },
     include: {
@@ -176,11 +220,19 @@ const getRentalById = async (id) => {
     throw new Error("Rental not found.");
   }
 
+  if (user && user.role !== "ADMIN") {
+    const isOwner = rental.equipment.ownerId === user.id;
+    const isRenter = rental.renterId === user.id;
+    if (!isOwner && !isRenter) {
+      throw new Error("You are not authorized to view this rental.");
+    }
+  }
+
   return rental;
 };
 
 // Update Rental Status
-const updateRentalStatus = async (id, status) => {
+const updateRentalStatus = async (id, status, user) => {
   const rental = await prisma.rental.findUnique({
     where: { id },
     include: {
@@ -191,6 +243,23 @@ const updateRentalStatus = async (id, status) => {
 
   if (!rental) {
     throw new Error("Rental not found.");
+  }
+
+  if (user && user.role !== "ADMIN") {
+    const isOwner = rental.equipment.ownerId === user.id;
+    const isRenter = rental.renterId === user.id;
+
+    if (!isOwner && !isRenter) {
+      throw new Error("You are not authorized to update this rental.");
+    }
+
+    // Only owner/admin can approve, activate, reject or mark returned
+    // Renter can only cancel their own pending request
+    if (isRenter && !isOwner) {
+      if (status !== "CANCELLED") {
+        throw new Error("Renters can only cancel their pending rental requests.");
+      }
+    }
   }
 
   const updatedRental = await prisma.rental.update({

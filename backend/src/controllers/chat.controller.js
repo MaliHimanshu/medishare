@@ -3,7 +3,7 @@ const chatService = require("../services/chat.service");
 // Create or get conversation
 const getOrCreateConversation = async (req, res) => {
   try {
-    const { userId } = req.body; // The user they want to chat with
+    const userId = req.body.userId || req.body.recipientId; // The user they want to chat with
     const currentUserId = req.user.id;
 
     if (!userId) {

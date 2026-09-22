@@ -9,10 +9,12 @@ import '../../providers/equipment_provider.dart';
 
 // Models
 import '../../models/equipment_model.dart';
+import '../../models/chat_user_model.dart';
 
 // Screens
 import 'edit_equipment_screen.dart';
 import '../rental/book_rental_dialog.dart';
+import '../rental/my_rentals_screen.dart';
 
 // Shared Constants
 import '../../core/constants/app_colors.dart';
@@ -172,7 +174,8 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final user = auth.user;
-    final bool isOwner = user?.id == widget.equipment.ownerId || user?.role == 'ADMIN';
+    final role = user?.role ?? 'DONOR';
+    final bool isOwner = (role != 'RECIPIENT' && user?.id != null && user?.id == widget.equipment.ownerId) || role == 'ADMIN';
 
     Color statusColor = Colors.teal;
     if (widget.equipment.status == 'REQUESTED') {
@@ -374,34 +377,43 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
                           );
                         },
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 8),
                       
                       if (!isOwner) ...[
                         // Message Owner Button
                         IconButton.outlined(
                           icon: const Icon(Icons.forum_outlined, color: AppColors.primary),
+                          tooltip: "Message Owner",
                           onPressed: () async {
                             final chatProv = context.read<ChatProvider>();
                             try {
-                              // We use the owner ID directly; in a real app, you might want to fetch owner details
-                              // But for now, chat API gets/creates a conversation by ID
                               final conv = await chatProv.getOrCreateConversation(widget.equipment.ownerId);
                               if (context.mounted) {
                                 Navigator.push(context, MaterialPageRoute(
                                   builder: (_) => PrivateChatScreen(
                                     conversationId: conv.id,
-                                    // otherUser could be passed if we had the full user object
-                                  )
+                                    otherUser: conv.getOtherUser(user?.id ?? '') ??
+                                        ChatUser(
+                                          id: widget.equipment.ownerId,
+                                          name: widget.equipment.donor.isNotEmpty
+                                              ? widget.equipment.donor
+                                              : 'Equipment Owner',
+                                          email: '',
+                                          role: 'DONOR',
+                                        ),
+                                  ),
                                 ));
                               }
                             } catch (e) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Could not start chat: $e'))
-                              );
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Could not start chat: $e'))
+                                );
+                              }
                             }
                           },
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 8),
                       ],
                       
                       // Share Action Button
@@ -417,44 +429,105 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
                         },
                       ),
                       
-                      if (widget.equipment.status == 'AVAILABLE' && !isOwner) ...[
-                        const SizedBox(width: 12),
+                      // Owner Actions (DONOR / HOSPITAL / ADMIN)
+                      if (isOwner) ...[
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: SizedBox(
+                            height: 48,
+                            child: OutlinedButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppColors.primary,
+                                side: const BorderSide(color: AppColors.primary, width: 1.5),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                              ),
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => const MyRentalsScreen()),
+                                );
+                              },
+                              icon: const Icon(Icons.list_alt, size: 18),
+                              label: const Text(
+                                "Rentals",
+                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: SizedBox(
                             height: 48,
                             child: ElevatedButton.icon(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: widget.equipment.mode == 'RENT'
-                                    ? const Color(0xFF0284C7)
-                                    : AppColors.primary,
+                                backgroundColor: AppColors.primary,
                                 foregroundColor: Colors.white,
                                 elevation: 2,
-                                shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16)),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                               ),
                               onPressed: () {
-                                if (widget.equipment.mode == 'RENT') {
-                                  _showBookRentalDialog(context);
-                                } else {
-                                  _showRequestDialog(context);
-                                }
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => EditEquipmentScreen(equipment: widget.equipment)),
+                                );
                               },
-                              icon: Icon(
-                                widget.equipment.mode == 'RENT'
-                                    ? Icons.handshake_outlined
-                                    : Icons.send_outlined,
-                                size: 18,
-                              ),
-                              label: Text(
-                                widget.equipment.mode == 'RENT'
-                                    ? "Rent Equipment"
-                                    : "Request Equipment",
-                                style: const TextStyle(
-                                    fontSize: 14, fontWeight: FontWeight.bold),
+                              icon: const Icon(Icons.edit, size: 18),
+                              label: const Text(
+                                "Edit",
+                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                               ),
                             ),
                           ),
                         ),
+                      ] else if (widget.equipment.status == 'AVAILABLE') ...[
+                        // Non-owner role-based actions
+                        // Rent Now: RECIPIENT or HOSPITAL (if mode is RENT or BOTH)
+                        if ((role == 'RECIPIENT' || role == 'HOSPITAL') && (widget.equipment.mode == 'RENT' || widget.equipment.mode == 'BOTH')) ...[
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: SizedBox(
+                              height: 48,
+                              child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF0284C7),
+                                  foregroundColor: Colors.white,
+                                  elevation: 2,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                ),
+                                onPressed: () => _showBookRentalDialog(context),
+                                icon: const Icon(Icons.handshake_outlined, size: 18),
+                                label: const Text(
+                                  "Rent Now",
+                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                        // Request: RECIPIENT, NGO, or HOSPITAL (if mode is DONATE or BOTH)
+                        if ((role == 'RECIPIENT' || role == 'NGO' || role == 'HOSPITAL') && (widget.equipment.mode == 'DONATE' || widget.equipment.mode == 'BOTH')) ...[
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: SizedBox(
+                              height: 48,
+                              child: ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primary,
+                                  foregroundColor: Colors.white,
+                                  elevation: 2,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                ),
+                                onPressed: () => _showRequestDialog(context),
+                                icon: const Icon(Icons.send_outlined, size: 18),
+                                label: const Text(
+                                  "Request",
+                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
                     ],
                   ),

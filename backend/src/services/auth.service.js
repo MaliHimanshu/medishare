@@ -30,6 +30,9 @@ const registerUser = async (data) => {
   // Hash password
   const hashedPassword = await bcrypt.hash(data.password, 10);
 
+  const verificationStatus =
+    data.role === "NGO" || data.role === "HOSPITAL" ? "PENDING" : "VERIFIED";
+
   // Create user
   const user = await prisma.user.create({
     data: {
@@ -39,6 +42,11 @@ const registerUser = async (data) => {
       phone: data.phone,
       address: data.address,
       role: data.role,
+      organizationName: data.organizationName || null,
+      registrationNumber: data.registrationNumber || null,
+      contactPerson: data.contactPerson || null,
+      equipmentPreference: data.equipmentPreference || null,
+      verificationStatus,
     },
   });
 

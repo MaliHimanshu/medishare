@@ -16,6 +16,13 @@ const {
  */
 const create = async (req, res, next) => {
   try {
+    if (req.user.role === "RECIPIENT") {
+      return res.status(403).json({
+        success: false,
+        message: "Recipients are not authorized to create equipment listings.",
+      });
+    }
+
     const validatedData = createEquipmentSchema.parse({
       body: req.body,
     });
@@ -40,7 +47,7 @@ const create = async (req, res, next) => {
  */
 const getAll = async (req, res, next) => {
   try {
-    const equipment = await getAllEquipment();
+    const equipment = await getAllEquipment(req.query);
 
     return res.status(200).json({
       success: true,
@@ -80,6 +87,21 @@ const getById = async (req, res, next) => {
  */
 const update = async (req, res, next) => {
   try {
+    const existing = await getEquipmentById(req.params.id);
+    if (!existing) {
+      return res.status(404).json({
+        success: false,
+        message: "Equipment not found.",
+      });
+    }
+
+    if (existing.ownerId !== req.user.id && req.user.role !== "ADMIN") {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to edit this equipment.",
+      });
+    }
+
     const validatedData = updateEquipmentSchema.parse({
       body: req.body,
     });
@@ -104,6 +126,21 @@ const update = async (req, res, next) => {
  */
 const remove = async (req, res, next) => {
   try {
+    const existing = await getEquipmentById(req.params.id);
+    if (!existing) {
+      return res.status(404).json({
+        success: false,
+        message: "Equipment not found.",
+      });
+    }
+
+    if (existing.ownerId !== req.user.id && req.user.role !== "ADMIN") {
+      return res.status(403).json({
+        success: false,
+        message: "You are not authorized to delete this equipment.",
+      });
+    }
+
     await deleteEquipment(req.params.id);
 
     return res.status(200).json({

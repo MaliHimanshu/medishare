@@ -47,9 +47,36 @@ const createDonation = async (userId, data) => {
   return donation;
 };
 
-// Get All Donations
-const getAllDonations = async () => {
+// Get All Donations (scoped by role)
+const getAllDonations = async (user) => {
+  let where = {};
+  if (user && user.role !== "ADMIN") {
+    if (user.role === "DONOR") {
+      where = { donorId: user.id };
+    } else if (user.role === "HOSPITAL") {
+      where = {
+        OR: [
+          { donorId: user.id },
+          { equipment: { ownerId: user.id } },
+        ],
+      };
+    } else if (user.role === "RECIPIENT") {
+      // Recipients only see donations for equipment linked to requests they made
+      where = {
+        equipment: {
+          requests: {
+            some: {
+              requesterId: user.id,
+            },
+          },
+        },
+      };
+    }
+    // NGOs can see all donations to facilitate distribution
+  }
+
   return prisma.donation.findMany({
+    where,
     include: {
       donor: {
         select: {
@@ -67,7 +94,7 @@ const getAllDonations = async () => {
 };
 
 // Get Donation By ID
-const getDonationById = async (id) => {
+const getDonationById = async (id, user) => {
   const donation = await prisma.donation.findUnique({
     where: { id },
     include: {
@@ -86,17 +113,48 @@ const getDonationById = async (id) => {
     throw new Error("Donation not found.");
   }
 
+  if (user && user.role !== "ADMIN" && user.role !== "NGO") {
+    const isDonor = donation.donorId === user.id;
+    const isEquipmentOwner = donation.equipment && donation.equipment.ownerId === user.id;
+    if (!isDonor && !isEquipmentOwner) {
+      if (user.role === "RECIPIENT") {
+        const hasRequest = await prisma.request.findFirst({
+          where: {
+            equipmentId: donation.equipmentId,
+            requesterId: user.id,
+          },
+        });
+        if (!hasRequest) {
+          throw new Error("You are not authorized to view this donation.");
+        }
+      } else {
+        throw new Error("You are not authorized to view this donation.");
+      }
+    }
+  }
+
   return donation;
 };
 
 // Update Donation Status
-const updateDonationStatus = async (id, status) => {
+const updateDonationStatus = async (id, status, user) => {
   const donation = await prisma.donation.findUnique({
     where: { id },
+    include: {
+      equipment: true,
+    },
   });
 
   if (!donation) {
     throw new Error("Donation not found.");
+  }
+
+  if (user && user.role !== "ADMIN" && user.role !== "NGO") {
+    const isDonor = donation.donorId === user.id;
+    const isEquipmentOwner = donation.equipment && donation.equipment.ownerId === user.id;
+    if (!isDonor && !isEquipmentOwner) {
+      throw new Error("You are not authorized to update this donation.");
+    }
   }
 
   return prisma.donation.update({
@@ -106,13 +164,20 @@ const updateDonationStatus = async (id, status) => {
 };
 
 // Delete Donation
-const deleteDonation = async (id) => {
+const deleteDonation = async (id, user) => {
   const donation = await prisma.donation.findUnique({
     where: { id },
   });
 
   if (!donation) {
     throw new Error("Donation not found.");
+  }
+
+  if (user && user.role !== "ADMIN") {
+    const isDonor = donation.donorId === user.id;
+    if (!isDonor) {
+      throw new Error("You are not authorized to delete this donation.");
+    }
   }
 
   await prisma.equipment.update({

@@ -60,12 +60,16 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final _nameCtrl    = TextEditingController();
-  final _emailCtrl   = TextEditingController();
-  final _phoneCtrl   = TextEditingController();
-  final _addressCtrl = TextEditingController();
-  final _passCtrl    = TextEditingController();
-  final _confirmCtrl = TextEditingController();
+  final _nameCtrl          = TextEditingController();
+  final _emailCtrl         = TextEditingController();
+  final _phoneCtrl         = TextEditingController();
+  final _addressCtrl       = TextEditingController();
+  final _orgNameCtrl       = TextEditingController();
+  final _regNumberCtrl     = TextEditingController();
+  final _contactPersonCtrl = TextEditingController();
+  final _preferenceCtrl    = TextEditingController();
+  final _passCtrl          = TextEditingController();
+  final _confirmCtrl       = TextEditingController();
 
   String _selectedRole = 'DONOR';
 
@@ -82,6 +86,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _emailCtrl.dispose();
     _phoneCtrl.dispose();
     _addressCtrl.dispose();
+    _orgNameCtrl.dispose();
+    _regNumberCtrl.dispose();
+    _contactPersonCtrl.dispose();
+    _preferenceCtrl.dispose();
     _passCtrl.dispose();
     _confirmCtrl.dispose();
     super.dispose();
@@ -138,12 +146,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final phone = _phoneCtrl.text.trim();
     final auth = context.read<AuthProvider>();
     final success = await auth.register(
-      name:     _nameCtrl.text.trim(),
-      email:    _emailCtrl.text.trim(),
-      password: _passCtrl.text,
-      role:     _selectedRole,
-      phone:    phone,
-      address:  _addressCtrl.text.trim().isEmpty ? null : _addressCtrl.text.trim(),
+      name:                _nameCtrl.text.trim(),
+      email:               _emailCtrl.text.trim(),
+      password:            _passCtrl.text,
+      role:                _selectedRole,
+      phone:               phone,
+      address:             _addressCtrl.text.trim().isEmpty ? null : _addressCtrl.text.trim(),
+      organizationName:   _orgNameCtrl.text.trim().isEmpty ? null : _orgNameCtrl.text.trim(),
+      registrationNumber: _regNumberCtrl.text.trim().isEmpty ? null : _regNumberCtrl.text.trim(),
+      contactPerson:      _contactPersonCtrl.text.trim().isEmpty ? null : _contactPersonCtrl.text.trim(),
+      equipmentPreference:_preferenceCtrl.text.trim().isEmpty ? null : _preferenceCtrl.text.trim(),
     );
 
     if (!mounted) return;
@@ -436,13 +448,62 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
               // ── City / Address Field ──────────────────
               MsTextField(
-                label: 'City / Address (Optional)',
+                label: _selectedRole == 'DONOR'
+                    ? 'Pickup Address / Preferred Location'
+                    : _selectedRole == 'NGO'
+                        ? 'NGO Office Address'
+                        : _selectedRole == 'HOSPITAL'
+                            ? 'Hospital / Clinic Address'
+                            : 'Delivery Address / Location (Optional)',
                 hint: 'e.g. Ahmedabad, Gujarat',
                 controller: _addressCtrl,
                 prefixIcon: Icons.location_on_outlined,
                 textInputAction: TextInputAction.next,
               ),
               const SizedBox(height: 16),
+
+              // ── Role Specific Registration Fields ─────
+              if (_selectedRole == 'NGO' || _selectedRole == 'HOSPITAL') ...[
+                MsTextField(
+                  label: _selectedRole == 'NGO'
+                      ? 'NGO / Organization Name'
+                      : 'Hospital Name',
+                  hint: _selectedRole == 'NGO'
+                      ? 'e.g. Hope Health Trust'
+                      : 'e.g. City Care Hospital',
+                  controller: _orgNameCtrl,
+                  prefixIcon: Icons.business_outlined,
+                  textInputAction: TextInputAction.next,
+                ),
+                const SizedBox(height: 16),
+                MsTextField(
+                  label: _selectedRole == 'NGO'
+                      ? 'NGO Registration Number'
+                      : 'Hospital License / Reg No',
+                  hint: 'e.g. REG-2024-8891',
+                  controller: _regNumberCtrl,
+                  prefixIcon: Icons.badge_outlined,
+                  textInputAction: TextInputAction.next,
+                ),
+                const SizedBox(height: 16),
+                MsTextField(
+                  label: 'Contact Person / Coordinator',
+                  hint: 'e.g. Dr. Rajesh Sharma',
+                  controller: _contactPersonCtrl,
+                  prefixIcon: Icons.assignment_ind_outlined,
+                  textInputAction: TextInputAction.next,
+                ),
+                const SizedBox(height: 16),
+              ] else if (_selectedRole == 'RECIPIENT') ...[
+                MsTextField(
+                  label: 'Equipment Needed / Preference (Optional)',
+                  hint: 'e.g. Wheelchair, Oxygen Concentrator',
+                  controller: _preferenceCtrl,
+                  prefixIcon: Icons.medical_services_outlined,
+                  textInputAction: TextInputAction.next,
+                ),
+                const SizedBox(height: 16),
+              ],
 
               // ── Password ──────────────────────────────
               MsTextField(

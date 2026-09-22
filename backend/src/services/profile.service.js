@@ -34,6 +34,11 @@ const SAFE_USER_SELECT = {
   phone: true,
   address: true,
   role: true,
+  organizationName: true,
+  registrationNumber: true,
+  contactPerson: true,
+  equipmentPreference: true,
+  verificationStatus: true,
   profileImage: true,
   createdAt: true,
   updatedAt: true,
@@ -72,16 +77,25 @@ const getUserProfile = async (userId) => {
 // ─────────────────────────────────────────────
 
 /**
- * Updates allowed profile fields (name, phone, address) for the user.
+ * Updates allowed profile fields for the user.
  * email, password, and role are intentionally not updatable here.
  *
  * @param {string} userId - The ID of the authenticated user
- * @param {Object} data   - Validated body: { name?, phone?, address? }
+ * @param {Object} data   - Validated body: { name?, phone?, address?, ... }
  * @returns {Promise<Object>} - Updated safe user object
  */
 const updateProfile = async (userId, data) => {
   // Only pick the allowed fields — an extra safety layer beyond Zod
-  const { name, phone, address, profileImage } = data;
+  const {
+    name,
+    phone,
+    address,
+    profileImage,
+    organizationName,
+    registrationNumber,
+    contactPerson,
+    equipmentPreference,
+  } = data;
 
   const updatedUser = await prisma.user.update({
     where: { id: userId },
@@ -91,6 +105,10 @@ const updateProfile = async (userId, data) => {
       ...(phone !== undefined && { phone }),
       ...(address !== undefined && { address }),
       ...(profileImage !== undefined && { profileImage }),
+      ...(organizationName !== undefined && { organizationName }),
+      ...(registrationNumber !== undefined && { registrationNumber }),
+      ...(contactPerson !== undefined && { contactPerson }),
+      ...(equipmentPreference !== undefined && { equipmentPreference }),
     },
     select: SAFE_USER_SELECT,
   });

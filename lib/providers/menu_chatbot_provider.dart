@@ -60,6 +60,8 @@ class MenuChatbotProvider extends ChangeNotifier {
   double _currentRadiusKm = 20.0;
   double? _lastKnownLat;
   double? _lastKnownLng;
+  String _currentRole = 'DONOR';
+  String? _currentUserId;
 
   // Getters
   List<ChatMessageModel> get messages => List.unmodifiable(_messages);
@@ -68,6 +70,7 @@ class MenuChatbotProvider extends ChangeNotifier {
   double get currentRadiusKm => _currentRadiusKm;
   String get conversationSearchQuery => _conversationSearchQuery;
   ChatFilter get activeFilter => _activeFilter;
+  String get currentRole => _currentRole;
 
   List<ChatConversationModel> get filteredConversations {
     return _conversations.where((conv) {
@@ -90,6 +93,16 @@ class MenuChatbotProvider extends ChangeNotifier {
 
   MenuChatbotProvider() {
     _initMenu();
+  }
+
+  void setRole(String role, [String? userId]) {
+    final normalized = role.toUpperCase();
+    final changed = _currentRole != normalized || _currentUserId != userId;
+    _currentRole = normalized;
+    _currentUserId = userId;
+    if (changed) {
+      _initMenu();
+    }
   }
 
   void updateLanguage(String lang) {
@@ -123,30 +136,102 @@ class MenuChatbotProvider extends ChangeNotifier {
     }
   }
 
-  // ── Menu Initialization ─────────────────────────────────────────────
+  // ── Menu Initialization (Adapted by Role) ───────────────────────────
   void _initMenu() {
     _messages.clear();
-    _messages.add(
-      ChatMessageModel(
-        id: 'welcome_menu_${DateTime.now().millisecondsSinceEpoch}',
-        text: "Hi 👋 Welcome to MediShare.\nHow can I help you today?\n\n"
+    String greeting;
+    List<String> options;
+
+    switch (_currentRole) {
+      case 'DONOR':
+        greeting = "Hi 👋 Welcome to MediShare.\nHow can I help you today?\n\n"
+            "1️⃣ My Equipment\n"
+            "2️⃣ Add Equipment\n"
+            "3️⃣ Rental Requests\n"
+            "4️⃣ Donate Equipment\n"
+            "5️⃣ My Rentals";
+        options = const [
+          "1️⃣ My Equipment",
+          "2️⃣ Add Equipment",
+          "3️⃣ Rental Requests",
+          "4️⃣ Donate Equipment",
+          "5️⃣ My Rentals",
+        ];
+        break;
+
+      case 'NGO':
+        greeting = "Hi 👋 Welcome to MediShare.\nHow can I help you today?\n\n"
+            "1️⃣ View Equipment\n"
+            "2️⃣ Request Equipment\n"
+            "3️⃣ My Requests\n"
+            "4️⃣ Donations\n"
+            "5️⃣ Beneficiaries";
+        options = const [
+          "1️⃣ View Equipment",
+          "2️⃣ Request Equipment",
+          "3️⃣ My Requests",
+          "4️⃣ Donations",
+          "5️⃣ Beneficiaries",
+        ];
+        break;
+
+      case 'HOSPITAL':
+        greeting = "Hi 👋 Welcome to MediShare.\nHow can I help you today?\n\n"
+            "1️⃣ Hospital Equipment\n"
+            "2️⃣ Request Equipment\n"
+            "3️⃣ Rent Equipment\n"
+            "4️⃣ Donations\n"
+            "5️⃣ My Requests";
+        options = const [
+          "1️⃣ Hospital Equipment",
+          "2️⃣ Request Equipment",
+          "3️⃣ Rent Equipment",
+          "4️⃣ Donations",
+          "5️⃣ My Requests",
+        ];
+        break;
+
+      case 'RECIPIENT':
+        greeting = "Hi 👋 Welcome to MediShare.\nHow can I help you today?\n\n"
+            "1️⃣ View Available Equipment\n"
+            "2️⃣ Search Equipment\n"
+            "3️⃣ Rent Equipment\n"
+            "4️⃣ My Requests\n"
+            "5️⃣ My Rentals";
+        options = const [
+          "1️⃣ View Available Equipment",
+          "2️⃣ Search Equipment",
+          "3️⃣ Rent Equipment",
+          "4️⃣ My Requests",
+          "5️⃣ My Rentals",
+        ];
+        break;
+
+      default:
+        greeting = "Hi 👋 Welcome to MediShare Support.\nHow can I help you today?\n\n"
             "1️⃣ Find Available Equipment\n"
             "2️⃣ Find Nearby Hospitals\n"
             "3️⃣ My Equipment Requests\n"
             "4️⃣ Track Rental\n"
-            "5️⃣ Donation Help\n"
-            "6️⃣ Payment Help",
-        isUser: false,
-        timestamp: DateTime.now(),
-        messageType: ChatMessageType.menu,
-        options: const [
+            "5️⃣ Donation Help";
+        options = const [
           "1️⃣ Find Available Equipment",
           "2️⃣ Find Nearby Hospitals",
           "3️⃣ My Equipment Requests",
           "4️⃣ Track Rental",
           "5️⃣ Donation Help",
-          "6️⃣ Payment Help",
-        ],
+        ];
+        break;
+    }
+
+    _messages.add(
+      ChatMessageModel(
+        id: 'welcome_menu_${DateTime.now().millisecondsSinceEpoch}',
+        text: greeting,
+        isUser: false,
+        timestamp: DateTime.now(),
+        messageType: ChatMessageType.menu,
+        options: options,
       ),
     );
     notifyListeners();
@@ -244,56 +329,78 @@ class MenuChatbotProvider extends ChangeNotifier {
       return;
     }
 
-    // Option triggers (Number or keywords)
-    if (trimmed == '1' ||
-        trimmed.startsWith('1️⃣') ||
-        normalized.contains('find available equipment') ||
-        normalized.contains('equipment') ||
-        normalized.contains('items')) {
-      await handleOption1AvailableEquipment();
-    } else if (trimmed == '2' ||
-        trimmed.startsWith('2️⃣') ||
-        normalized.contains('hospital') ||
-        normalized.contains('nearby hospitals')) {
-      await handleOption2NearbyHospitals();
-    } else if (trimmed == '3' ||
-        trimmed.startsWith('3️⃣') ||
-        normalized.contains('request') ||
-        normalized.contains('my requests')) {
-      await handleOption3MyRequests();
-    } else if (trimmed == '4' ||
-        trimmed.startsWith('4️⃣') ||
-        normalized.contains('track') ||
-        normalized.contains('rental') ||
-        normalized.contains('tracking')) {
-      await handleOption4TrackRental();
-    } else if (trimmed == '5' ||
-        trimmed.startsWith('5️⃣') ||
-        normalized.contains('donate') ||
-        normalized.contains('donation')) {
-      await handleOption5DonationHelp();
-    } else if (trimmed == '6' ||
-        trimmed.startsWith('6️⃣') ||
-        normalized.contains('payment') ||
-        normalized.contains('deposit') ||
-        normalized.contains('razorpay')) {
-      await handleOption6PaymentHelp();
+    // ── Role-Specific Menu Routing ────────────────────────────────────
+    if (_currentRole == 'DONOR') {
+      if (trimmed == '1' || trimmed.startsWith('1️⃣') || normalized.contains('my equipment')) {
+        await handleDonorMyEquipment();
+      } else if (trimmed == '2' || trimmed.startsWith('2️⃣') || normalized.contains('add equipment')) {
+        await handleDonorAddEquipment();
+      } else if (trimmed == '3' || trimmed.startsWith('3️⃣') || normalized.contains('rental request')) {
+        await handleDonorRentalRequests();
+      } else if (trimmed == '4' || trimmed.startsWith('4️⃣') || normalized.contains('donate')) {
+        await handleOption5DonationHelp();
+      } else if (trimmed == '5' || trimmed.startsWith('5️⃣') || normalized.contains('rental') || normalized.contains('my rentals')) {
+        await handleOption4TrackRental();
+      } else {
+        _showMainMenu();
+      }
+    } else if (_currentRole == 'NGO') {
+      if (trimmed == '1' || trimmed.startsWith('1️⃣') || normalized.contains('view equipment') || normalized.contains('available')) {
+        await handleOption1AvailableEquipment();
+      } else if (trimmed == '2' || trimmed.startsWith('2️⃣') || normalized.contains('request equipment')) {
+        await handleNgoRequestEquipment();
+      } else if (trimmed == '3' || trimmed.startsWith('3️⃣') || normalized.contains('my requests') || normalized.contains('request')) {
+        await handleOption3MyRequests();
+      } else if (trimmed == '4' || trimmed.startsWith('4️⃣') || normalized.contains('donation')) {
+        await handleNgoDonations();
+      } else if (trimmed == '5' || trimmed.startsWith('5️⃣') || normalized.contains('beneficiar')) {
+        await handleNgoBeneficiaries();
+      } else {
+        _showMainMenu();
+      }
+    } else if (_currentRole == 'HOSPITAL') {
+      if (trimmed == '1' || trimmed.startsWith('1️⃣') || normalized.contains('hospital equipment') || normalized.contains('my equipment')) {
+        await handleHospitalEquipment();
+      } else if (trimmed == '2' || trimmed.startsWith('2️⃣') || normalized.contains('request equipment')) {
+        await handleHospitalRequestEquipment();
+      } else if (trimmed == '3' || trimmed.startsWith('3️⃣') || normalized.contains('rent equipment') || normalized.contains('rent')) {
+        await handleHospitalRentEquipment();
+      } else if (trimmed == '4' || trimmed.startsWith('4️⃣') || normalized.contains('donation')) {
+        await handleNgoDonations();
+      } else if (trimmed == '5' || trimmed.startsWith('5️⃣') || normalized.contains('my requests') || normalized.contains('request')) {
+        await handleOption3MyRequests();
+      } else {
+        _showMainMenu();
+      }
+    } else if (_currentRole == 'RECIPIENT') {
+      if (trimmed == '1' || trimmed.startsWith('1️⃣') || normalized.contains('view available') || normalized.contains('available')) {
+        await handleOption1AvailableEquipment();
+      } else if (trimmed == '2' || trimmed.startsWith('2️⃣') || normalized.contains('search')) {
+        await handleRecipientSearchEquipment();
+      } else if (trimmed == '3' || trimmed.startsWith('3️⃣') || normalized.contains('rent')) {
+        await handleRecipientRentEquipment();
+      } else if (trimmed == '4' || trimmed.startsWith('4️⃣') || normalized.contains('my requests') || normalized.contains('request')) {
+        await handleOption3MyRequests();
+      } else if (trimmed == '5' || trimmed.startsWith('5️⃣') || normalized.contains('rental') || normalized.contains('my rentals')) {
+        await handleOption4TrackRental();
+      } else {
+        _showMainMenu();
+      }
     } else {
-      // Fallback helpful guidance with options
-      _addBotMessage(
-        "I can help you with medical equipment, nearby hospitals, rental tracking, requests, donations, or payments.\n\n"
-        "Please choose an option below or type a number from 1 to 6:",
-        messageType: ChatMessageType.menu,
-        options: const [
-          "1️⃣ Find Available Equipment",
-          "2️⃣ Find Nearby Hospitals",
-          "3️⃣ My Equipment Requests",
-          "4️⃣ Track Rental",
-          "5️⃣ Donation Help",
-          "6️⃣ Payment Help",
-        ],
-        showMainMenuButton: true,
-      );
+      // Default (ADMIN / other)
+      if (trimmed == '1' || trimmed.startsWith('1️⃣') || normalized.contains('equipment')) {
+        await handleOption1AvailableEquipment();
+      } else if (trimmed == '2' || trimmed.startsWith('2️⃣') || normalized.contains('hospital')) {
+        await handleOption2NearbyHospitals();
+      } else if (trimmed == '3' || trimmed.startsWith('3️⃣') || normalized.contains('request')) {
+        await handleOption3MyRequests();
+      } else if (trimmed == '4' || trimmed.startsWith('4️⃣') || normalized.contains('rental') || normalized.contains('track')) {
+        await handleOption4TrackRental();
+      } else if (trimmed == '5' || trimmed.startsWith('5️⃣') || normalized.contains('donate')) {
+        await handleOption5DonationHelp();
+      } else {
+        _showMainMenu();
+      }
     }
 
     _isTyping = false;
@@ -301,23 +408,95 @@ class MenuChatbotProvider extends ChangeNotifier {
   }
 
   void _showMainMenu() {
+    String greeting;
+    List<String> options;
+
+    switch (_currentRole) {
+      case 'DONOR':
+        greeting = "Hi 👋 Welcome to MediShare.\nHow can I help you today?\n\n"
+            "1️⃣ My Equipment\n"
+            "2️⃣ Add Equipment\n"
+            "3️⃣ Rental Requests\n"
+            "4️⃣ Donate Equipment\n"
+            "5️⃣ My Rentals";
+        options = const [
+          "1️⃣ My Equipment",
+          "2️⃣ Add Equipment",
+          "3️⃣ Rental Requests",
+          "4️⃣ Donate Equipment",
+          "5️⃣ My Rentals",
+        ];
+        break;
+
+      case 'NGO':
+        greeting = "Hi 👋 Welcome to MediShare.\nHow can I help you today?\n\n"
+            "1️⃣ View Equipment\n"
+            "2️⃣ Request Equipment\n"
+            "3️⃣ My Requests\n"
+            "4️⃣ Donations\n"
+            "5️⃣ Beneficiaries";
+        options = const [
+          "1️⃣ View Equipment",
+          "2️⃣ Request Equipment",
+          "3️⃣ My Requests",
+          "4️⃣ Donations",
+          "5️⃣ Beneficiaries",
+        ];
+        break;
+
+      case 'HOSPITAL':
+        greeting = "Hi 👋 Welcome to MediShare.\nHow can I help you today?\n\n"
+            "1️⃣ Hospital Equipment\n"
+            "2️⃣ Request Equipment\n"
+            "3️⃣ Rent Equipment\n"
+            "4️⃣ Donations\n"
+            "5️⃣ My Requests";
+        options = const [
+          "1️⃣ Hospital Equipment",
+          "2️⃣ Request Equipment",
+          "3️⃣ Rent Equipment",
+          "4️⃣ Donations",
+          "5️⃣ My Requests",
+        ];
+        break;
+
+      case 'RECIPIENT':
+        greeting = "Hi 👋 Welcome to MediShare.\nHow can I help you today?\n\n"
+            "1️⃣ View Available Equipment\n"
+            "2️⃣ Search Equipment\n"
+            "3️⃣ Rent Equipment\n"
+            "4️⃣ My Requests\n"
+            "5️⃣ My Rentals";
+        options = const [
+          "1️⃣ View Available Equipment",
+          "2️⃣ Search Equipment",
+          "3️⃣ Rent Equipment",
+          "4️⃣ My Requests",
+          "5️⃣ My Rentals",
+        ];
+        break;
+
+      default:
+        greeting = "Hi 👋 Welcome to MediShare Support.\nHow can I help you today?\n\n"
+            "1️⃣ Find Available Equipment\n"
+            "2️⃣ Find Nearby Hospitals\n"
+            "3️⃣ My Equipment Requests\n"
+            "4️⃣ Track Rental\n"
+            "5️⃣ Donation Help";
+        options = const [
+          "1️⃣ Find Available Equipment",
+          "2️⃣ Find Nearby Hospitals",
+          "3️⃣ My Equipment Requests",
+          "4️⃣ Track Rental",
+          "5️⃣ Donation Help",
+        ];
+        break;
+    }
+
     _addBotMessage(
-      "Hi 👋 Welcome to MediShare.\nHow can I help you today?\n\n"
-      "1️⃣ Find Available Equipment\n"
-      "2️⃣ Find Nearby Hospitals\n"
-      "3️⃣ My Equipment Requests\n"
-      "4️⃣ Track Rental\n"
-      "5️⃣ Donation Help\n"
-      "6️⃣ Payment Help",
+      greeting,
       messageType: ChatMessageType.menu,
-      options: const [
-        "1️⃣ Find Available Equipment",
-        "2️⃣ Find Nearby Hospitals",
-        "3️⃣ My Equipment Requests",
-        "4️⃣ Track Rental",
-        "5️⃣ Donation Help",
-        "6️⃣ Payment Help",
-      ],
+      options: options,
       showMainMenuButton: false,
     );
   }
@@ -756,6 +935,225 @@ class MenuChatbotProvider extends ChangeNotifier {
       notifyListeners();
       return false;
     }
+  }
+
+  // ── ROLE-SPECIFIC CHATBOT HANDLERS ─────────────────────────────────
+
+  // DONOR 1: My Equipment
+  Future<void> handleDonorMyEquipment() async {
+    try {
+      final response = await _dio.get(ApiEndpoints.equipment);
+      if (response.data != null && response.data['success'] == true) {
+        final listData = response.data['data'] as List<dynamic>? ?? [];
+        final items = listData
+            .map((item) => EquipmentModel.fromJson(item as Map<String, dynamic>))
+            .where((e) => _currentUserId == null || e.ownerId == _currentUserId)
+            .toList();
+
+        if (items.isEmpty) {
+          _addBotMessage(
+            "📦 You haven't listed any equipment yet.\n\nYou can list medical equipment to donate or rent to those in need.",
+            options: const ["Open Add Equipment Form", "View Available Equipment"],
+            showMainMenuButton: true,
+          );
+        } else {
+          _addBotMessage(
+            "📦 Your Listed Equipment (${items.length} items):",
+            messageType: ChatMessageType.equipmentList,
+            equipmentList: items,
+            options: const ["View My Equipment", "Open Add Equipment Form"],
+            showMainMenuButton: true,
+          );
+        }
+      } else {
+        _addBotMessage(
+          "⚠️ Unable to load your equipment listings. Please try again.",
+          isError: true,
+          showMainMenuButton: true,
+        );
+      }
+    } catch (e) {
+      _addBotMessage(
+        "⚠️ Could not retrieve your equipment list.",
+        isError: true,
+        showMainMenuButton: true,
+      );
+    }
+  }
+
+  // DONOR 2: Add Equipment
+  Future<void> handleDonorAddEquipment() async {
+    _addBotMessage(
+      "➕ List Medical Equipment\n\n"
+      "1. Enter equipment name, category, and condition.\n"
+      "2. Choose listing mode: DONATE (free for patients/NGOs) or RENT (daily rate + refundable deposit).\n"
+      "3. Set item location and upload photos.\n"
+      "4. Publish to reach patients and hospitals.",
+      options: const ["Open Add Equipment Form", "View My Equipment"],
+      showMainMenuButton: true,
+    );
+  }
+
+  // DONOR 3: Rental Requests
+  Future<void> handleDonorRentalRequests() async {
+    try {
+      final response = await _dio.get(ApiEndpoints.rental);
+      if (response.data != null && response.data['success'] == true) {
+        final listData = response.data['data'] as List<dynamic>? ?? [];
+        final rentals = listData
+            .map((item) => RentalModel.fromJson(item as Map<String, dynamic>))
+            .toList();
+
+        if (rentals.isEmpty) {
+          _addBotMessage(
+            "📋 You have no incoming rental requests for your equipment at this time.",
+            options: const ["View My Equipment", "Open Add Equipment Form"],
+            showMainMenuButton: true,
+          );
+        } else {
+          String msg = "📋 Incoming Rental Requests (${rentals.length}):\n\n";
+          for (final r in rentals.take(4)) {
+            final equipName = r.equipment?.name ?? 'Equipment Item';
+            final renter = r.renterName.isNotEmpty ? r.renterName : 'User';
+            msg += "• $equipName\n  Renter: $renter\n  Status: [${r.status}]\n  Duration: ${r.startDate.substring(0, 10)} to ${r.endDate.substring(0, 10)}\n\n";
+          }
+          _addBotMessage(
+            msg.trim(),
+            messageType: ChatMessageType.trackingList,
+            options: const ["Open Rental Requests", "View My Equipment"],
+            showMainMenuButton: true,
+          );
+        }
+      } else {
+        _addBotMessage(
+          "⚠️ Unable to fetch rental requests at this moment.",
+          isError: true,
+          showMainMenuButton: true,
+        );
+      }
+    } catch (e) {
+      _addBotMessage(
+        "⚠️ Could not load rental requests.",
+        isError: true,
+        showMainMenuButton: true,
+      );
+    }
+  }
+
+  // NGO 2: Request Equipment
+  Future<void> handleNgoRequestEquipment() async {
+    _addBotMessage(
+      "📋 Request Equipment for Beneficiaries\n\n"
+      "Browse our network of donated and available medical equipment and submit a request on behalf of patients or clinics in your service.",
+      options: const ["Browse Equipment to Request", "View Requests"],
+      showMainMenuButton: true,
+    );
+  }
+
+  // NGO 4: Donations
+  Future<void> handleNgoDonations() async {
+    try {
+      final response = await _dio.get(ApiEndpoints.donation);
+      if (response.data != null && response.data['success'] == true) {
+        final listData = response.data['data'] as List<dynamic>? ?? [];
+        if (listData.isEmpty) {
+          _addBotMessage(
+            "🎁 No donation records found at this time. You can request equipment directly for your beneficiaries.",
+            options: const ["Browse Equipment to Request", "View Requests"],
+            showMainMenuButton: true,
+          );
+        } else {
+          String msg = "🎁 Community Healthcare Donations (${listData.length} active):\n\n";
+          for (final d in listData.take(3)) {
+            final name = d['equipment']?['name'] ?? 'Medical Item';
+            final donor = d['donor']?['name'] ?? 'Verified Donor';
+            final status = d['status'] ?? 'PENDING';
+            msg += "• $name\n  Donor: $donor\n  Status: [$status]\n\n";
+          }
+          _addBotMessage(
+            msg.trim(),
+            options: const ["View Donations", "Browse Equipment to Request"],
+            showMainMenuButton: true,
+          );
+        }
+      } else {
+        _addBotMessage(
+          "⚠️ Unable to load donations at this moment.",
+          isError: true,
+          showMainMenuButton: true,
+        );
+      }
+    } catch (e) {
+      _addBotMessage(
+        "⚠️ Error retrieving donation information.",
+        isError: true,
+        showMainMenuButton: true,
+      );
+    }
+  }
+
+  // NGO 5: Beneficiaries
+  Future<void> handleNgoBeneficiaries() async {
+    _addBotMessage(
+      "🤝 Beneficiary Services & Tracking\n\n"
+      "• Request medical items and assign them to verified underprivileged beneficiaries.\n"
+      "• Track equipment fulfillment to ensure it reaches those who need it most.\n"
+      "• Access partner hospital coordination.",
+      options: const ["Browse Equipment to Request", "View Requests"],
+      showMainMenuButton: true,
+    );
+  }
+
+  // HOSPITAL 1: Hospital Equipment
+  Future<void> handleHospitalEquipment() async {
+    await handleDonorMyEquipment();
+  }
+
+  // HOSPITAL 2: Request Equipment
+  Future<void> handleHospitalRequestEquipment() async {
+    _addBotMessage(
+      "🏥 Hospital Equipment Requests & Coordination\n\n"
+      "Partner hospitals can request surplus ventilators, oxygen cylinders, ICU beds, or monitors for surge capacity.\n\n"
+      "Browse available listings or check your active requests.",
+      options: const ["Browse Equipment to Request", "View Requests"],
+      showMainMenuButton: true,
+    );
+  }
+
+  // HOSPITAL 3: Rent Equipment
+  Future<void> handleHospitalRentEquipment() async {
+    _addBotMessage(
+      "🏥 Equipment Rental for Medical Facilities\n\n"
+      "Rent certified medical devices on daily or weekly terms from verified healthcare suppliers.\n"
+      "Includes instant invoice generation and maintenance tracking.",
+      options: const ["View Equipment to Rent", "Open Rentals"],
+      showMainMenuButton: true,
+    );
+  }
+
+  // RECIPIENT 2: Search Equipment
+  Future<void> handleRecipientSearchEquipment() async {
+    _addBotMessage(
+      "🔍 Search Medical Equipment\n\n"
+      "Find ICU equipment, wheelchairs, oxygen concentrators, hospital beds, and patient monitors.\n"
+      "Filter by location, category, or rental mode.",
+      options: const ["Open Search Screen", "View Available Equipment"],
+      showMainMenuButton: true,
+    );
+  }
+
+  // RECIPIENT 3: Rent Equipment
+  Future<void> handleRecipientRentEquipment() async {
+    _addBotMessage(
+      "🤝 Rent Medical Equipment\n\n"
+      "• Browse items marked for rent\n"
+      "• Select rental start and return dates\n"
+      "• Securely pay deposit & per-day rental fee via Razorpay\n"
+      "• Live GPS delivery tracking once dispatched\n"
+      "• 100% deposit refunded upon return in intact condition.",
+      options: const ["View Equipment to Rent", "Open Rentals"],
+      showMainMenuButton: true,
+    );
   }
 
   // ── Delete a single message from state ──────────────────────────────

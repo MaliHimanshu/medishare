@@ -69,17 +69,25 @@ class AuthProvider extends ChangeNotifier {
     required String role,
     String? phone,
     String? address,
+    String? organizationName,
+    String? registrationNumber,
+    String? contactPerson,
+    String? equipmentPreference,
   }) async {
     _setStatus(AuthStatus.loading);
     _errorMessage = null;
     try {
       final result = await _authService.register(
-        name:     name,
-        email:    email,
-        password: password,
-        role:     role,
-        phone:    phone,
-        address:  address,
+        name:                 name,
+        email:                email,
+        password:             password,
+        role:                 role,
+        phone:                phone,
+        address:              address,
+        organizationName:    organizationName,
+        registrationNumber:  registrationNumber,
+        contactPerson:       contactPerson,
+        equipmentPreference: equipmentPreference,
       );
       _user = result.user;
       _setStatus(AuthStatus.authenticated);

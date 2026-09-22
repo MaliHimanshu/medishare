@@ -43,6 +43,10 @@ class AuthService {
     required String role,
     String? phone,
     String? address,
+    String? organizationName,
+    String? registrationNumber,
+    String? contactPerson,
+    String? equipmentPreference,
   }) async {
     try {
       final payload = <String, dynamic>{
@@ -52,6 +56,10 @@ class AuthService {
         'role':     role,
         if (phone != null && phone.isNotEmpty)   'phone':   phone,
         if (address != null && address.isNotEmpty) 'address': address,
+        if (organizationName != null && organizationName.isNotEmpty) 'organizationName': organizationName,
+        if (registrationNumber != null && registrationNumber.isNotEmpty) 'registrationNumber': registrationNumber,
+        if (contactPerson != null && contactPerson.isNotEmpty) 'contactPerson': contactPerson,
+        if (equipmentPreference != null && equipmentPreference.isNotEmpty) 'equipmentPreference': equipmentPreference,
       };
 
       final response = await _dio.post(

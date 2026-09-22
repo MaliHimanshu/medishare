@@ -30,7 +30,7 @@ const getAllRequests = async (req, res) => {
   try {
     requestQuerySchema.parse(req.query);
 
-    const requests = await requestService.getAllRequests();
+    const requests = await requestService.getAllRequests(req.user);
 
     return res.status(200).json({
       success: true,
@@ -48,7 +48,7 @@ const getAllRequests = async (req, res) => {
 // Get Request By ID
 const getRequestById = async (req, res) => {
   try {
-    const request = await requestService.getRequestById(req.params.id);
+    const request = await requestService.getRequestById(req.params.id, req.user);
 
     return res.status(200).json({
       success: true,
@@ -67,7 +67,11 @@ const updateRequestStatus = async (req, res) => {
   try {
     const { status } = statusUpdateSchema.parse(req.body);
 
-    const request = await requestService.updateRequestStatus(req.params.id, status);
+    const request = await requestService.updateRequestStatus(
+      req.params.id,
+      status,
+      req.user
+    );
 
     return res.status(200).json({
       success: true,
@@ -85,7 +89,7 @@ const updateRequestStatus = async (req, res) => {
 // Delete Request
 const deleteRequest = async (req, res) => {
   try {
-    const result = await requestService.deleteRequest(req.params.id);
+    const result = await requestService.deleteRequest(req.params.id, req.user);
 
     return res.status(200).json(result);
   } catch (error) {

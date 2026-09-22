@@ -4,9 +4,11 @@ const prisma = require("../config/prisma");
  * Create Equipment
  */
 const createEquipment = async (userId, data) => {
+  const { location, ...rest } = data;
   return await prisma.equipment.create({
     data: {
-      ...data,
+      ...rest,
+      address: rest.address || location || null,
       ownerId: userId,
     },
     include: {
@@ -14,7 +16,6 @@ const createEquipment = async (userId, data) => {
         select: {
           id: true,
           name: true,
-          email: true,
           role: true,
         },
       },
@@ -25,14 +26,44 @@ const createEquipment = async (userId, data) => {
 /**
  * Get All Equipment
  */
-const getAllEquipment = async () => {
+const getAllEquipment = async (filters = {}) => {
+  const { search, category, status, mode, condition, location } = filters;
+  const where = {};
+
+  if (status && status !== "ALL" && status !== "All") {
+    where.status = status;
+  }
+  if (category && category !== "ALL" && category !== "All") {
+    where.category = { equals: category, mode: "insensitive" };
+  }
+  if (mode && mode !== "ALL" && mode !== "All") {
+    where.mode = mode;
+  }
+  if (condition && condition !== "ALL" && condition !== "All") {
+    where.condition = condition;
+  }
+  if (location && location.trim()) {
+    where.address = { contains: location.trim(), mode: "insensitive" };
+  }
+  if (search && search.trim()) {
+    const s = search.trim();
+    where.OR = [
+      { name: { contains: s, mode: "insensitive" } },
+      { category: { contains: s, mode: "insensitive" } },
+      { description: { contains: s, mode: "insensitive" } },
+      { address: { contains: s, mode: "insensitive" } },
+      { manufacturer: { contains: s, mode: "insensitive" } },
+    ];
+  }
+
   return await prisma.equipment.findMany({
+    where,
     include: {
       owner: {
         select: {
           id: true,
           name: true,
-          email: true,
+          role: true,
         },
       },
     },
@@ -55,7 +86,7 @@ const getEquipmentById = async (id) => {
         select: {
           id: true,
           name: true,
-          email: true,
+          role: true,
         },
       },
     },
@@ -66,17 +97,21 @@ const getEquipmentById = async (id) => {
  * Update Equipment
  */
 const updateEquipment = async (id, data) => {
+  const { location, ...rest } = data;
   return await prisma.equipment.update({
     where: {
       id,
     },
-    data,
+    data: {
+      ...rest,
+      ...(location !== undefined && { address: location }),
+    },
     include: {
       owner: {
         select: {
           id: true,
           name: true,
-          email: true,
+          role: true,
         },
       },
     },
