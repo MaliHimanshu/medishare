@@ -85,11 +85,13 @@ const login = async (req, res) => {
 const sendOtpController = async (req, res) => {
   try {
     const data = otpSendSchema.parse(req.body);
-    await sendOtp(data.phone);
+    const destination = data.phone || data.email || data.target;
+    const type = data.type || (data.email || (destination && destination.includes("@")) ? "email" : "phone");
+    const result = await sendOtp(destination, type);
 
     return res.status(200).json({
       success: true,
-      message: "OTP sent successfully",
+      message: result.message || "OTP sent successfully",
     });
   } catch (error) {
     return res.status(400).json({
@@ -106,7 +108,9 @@ const sendOtpController = async (req, res) => {
 const verifyOtpController = async (req, res) => {
   try {
     const data = otpVerifySchema.parse(req.body);
-    const result = await verifyOtp(data.phone, data.otp);
+    const destination = data.phone || data.email || data.target;
+    const type = data.type || (data.email || (destination && destination.includes("@")) ? "email" : "phone");
+    const result = await verifyOtp(destination, data.otp, type);
 
     if (!result.success) {
       return res.status(400).json({
@@ -117,7 +121,7 @@ const verifyOtpController = async (req, res) => {
 
     const responsePayload = {
       success: true,
-      message: "Phone number verified successfully",
+      message: result.message || "Verified successfully",
     };
 
     if (result.token) {

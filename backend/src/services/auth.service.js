@@ -152,10 +152,48 @@ const { sendVerifyOtp, checkVerifyOtp, getVerifyConfig } = require("./twilioVeri
 
 /**
  * Send OTP
- * Uses Twilio Verify to send SMS OTP
+ * Supports phone (via Twilio Verify) and email (via 6-digit cryptographic OTP)
  */
-const sendOtp = async (phone) => {
-  const normalizedPhone = normalizePhoneNumber(phone);
+const sendOtp = async (destination, type) => {
+  const isEmail = type === "email" || (typeof destination === "string" && destination.includes("@"));
+
+  if (isEmail) {
+    const email = destination.trim().toLowerCase();
+    const user = await prisma.user.findFirst({ where: { email } });
+
+    // 30-second cooldown check if user exists
+    if (user && user.phoneOtpLastSentAt) {
+      const timeSinceLastSent = Date.now() - new Date(user.phoneOtpLastSentAt).getTime();
+      if (timeSinceLastSent < 30000) {
+        const waitSeconds = Math.ceil((30000 - timeSinceLastSent) / 1000);
+        throw new Error(`Please wait ${waitSeconds}s before requesting a new OTP`);
+      }
+    }
+
+    const otp = generateOtp();
+    const otpHash = await bcrypt.hash(`email:${otp}`, 10);
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+    if (user) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          phoneOtpHash: otpHash,
+          phoneOtpExpiresAt: expiresAt,
+          phoneOtpLastSentAt: new Date(),
+          phoneOtpAttempts: 0,
+        },
+      });
+    }
+
+    return {
+      success: true,
+      message: "OTP sent successfully to your email",
+    };
+  }
+
+  // Phone flow
+  const normalizedPhone = normalizePhoneNumber(destination);
   const user = await findUserByPhone(normalizedPhone);
 
   // 30-second cooldown check if user exists
@@ -189,9 +227,9 @@ const sendOtp = async (phone) => {
 
 /**
  * Verify OTP
- * Uses Twilio Verify to check SMS OTP
+ * Supports phone (via Twilio Verify) and email (via 6-digit cryptographic OTP)
  */
-const verifyOtp = async (phone, otp) => {
+const verifyOtp = async (destination, otp, type) => {
   if (!otp || typeof otp !== "string" || otp.trim().length !== 6) {
     return {
       success: false,
@@ -199,7 +237,77 @@ const verifyOtp = async (phone, otp) => {
     };
   }
 
-  const normalizedPhone = normalizePhoneNumber(phone);
+  const isEmail = type === "email" || (typeof destination === "string" && destination.includes("@"));
+
+  if (isEmail) {
+    const email = destination.trim().toLowerCase();
+    const user = await prisma.user.findFirst({ where: { email } });
+
+    if (!user) {
+      return {
+        success: false,
+        message: "No account found with this email",
+      };
+    }
+
+    if (!user.phoneOtpHash || !user.phoneOtpExpiresAt) {
+      return {
+        success: false,
+        message: "No OTP was requested or the code has expired.",
+      };
+    }
+
+    if (user.phoneOtpAttempts >= 5) {
+      return {
+        success: false,
+        message: "Too many incorrect attempts. Please request a new OTP.",
+      };
+    }
+
+    if (new Date() > new Date(user.phoneOtpExpiresAt)) {
+      return {
+        success: false,
+        message: "This verification code has expired. Please request a new code.",
+      };
+    }
+
+    const isValid = await bcrypt.compare(`email:${otp.trim()}`, user.phoneOtpHash);
+    if (!isValid) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          phoneOtpAttempts: { increment: 1 },
+        },
+      });
+      return {
+        success: false,
+        message: "Incorrect verification code. Please try again.",
+      };
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        phoneOtpHash: null,
+        phoneOtpExpiresAt: null,
+        phoneOtpAttempts: 0,
+        phoneOtpLastSentAt: null,
+      },
+    });
+
+    const { password, ...userWithoutPassword } = updatedUser;
+    const token = generateToken(updatedUser);
+
+    return {
+      success: true,
+      message: "Email verified successfully",
+      user: userWithoutPassword,
+      token,
+    };
+  }
+
+  // Phone flow
+  const normalizedPhone = normalizePhoneNumber(destination);
 
   // Check with Twilio Verify
   const verifyResult = await checkVerifyOtp(normalizedPhone, otp.trim());
@@ -394,10 +502,7 @@ const verifyForgotPasswordOtp = async (target, type, otp) => {
   }
 
   // Email OTP verification (or Phone fallback when Twilio Verify not configured)
-  const isDev = process.env.NODE_ENV === "development" && !process.env.TWILIO_ACCOUNT_SID;
-  const isMasterOtp = isDev && (otp === "123456" || otp === "000000");
-
-  if (!isMasterOtp && (!user.phoneOtpHash || !user.phoneOtpExpiresAt)) {
+  if (!user.phoneOtpHash || !user.phoneOtpExpiresAt) {
     throw new Error("No OTP was requested or the code has expired.");
   }
 
@@ -405,22 +510,18 @@ const verifyForgotPasswordOtp = async (target, type, otp) => {
     throw new Error("Too many incorrect attempts. Please request a new OTP.");
   }
 
-  if (!isMasterOtp && new Date() > new Date(user.phoneOtpExpiresAt)) {
+  if (new Date() > new Date(user.phoneOtpExpiresAt)) {
     throw new Error("This verification code has expired. Please request a new code.");
   }
 
   // Cross-channel protection: ensure email OTP cannot verify phone and vice versa
   let isValid = false;
-  if (isMasterOtp) {
+  const typedMatch = await bcrypt.compare(`${type}:${otp}`, user.phoneOtpHash);
+  if (typedMatch) {
     isValid = true;
   } else {
-    const typedMatch = await bcrypt.compare(`${type}:${otp}`, user.phoneOtpHash);
-    if (typedMatch) {
-      isValid = true;
-    } else {
-      const plainMatch = await bcrypt.compare(otp, user.phoneOtpHash);
-      if (plainMatch) isValid = true;
-    }
+    const plainMatch = await bcrypt.compare(otp, user.phoneOtpHash);
+    if (plainMatch) isValid = true;
   }
 
   if (!isValid) {

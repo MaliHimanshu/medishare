@@ -55,12 +55,7 @@ const getTwilioClient = () => {
 const sendSms = async (to, body) => {
   const config = getTwilioConfig();
   if (!config.isConfigured) {
-    console.log("\n========================================================");
-    console.log(`📱 [DEV OTP] Twilio not configured in .env`);
-    console.log(`   Destination : ${to}`);
-    console.log(`   Message     : ${body}`);
-    console.log(`   💡 Use test OTP: 123456 to verify immediately`);
-    console.log("========================================================\n");
+    console.log(`[SMS Service] Twilio not configured - SMS delivery bypassed for ${to}`);
     return {
       success: true,
       messageSid: "DEV_MOCK_SID",

@@ -56,20 +56,32 @@ const loginSchema = z.object({
     .max(128, "Password must be at most 128 characters"),
 });
 
-const otpSendSchema = z.object({
-  phone: z
-    .string({ required_error: "Phone is required" })
-    .trim(),
-});
+const otpSendSchema = z
+  .object({
+    phone: z.string().trim().optional(),
+    email: z.string().trim().toLowerCase().optional(),
+    target: z.string().trim().optional(),
+    type: z.enum(["phone", "email"]).optional(),
+  })
+  .refine((data) => data.phone || data.email || data.target, {
+    message: "Phone or email is required",
+    path: ["phone"],
+  });
 
-const otpVerifySchema = z.object({
-  phone: z
-    .string({ required_error: "Phone is required" })
-    .trim(),
-  otp: z
-    .string({ required_error: "OTP is required" })
-    .length(6, "OTP must be exactly 6 digits"),
-});
+const otpVerifySchema = z
+  .object({
+    phone: z.string().trim().optional(),
+    email: z.string().trim().toLowerCase().optional(),
+    target: z.string().trim().optional(),
+    type: z.enum(["phone", "email"]).optional(),
+    otp: z
+      .string({ required_error: "OTP is required" })
+      .length(6, "OTP must be exactly 6 digits"),
+  })
+  .refine((data) => data.phone || data.email || data.target, {
+    message: "Phone or email is required",
+    path: ["phone"],
+  });
 
 const forgotPasswordSendSchema = z.object({
   target: z
