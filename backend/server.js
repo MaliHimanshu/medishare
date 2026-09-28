@@ -1,19 +1,12 @@
 require("dotenv").config();
 
-const http = require("http");
 const app = require("./src/app");
 const { initSocket } = require("./src/socket");
 
 const PORT = process.env.PORT || 5000;
 
-// Create HTTP server
-const server = http.createServer(app);
-
-// Initialize Socket.io
-const io = initSocket(server, app);
-app.set("io", io);
-
-server.listen(PORT, "0.0.0.0", () => {
+const server = app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server running on port ${PORT}`);
   console.log("─────────────────────────────────────────");
   console.log("🏥 MediShare Backend Server Started");
   console.log("─────────────────────────────────────────");
@@ -24,3 +17,7 @@ server.listen(PORT, "0.0.0.0", () => {
   console.log(`🔌 WebSockets  : Enabled`);
   console.log("─────────────────────────────────────────");
 });
+
+// Initialize Socket.io
+const io = initSocket(server, app);
+app.set("io", io);

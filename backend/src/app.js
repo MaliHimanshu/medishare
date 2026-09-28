@@ -72,9 +72,17 @@ app.use("/api/rental", rentalRoutes);
 app.use("/api/tracking", trackingRoutes);
 app.use("/api/chat", chatRoutes);
 
-// ── Health Check (for Railway / Docker) ────────────────────────────
+// ── Health Checks (for Render / Railway / Docker) ────────────────────────────
 app.get("/api/health", (req, res) => {
   res.status(200).json({ status: "ok", service: "MediShare API", timestamp: new Date().toISOString() });
+});
+
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok", service: "MediShare API", timestamp: new Date().toISOString() });
+});
+
+app.get("/", (req, res) => {
+  res.status(200).json({ status: "ok", message: "MediShare Backend API is running", docs: "/api/docs" });
 });
 
 module.exports = app;
