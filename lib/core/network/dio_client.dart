@@ -26,9 +26,9 @@ class DioClient {
     final dio = Dio(
       BaseOptions(
         baseUrl: ApiEndpoints.baseUrl,
-        connectTimeout: const Duration(seconds: 60),
-        receiveTimeout: const Duration(seconds: 60),
-        sendTimeout: const Duration(seconds: 60),
+        connectTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 20),
+        sendTimeout: const Duration(seconds: 15),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
@@ -82,10 +82,10 @@ class DioClient {
     if (e.type == DioExceptionType.connectionTimeout ||
         e.type == DioExceptionType.receiveTimeout ||
         e.type == DioExceptionType.sendTimeout) {
-      return 'Server is spinning up. Please wait a moment and try again.';
+      return 'Request timed out. Please check your connection and try again.';
     }
     if (e.type == DioExceptionType.connectionError) {
-      return AppStrings.networkError;
+      return 'Cannot reach the server. Please check your internet or verify backend is running.';
     }
     final data = e.response?.data;
     if (data is Map) {
@@ -103,15 +103,14 @@ class DioClient {
         return firstErr.toString();
       }
     }
+    if (e.response?.statusCode != null) {
+      return 'Server returned error (${e.response!.statusCode}). Please try again.';
+    }
     return AppStrings.genericError;
   }
 
   static void debugLog(String message) {
-    // Only log in debug mode
-    assert(() {
-      // ignore: avoid_print
-      print('[DioClient] $message');
-      return true;
-    }());
+    // ignore: avoid_print
+    print('[DioClient] $message');
   }
 }

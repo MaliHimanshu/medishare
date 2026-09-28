@@ -13,13 +13,19 @@ class AuthProvider extends ChangeNotifier {
   AuthStatus _status = AuthStatus.initial;
   UserModel? _user;
   String?    _errorMessage;
+  bool       _isOtpSending = false;
+  bool       _isOtpVerifying = false;
+  bool       _isPasswordResetting = false;
 
   // ── Getters ───────────────────────────────────────────
-  AuthStatus get status         => _status;
-  UserModel? get user           => _user;
-  String?    get errorMessage   => _errorMessage;
-  bool       get isAuthenticated => _status == AuthStatus.authenticated;
-  bool       get isLoading       => _status == AuthStatus.loading;
+  AuthStatus get status             => _status;
+  UserModel? get user               => _user;
+  String?    get errorMessage       => _errorMessage;
+  bool       get isAuthenticated    => _status == AuthStatus.authenticated;
+  bool       get isLoading          => _status == AuthStatus.loading;
+  bool       get isOtpSending       => _isOtpSending;
+  bool       get isOtpVerifying     => _isOtpVerifying;
+  bool       get isPasswordResetting=> _isPasswordResetting;
 
   // ── Init: Check existing JWT on app launch ────────────
   Future<void> checkAuthStatus() async {
@@ -101,18 +107,26 @@ class AuthProvider extends ChangeNotifier {
 
   // ── OTP ───────────────────────────────────────────────
   Future<bool> sendOtp(String phone) async {
+    if (_isOtpSending) return false;
+    _isOtpSending = true;
     _errorMessage = null;
+    notifyListeners();
     try {
       return await _authService.sendOtp(phone);
     } catch (e) {
       _errorMessage = e.toString().replaceAll('Exception: ', '');
-      notifyListeners();
       return false;
+    } finally {
+      _isOtpSending = false;
+      notifyListeners();
     }
   }
 
   Future<bool> verifyOtp(String phone, String otp) async {
+    if (_isOtpVerifying) return false;
+    _isOtpVerifying = true;
     _errorMessage = null;
+    notifyListeners();
     try {
       final success = await _authService.verifyOtp(phone, otp);
       if (success) {
@@ -123,60 +137,80 @@ class AuthProvider extends ChangeNotifier {
         final hasToken = await _authService.hasToken();
         if (hasToken) {
           _setStatus(AuthStatus.authenticated);
-        } else {
-          notifyListeners();
         }
       }
       return success;
     } catch (e) {
       _errorMessage = e.toString().replaceAll('Exception: ', '');
-      notifyListeners();
       return false;
+    } finally {
+      _isOtpVerifying = false;
+      notifyListeners();
     }
   }
 
   Future<bool> resendOtp(String phone) async {
+    if (_isOtpSending) return false;
+    _isOtpSending = true;
     _errorMessage = null;
+    notifyListeners();
     try {
       return await _authService.resendOtp(phone);
     } catch (e) {
       _errorMessage = e.toString().replaceAll('Exception: ', '');
-      notifyListeners();
       return false;
+    } finally {
+      _isOtpSending = false;
+      notifyListeners();
     }
   }
 
   // ── Forgot Password Flow ──────────────────────────────
   Future<bool> sendForgotPasswordOtp(String target, String type) async {
+    if (_isOtpSending) return false;
+    _isOtpSending = true;
     _errorMessage = null;
+    notifyListeners();
     try {
       return await _authService.sendForgotPasswordOtp(target, type);
     } catch (e) {
       _errorMessage = e.toString().replaceAll('Exception: ', '');
-      notifyListeners();
       return false;
+    } finally {
+      _isOtpSending = false;
+      notifyListeners();
     }
   }
 
   Future<String?> verifyForgotPasswordOtp(String target, String type, String otp) async {
+    if (_isOtpVerifying) return null;
+    _isOtpVerifying = true;
     _errorMessage = null;
+    notifyListeners();
     try {
       return await _authService.verifyForgotPasswordOtp(target, type, otp);
     } catch (e) {
       _errorMessage = e.toString().replaceAll('Exception: ', '');
-      notifyListeners();
       return null;
+    } finally {
+      _isOtpVerifying = false;
+      notifyListeners();
     }
   }
 
   Future<bool> resetPassword(String target, String type, String resetToken, String newPassword) async {
+    if (_isPasswordResetting) return false;
+    _isPasswordResetting = true;
     _errorMessage = null;
+    notifyListeners();
     try {
       return await _authService.resetPassword(target, type, resetToken, newPassword);
     } catch (e) {
       _errorMessage = e.toString().replaceAll('Exception: ', '');
-      notifyListeners();
       return false;
+    } finally {
+      _isPasswordResetting = false;
+      notifyListeners();
     }
   }
 

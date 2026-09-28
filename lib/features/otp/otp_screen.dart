@@ -33,6 +33,7 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
   late List<TextEditingController> _controllers;
 
   bool _isVerifying = false;
+  bool _isResending = false;
   String? _errorMessage;
 
   // Timer (30-second countdown)
@@ -106,7 +107,12 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
   }
 
   Future<void> _handleResend() async {
-    if (!_canResend || _isVerifying) return;
+    if (!_canResend || _isResending || _isVerifying) return;
+
+    setState(() {
+      _isResending = true;
+      _errorMessage = null;
+    });
 
     final auth = context.read<AuthProvider>();
 
@@ -116,25 +122,39 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
     }
     _focusNodes[0].requestFocus();
 
-    final success = widget.isForgotPassword
-        ? await auth.sendForgotPasswordOtp(widget.target, widget.type)
-        : await auth.resendOtp(widget.target);
-    if (!mounted) return;
+    try {
+      final success = widget.isForgotPassword
+          ? await auth.sendForgotPasswordOtp(widget.target, widget.type)
+          : await auth.resendOtp(widget.target);
+      if (!mounted) return;
 
-    if (success) {
-      _startResendTimer();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('OTP sent to ${_getFormattedTarget(widget.target, widget.type)} 📲'),
-          backgroundColor: AppColors.success,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-      );
-    } else {
-      setState(() {
-        _errorMessage = auth.errorMessage ?? "Failed to resend OTP";
-      });
+      if (success) {
+        _startResendTimer();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('OTP sent to ${_getFormattedTarget(widget.target, widget.type)} 📲'),
+            backgroundColor: AppColors.success,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      } else {
+        setState(() {
+          _errorMessage = auth.errorMessage ?? "Failed to resend OTP";
+        });
+        _shakeCtrl.forward(from: 0.0);
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString().replaceAll('Exception: ', '');
+        });
+        _shakeCtrl.forward(from: 0.0);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isResending = false);
+      }
     }
   }
 
@@ -218,80 +238,89 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
       return;
     }
 
+    if (_isVerifying) return;
+
     setState(() {
       _isVerifying = true;
       _errorMessage = null;
     });
 
-    final auth = context.read<AuthProvider>();
+    try {
+      final auth = context.read<AuthProvider>();
 
-    if (widget.isForgotPassword) {
-      final resetToken = await auth.verifyForgotPasswordOtp(
-        widget.target,
-        widget.type,
-        otp,
-      );
-
-      if (!mounted) return;
-
-      if (resetToken != null && resetToken.isNotEmpty) {
-        setState(() => _isVerifying = false);
-
-        Navigator.pushReplacement(
-          context,
-          AppPageTransitions.slideRight(
-            ResetPasswordScreen(
-              target: widget.target,
-              type: widget.type,
-              resetToken: resetToken,
-            ),
-          ),
+      if (widget.isForgotPassword) {
+        final resetToken = await auth.verifyForgotPasswordOtp(
+          widget.target,
+          widget.type,
+          otp,
         );
+
+        if (!mounted) return;
+
+        if (resetToken != null && resetToken.isNotEmpty) {
+          Navigator.pushReplacement(
+            context,
+            AppPageTransitions.slideRight(
+              ResetPasswordScreen(
+                target: widget.target,
+                type: widget.type,
+                resetToken: resetToken,
+              ),
+            ),
+          );
+        } else {
+          setState(() {
+            _errorMessage = auth.errorMessage ?? "Invalid or expired OTP";
+          });
+          _shakeCtrl.forward(from: 0.0);
+        }
       } else {
+        final success = await auth.verifyOtp(widget.target, otp);
+
+        if (!mounted) return;
+
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Phone number verified successfully! 🎉'),
+              backgroundColor: AppColors.success,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          );
+
+          if (auth.isAuthenticated) {
+            Navigator.pushAndRemoveUntil(
+              context,
+              AppPageTransitions.slideRight(const HomeScreen()),
+              (route) => false,
+            );
+          } else if (Navigator.canPop(context)) {
+            Navigator.pop(context, true);
+          } else {
+            Navigator.pushAndRemoveUntil(
+              context,
+              AppPageTransitions.slideRight(const HomeScreen()),
+              (route) => false,
+            );
+          }
+        } else {
+          setState(() {
+            _errorMessage = auth.errorMessage ?? "Invalid or expired OTP";
+          });
+          _shakeCtrl.forward(from: 0.0);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
         setState(() {
-          _isVerifying = false;
-          _errorMessage = auth.errorMessage ?? "Invalid or expired OTP";
+          _errorMessage = e.toString().replaceAll('Exception: ', '');
         });
         _shakeCtrl.forward(from: 0.0);
       }
-    } else {
-      final success = await auth.verifyOtp(widget.target, otp);
-
-      if (!mounted) return;
-
-      if (success) {
+    } finally {
+      if (mounted) {
         setState(() => _isVerifying = false);
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Phone number verified successfully! 🎉'),
-            backgroundColor: AppColors.success,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-        );
-
-        if (auth.isAuthenticated) {
-          Navigator.pushAndRemoveUntil(
-            context,
-            AppPageTransitions.slideRight(const HomeScreen()),
-            (route) => false,
-          );
-        } else if (Navigator.canPop(context)) {
-          Navigator.pop(context, true);
-        } else {
-          Navigator.pushAndRemoveUntil(
-            context,
-            AppPageTransitions.slideRight(const HomeScreen()),
-            (route) => false,
-          );
-        }
-      } else {
-        setState(() {
-          _isVerifying = false;
-          _errorMessage = auth.errorMessage ?? "Invalid or expired OTP";
-        });
-        _shakeCtrl.forward(from: 0.0);
       }
     }
   }
@@ -410,12 +439,29 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
 
               const SizedBox(height: 20),
 
-              // Error Message with Shake
+              // Error Message with Shake & Category
               if (_errorMessage != null)
                 AnimatedBuilder(
                   animation: _shakeCtrl,
                   builder: (context, child) {
                     final shakeOffset = math.sin(_shakeCtrl.value * math.pi * 4) * 8.0;
+                    final msg = _errorMessage!.toLowerCase();
+                    final isExpired = msg.contains('expire');
+                    final isInvalid = msg.contains('invalid') || msg.contains('incorrect') || msg.contains('wrong');
+                    final isNetwork = msg.contains('timed out') || msg.contains('network') || msg.contains('reach the server') || msg.contains('connection');
+                    final isServer = msg.contains('server') || msg.contains('500');
+
+                    String categoryTitle = "Verification Error";
+                    if (isExpired) {
+                      categoryTitle = "Expired OTP";
+                    } else if (isInvalid) {
+                      categoryTitle = "Invalid OTP";
+                    } else if (isNetwork) {
+                      categoryTitle = "Network Error";
+                    } else if (isServer) {
+                      categoryTitle = "Server Error";
+                    }
+
                     return Transform.translate(
                       offset: Offset(shakeOffset, 0),
                       child: Container(
@@ -423,19 +469,35 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
                         decoration: BoxDecoration(
                           color: AppColors.error.withAlpha(20),
                           borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: AppColors.error.withAlpha(60)),
                         ),
                         child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Icon(Icons.error_outline_rounded, color: AppColors.error, size: 20),
                             const SizedBox(width: 10),
                             Expanded(
-                              child: Text(
-                                _errorMessage!,
-                                style: const TextStyle(
-                                  color: AppColors.error,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    categoryTitle,
+                                    style: const TextStyle(
+                                      color: AppColors.error,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    _errorMessage!,
+                                    style: const TextStyle(
+                                      color: AppColors.error,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
@@ -520,20 +582,41 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
                         fontSize: 14,
                       ),
                     ),
-                    const SizedBox(height: 6),
-                    GestureDetector(
-                      onTap: _handleResend,
-                      child: Text(
-                        _canResend
-                            ? "Resend OTP"
-                            : "Resend OTP in ${(_secondsRemaining ~/ 60).toString().padLeft(2, '0')}:${(_secondsRemaining % 60).toString().padLeft(2, '0')}",
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: _canResend ? AppColors.primary : context.textSecondaryColor.withAlpha(120),
+                    const SizedBox(height: 8),
+                    if (_isResending)
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const SizedBox(
+                            width: 14,
+                            height: 14,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            "Sending OTP...",
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ],
+                      )
+                    else
+                      GestureDetector(
+                        onTap: (_canResend && !_isVerifying) ? _handleResend : null,
+                        child: Text(
+                          _canResend
+                              ? "Resend OTP (available) →"
+                              : "Resend OTP in ${(_secondsRemaining ~/ 60).toString().padLeft(2, '0')}:${(_secondsRemaining % 60).toString().padLeft(2, '0')}",
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: _canResend ? AppColors.primary : context.textSecondaryColor.withAlpha(120),
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),

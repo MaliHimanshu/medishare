@@ -148,11 +148,12 @@ const verifyOtpController = async (req, res) => {
 const forgotPasswordSendController = async (req, res) => {
   try {
     const data = forgotPasswordSendSchema.parse(req.body);
-    await sendForgotPasswordOtp(data.target, data.type);
+    const result = await sendForgotPasswordOtp(data.target, data.type);
 
     return res.status(200).json({
       success: true,
-      message: `OTP sent successfully to your ${data.type}`,
+      message: result?.message || `OTP sent successfully to your ${data.type}`,
+      ...(result?.devOtp ? { devOtp: result.devOtp } : {}),
     });
   } catch (error) {
     return res.status(400).json({

@@ -26,6 +26,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   RecoveryType _selectedType = RecoveryType.email;
   String _selectedCountryCode = '+91';
   String? _inputError;
+  bool _isSending = false;
 
   final List<String> _countryCodes = ['+91', '+1', '+44', '+61', '+971', '+81'];
 
@@ -54,6 +55,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   Future<void> _submit() async {
+    if (_isSending) return;
+
     setState(() => _inputError = null);
 
     if (_selectedType == RecoveryType.email) {
@@ -70,51 +73,69 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       }
     }
 
-    final auth = context.read<AuthProvider>();
-    final typeStr = _selectedType == RecoveryType.email ? 'email' : 'phone';
-    final rawTarget = _selectedType == RecoveryType.email
-        ? _emailCtrl.text.trim()
-        : '$_selectedCountryCode${_phoneCtrl.text.trim().replaceAll(RegExp(r'\D'), '')}';
+    setState(() => _isSending = true);
 
-    final success = await auth.sendForgotPasswordOtp(rawTarget, typeStr);
+    try {
+      final auth = context.read<AuthProvider>();
+      final typeStr = _selectedType == RecoveryType.email ? 'email' : 'phone';
+      final rawTarget = _selectedType == RecoveryType.email
+          ? _emailCtrl.text.trim()
+          : '$_selectedCountryCode${_phoneCtrl.text.trim().replaceAll(RegExp(r'\D'), '')}';
 
-    if (!mounted) return;
+      final success = await auth.sendForgotPasswordOtp(rawTarget, typeStr);
 
-    if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Verification code sent to your ${_selectedType == RecoveryType.email ? 'email' : 'phone'}'),
-          backgroundColor: AppColors.success,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-      );
+      if (!mounted) return;
 
-      Navigator.push(
-        context,
-        AppPageTransitions.slideRight(
-          OtpScreen(
-            target: rawTarget,
-            type: typeStr,
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('OTP sent to your ${_selectedType == RecoveryType.email ? 'email' : 'phone'} 📲'),
+            backgroundColor: AppColors.success,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(auth.errorMessage ?? 'Failed to send verification code'),
-          backgroundColor: AppColors.error,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-      );
+        );
+
+        Navigator.push(
+          context,
+          AppPageTransitions.slideRight(
+            OtpScreen(
+              target: rawTarget,
+              type: typeStr,
+              isForgotPassword: true,
+            ),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(auth.errorMessage ?? 'Failed to send verification code'),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSending = false);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final auth = context.watch<AuthProvider>();
-    final isLoading = auth.isLoading;
 
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -386,9 +407,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
                 // ── Send OTP Button ──────────────────────────
                 MsButton(
-                  label: 'Send OTP',
-                  onPressed: isLoading ? null : _submit,
-                  isLoading: isLoading,
+                  label: _isSending ? 'Sending OTP...' : 'Send OTP',
+                  onPressed: _isSending ? null : _submit,
+                  isLoading: _isSending,
                   icon: Icons.send_rounded,
                 ),
 

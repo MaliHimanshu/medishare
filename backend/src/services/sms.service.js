@@ -55,12 +55,9 @@ const getTwilioClient = () => {
 const sendSms = async (to, body) => {
   const config = getTwilioConfig();
   if (!config.isConfigured) {
-    console.log(`[SMS Service] Twilio not configured - SMS delivery bypassed for ${to}`);
-    return {
-      success: true,
-      messageSid: "DEV_MOCK_SID",
-      status: "delivered",
-    };
+    throw new Error(
+      `SMS provider not configured. Missing required environment variable(s): ${config.missing.join(", ")}`
+    );
   }
 
   // Ensure both sender and recipient are in strict E.164 format

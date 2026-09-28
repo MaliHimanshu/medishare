@@ -32,6 +32,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   String? _newPassError;
   String? _confirmPassError;
+  bool _isResetting = false;
 
   @override
   void initState() {
@@ -97,6 +98,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   }
 
   Future<void> _submitReset() async {
+    if (_isResetting) return;
+
     setState(() {
       _newPassError = _validatePassword(_newPassCtrl.text);
       _confirmPassError = _validateConfirmPassword(_confirmPassCtrl.text);
@@ -109,27 +112,46 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       return;
     }
 
-    final auth = context.read<AuthProvider>();
-    final success = await auth.resetPassword(
-      widget.target!,
-      widget.type!,
-      widget.resetToken!,
-      _newPassCtrl.text,
-    );
+    setState(() => _isResetting = true);
 
-    if (!mounted) return;
-
-    if (success) {
-      _showSuccessDialog();
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(auth.errorMessage ?? 'Password reset failed'),
-          backgroundColor: AppColors.error,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
+    try {
+      final auth = context.read<AuthProvider>();
+      final success = await auth.resetPassword(
+        widget.target!,
+        widget.type!,
+        widget.resetToken!,
+        _newPassCtrl.text,
       );
+
+      if (!mounted) return;
+
+      if (success) {
+        _showSuccessDialog();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(auth.errorMessage ?? 'Password reset failed'),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isResetting = false);
+      }
     }
   }
 
@@ -200,9 +222,6 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final auth = context.watch<AuthProvider>();
-    final isLoading = auth.isLoading;
-
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
@@ -300,9 +319,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
                 // ── Reset Password Button ────────────────────
                 MsButton(
-                  label: 'Reset Password',
-                  onPressed: isLoading ? null : _submitReset,
-                  isLoading: isLoading,
+                  label: _isResetting ? 'Resetting Password...' : 'Reset Password',
+                  onPressed: _isResetting ? null : _submitReset,
+                  isLoading: _isResetting,
                   icon: Icons.check_circle_outline_rounded,
                 ),
 

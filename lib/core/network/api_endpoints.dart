@@ -33,8 +33,12 @@ class ApiEndpoints {
       return kDebugMode ? 'http://10.0.2.2:5000/api' : _liveUrl;
     }
 
+    if (Platform.isWindows || Platform.isLinux) {
+      return 'http://localhost:5000/api';
+    }
+
     // iOS Simulator / macOS / physical iOS
-    return _localDevUrl;
+    return _usePhysicalPhoneLocal ? _localDevUrl : 'http://localhost:5000/api';
   }
 
   // ── Auth ────────────────────────────────────────────────

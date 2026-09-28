@@ -125,13 +125,17 @@ class AuthService {
   // ── Forgot Password Flow ──────────────────────────────
   Future<bool> sendForgotPasswordOtp(String target, String type) async {
     try {
-      await _dio.post(
+      final response = await _dio.post(
         ApiEndpoints.forgotPasswordSendOtp,
         data: {'target': target, 'type': type},
       );
+      DioClient.debugLog('sendForgotPasswordOtp success: ${response.data}');
       return true;
     } on DioException catch (e) {
       throw Exception(DioClient.handleError(e));
+    } catch (e) {
+      if (e is Exception) rethrow;
+      throw Exception(e.toString());
     }
   }
 
@@ -141,16 +145,23 @@ class AuthService {
         ApiEndpoints.forgotPasswordVerifyOtp,
         data: {'target': target, 'type': type, 'otp': otp},
       );
-      final data = response.data as Map<String, dynamic>;
-      return data['resetToken'] as String;
+      DioClient.debugLog('verifyForgotPasswordOtp response: ${response.data}');
+      final data = response.data;
+      if (data is Map && data['resetToken'] != null) {
+        return data['resetToken'].toString();
+      }
+      throw Exception('Invalid response from server: reset token missing');
     } on DioException catch (e) {
       throw Exception(DioClient.handleError(e));
+    } catch (e) {
+      if (e is Exception) rethrow;
+      throw Exception(e.toString());
     }
   }
 
   Future<bool> resetPassword(String target, String type, String resetToken, String newPassword) async {
     try {
-      await _dio.post(
+      final response = await _dio.post(
         ApiEndpoints.resetPassword,
         data: {
           'target': target,
@@ -159,9 +170,13 @@ class AuthService {
           'newPassword': newPassword,
         },
       );
+      DioClient.debugLog('resetPassword response: ${response.data}');
       return true;
     } on DioException catch (e) {
       throw Exception(DioClient.handleError(e));
+    } catch (e) {
+      if (e is Exception) rethrow;
+      throw Exception(e.toString());
     }
   }
 
