@@ -148,7 +148,7 @@ const generateOtp = () => {
   return crypto.randomInt(100000, 999999).toString();
 };
 
-const { sendVerifyOtp, checkVerifyOtp } = require("./twilioVerify.service");
+const { sendVerifyOtp, checkVerifyOtp, getVerifyConfig } = require("./twilioVerify.service");
 
 /**
  * Send OTP
@@ -273,22 +273,39 @@ const sendForgotPasswordOtp = async (target, type) => {
     }
   }
 
-  const otp = generateOtp();
-  const otpHash = await bcrypt.hash(otp, 10);
-  const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
-
-  await prisma.user.update({
-    where: { id: user.id },
-    data: {
-      phoneOtpHash: otpHash,
-      phoneOtpExpiresAt: expiresAt,
-      phoneOtpLastSentAt: new Date(),
-      phoneOtpAttempts: 0,
-    },
-  });
-
   if (type === "phone") {
     const normalizedPhone = normalizePhoneNumber(user.phone || target);
+    const { isConfigured } = getVerifyConfig();
+
+    if (isConfigured) {
+      await sendVerifyOtp(normalizedPhone);
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          phoneOtpHash: null,
+          phoneOtpExpiresAt: null,
+          phoneOtpLastSentAt: new Date(),
+          phoneOtpAttempts: 0,
+        },
+      });
+      return true;
+    }
+
+    // Fallback if Twilio Verify not configured
+    const otp = generateOtp();
+    const otpHash = await bcrypt.hash(`phone:${otp}`, 10);
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        phoneOtpHash: otpHash,
+        phoneOtpExpiresAt: expiresAt,
+        phoneOtpLastSentAt: new Date(),
+        phoneOtpAttempts: 0,
+      },
+    });
+
     try {
       await sendSms(
         normalizedPhone,
@@ -303,13 +320,25 @@ const sendForgotPasswordOtp = async (target, type) => {
       });
       throw smsError;
     }
-  } else {
-    console.log("\n========================================================");
-    console.log(`📧 [EMAIL OTP] Password reset code for ${target}: ${otp}`);
-    console.log(`   💡 Use test OTP: 123456 or ${otp} to verify`);
-    console.log("========================================================\n");
+    return true;
   }
 
+  // Email OTP flow: generate 6-digit OTP, 5-minute expiry, type-isolated hash
+  const otp = generateOtp();
+  const otpHash = await bcrypt.hash(`email:${otp}`, 10);
+  const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      phoneOtpHash: otpHash,
+      phoneOtpExpiresAt: expiresAt,
+      phoneOtpLastSentAt: new Date(),
+      phoneOtpAttempts: 0,
+    },
+  });
+
+  // Never log OTP code to console
   return true;
 };
 
@@ -317,6 +346,10 @@ const sendForgotPasswordOtp = async (target, type) => {
  * Verify Forgot Password OTP (email or phone)
  */
 const verifyForgotPasswordOtp = async (target, type, otp) => {
+  if (!otp || typeof otp !== "string" || otp.trim().length !== 6) {
+    throw new Error("Invalid or expired OTP");
+  }
+
   let user;
   if (type === "email") {
     user = await prisma.user.findFirst({
@@ -332,7 +365,36 @@ const verifyForgotPasswordOtp = async (target, type, otp) => {
     );
   }
 
-  const isDev = process.env.NODE_ENV === "development" || !process.env.TWILIO_ACCOUNT_SID;
+  if (type === "phone") {
+    const { isConfigured } = getVerifyConfig();
+    const normalizedPhone = normalizePhoneNumber(user.phone || target);
+
+    if (isConfigured) {
+      const verifyResult = await checkVerifyOtp(normalizedPhone, otp.trim());
+      if (!verifyResult.success) {
+        throw new Error(verifyResult.message || "Invalid or expired OTP");
+      }
+
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          phoneOtpHash: null,
+          phoneOtpExpiresAt: null,
+          phoneOtpAttempts: 0,
+        },
+      });
+
+      const resetToken = jwt.sign(
+        { userId: user.id, action: "password_reset" },
+        process.env.JWT_SECRET || "medishare_super_secret_key",
+        { expiresIn: "15m" }
+      );
+      return { resetToken };
+    }
+  }
+
+  // Email OTP verification (or Phone fallback when Twilio Verify not configured)
+  const isDev = process.env.NODE_ENV === "development" && !process.env.TWILIO_ACCOUNT_SID;
   const isMasterOtp = isDev && (otp === "123456" || otp === "000000");
 
   if (!isMasterOtp && (!user.phoneOtpHash || !user.phoneOtpExpiresAt)) {
@@ -347,7 +409,19 @@ const verifyForgotPasswordOtp = async (target, type, otp) => {
     throw new Error("This verification code has expired. Please request a new code.");
   }
 
-  const isValid = isMasterOtp ? true : await bcrypt.compare(otp, user.phoneOtpHash);
+  // Cross-channel protection: ensure email OTP cannot verify phone and vice versa
+  let isValid = false;
+  if (isMasterOtp) {
+    isValid = true;
+  } else {
+    const typedMatch = await bcrypt.compare(`${type}:${otp}`, user.phoneOtpHash);
+    if (typedMatch) {
+      isValid = true;
+    } else {
+      const plainMatch = await bcrypt.compare(otp, user.phoneOtpHash);
+      if (plainMatch) isValid = true;
+    }
+  }
 
   if (!isValid) {
     await prisma.user.update({
@@ -359,7 +433,15 @@ const verifyForgotPasswordOtp = async (target, type, otp) => {
     throw new Error("Incorrect verification code. Please try again.");
   }
 
-  // Create temporary password reset token valid for 15 minutes
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      phoneOtpHash: null,
+      phoneOtpExpiresAt: null,
+      phoneOtpAttempts: 0,
+    },
+  });
+
   const resetToken = jwt.sign(
     { userId: user.id, action: "password_reset" },
     process.env.JWT_SECRET || "medishare_super_secret_key",
