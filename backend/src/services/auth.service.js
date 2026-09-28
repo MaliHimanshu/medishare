@@ -97,10 +97,14 @@ const registerUser = async (data) => {
   });
 
   // Trigger OTP sending if phone is provided
+  let otpSent = false;
+  let otpError = null;
   if (normalizedPhone) {
     try {
       await sendOtp(normalizedPhone);
+      otpSent = true;
     } catch (smsErr) {
+      otpError = smsErr.message;
       console.warn("Could not automatically send OTP during registration:", smsErr.message);
     }
   }
@@ -111,6 +115,8 @@ const registerUser = async (data) => {
   return {
     user: userWithoutPassword,
     token: generateToken(user),
+    otpSent,
+    ...(otpError ? { otpError } : {}),
   };
 };
 
@@ -397,65 +403,21 @@ const sendForgotPasswordOtp = async (target, type) => {
 
   if (type === "phone") {
     const normalizedPhone = normalizePhoneNumber(user.phone || target);
-    const { isConfigured: isVerifyConfigured, missing: missingVerify } = getVerifyConfig();
-
-    if (isVerifyConfigured) {
-      try {
-        await sendVerifyOtp(normalizedPhone);
-        await prisma.user.update({
-          where: { id: user.id },
-          data: {
-            phoneOtpHash: null,
-            phoneOtpExpiresAt: null,
-            phoneOtpLastSentAt: new Date(),
-            phoneOtpAttempts: 0,
-          },
-        });
-        return {
-          success: true,
-          message: "OTP sent successfully to your phone",
-        };
-      } catch (verifyError) {
-        console.warn(`[Twilio Verify Warning] ${verifyError.message}`);
-        if (process.env.NODE_ENV === "production") {
-          throw verifyError;
-        }
-        console.log(`[Phone OTP - DEV FALLBACK] Twilio rejected number. Falling back to local OTP for testing.`);
-      }
-    } else {
-      if (process.env.NODE_ENV === "production") {
-        throw new Error(
-          `SMS provider not configured. Missing required environment variable(s): ${missingVerify.join(", ")}`
-        );
-      }
-    }
-
-    // Local / Dev Phone OTP generation (for development or when Twilio Verify isn't active)
-    const otp = generateOtp();
-    const otpHash = await bcrypt.hash(`phone:${otp}`, 10);
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+    await sendVerifyOtp(normalizedPhone);
 
     await prisma.user.update({
       where: { id: user.id },
       data: {
-        phoneOtpHash: otpHash,
-        phoneOtpExpiresAt: expiresAt,
+        phoneOtpHash: null,
+        phoneOtpExpiresAt: null,
         phoneOtpLastSentAt: new Date(),
         phoneOtpAttempts: 0,
       },
     });
 
-    console.log(`\n==================================================`);
-    console.log(`[Phone OTP - DEV MODE]`);
-    console.log(`Recipient: ${normalizedPhone}`);
-    console.log(`OTP Code : ${otp}`);
-    console.log(`Expires in: 5 minutes`);
-    console.log(`==================================================\n`);
-
     return {
       success: true,
       message: "OTP sent successfully to your phone",
-      ...(process.env.NODE_ENV !== "production" ? { devOtp: otp } : {}),
     };
   }
 

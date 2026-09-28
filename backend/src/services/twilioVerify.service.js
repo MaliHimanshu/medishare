@@ -8,7 +8,7 @@
  */
 
 const twilio = require("twilio");
-const { normalizePhoneNumber } = require("../utils/phone.utils");
+const { normalizePhoneNumber, maskPhoneNumber } = require("../utils/phone.utils");
 
 /**
  * Read and validate Twilio Verify configuration from process.env
@@ -16,7 +16,7 @@ const { normalizePhoneNumber } = require("../utils/phone.utils");
 const getVerifyConfig = () => {
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;
-  const serviceSid = process.env.TWILIO_VERIFY_SERVICE_SID;
+  const serviceSid = process.env.TWILIO_VERIFY_SERVICE_SID || process.env.TWILIO_SERVICE_SID;
 
   const missing = [];
   if (!accountSid || !accountSid.trim()) missing.push("TWILIO_ACCOUNT_SID");
@@ -52,12 +52,15 @@ const getTwilioClient = () => {
  */
 const sendVerifyOtp = async (phone) => {
   const normalizedPhone = normalizePhoneNumber(phone);
+  const maskedPhone = maskPhoneNumber(normalizedPhone);
   const config = getVerifyConfig();
 
+  console.log(`[Twilio Verify] Send OTP request received for ${maskedPhone}`);
+
   if (!config.isConfigured) {
-    throw new Error(
-      `Twilio Verify is not configured. Missing: ${config.missing.join(", ")}`
-    );
+    const errorMsg = `Twilio Verify service not configured. Missing environment variable(s): ${config.missing.join(", ")}`;
+    console.error(`[Twilio Verify Config Error] Phone: ${maskedPhone} | ${errorMsg}`);
+    throw new Error(errorMsg);
   }
 
   const client = getTwilioClient();
@@ -70,6 +73,8 @@ const sendVerifyOtp = async (phone) => {
         channel: "sms",
       });
 
+    console.log(`[Twilio Verify Success] OTP sent successfully to ${maskedPhone} (Status: ${verification.status})`);
+
     return {
       success: true,
       to: normalizedPhone,
@@ -77,27 +82,29 @@ const sendVerifyOtp = async (phone) => {
     };
   } catch (error) {
     const code = error.code;
-    let friendlyMessage = "Unable to send verification OTP.";
+    let friendlyMessage = "Unable to send verification OTP via SMS.";
 
-    if (code === 60200 || code === 21211) {
-      friendlyMessage = `Invalid phone number format (${normalizedPhone}). Please enter a valid 10-digit mobile number.`;
-    } else if (code === 60203) {
-      friendlyMessage = "Max OTP send attempts reached for this phone number. Please try again later.";
-    } else if (code === 21608) {
-      friendlyMessage = `Twilio Trial Account: The number ${normalizedPhone} must be verified in your Twilio Console (Verified Caller IDs).`;
+    if (code === 21608) {
+      friendlyMessage = `Twilio Trial Account Restriction: Phone ${maskedPhone} is not verified. Recipient phone numbers must be verified under 'Verified Caller IDs' in the Twilio Console on trial accounts.`;
+    } else if (code === 60628) {
+      friendlyMessage = "Twilio Trial Expired: Your Twilio trial account has expired (30-day limit reached) or trial units are depleted. Please upgrade your Twilio project or add balance in Twilio Console.";
     } else if (code === 21408) {
-      friendlyMessage = "Twilio geo-permission error: SMS to India is not enabled in your Twilio Verify settings.";
+      friendlyMessage = "Twilio Geo-Permission Error: SMS to India (+91) is not enabled in your Twilio account. Please enable India under Twilio Console > Messaging > Settings > Geo-Permissions.";
+    } else if (code === 60203) {
+      friendlyMessage = "Maximum OTP send attempts reached for this phone number. Please wait before requesting another OTP.";
+    } else if (code === 60200 || code === 21211) {
+      friendlyMessage = `Invalid phone number format (${maskedPhone}). Please enter a valid 10-digit Indian mobile number.`;
     } else if (code === 20003 || error.status === 401) {
-      friendlyMessage = "Twilio authentication error: Please verify your TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN.";
+      friendlyMessage = "Twilio authentication error: Please verify TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN in Render environment variables.";
     } else if (code === 20404) {
-      friendlyMessage = "Twilio Verify service not found. Please verify your TWILIO_VERIFY_SERVICE_SID.";
+      friendlyMessage = "Twilio Verify Service not found. Please verify TWILIO_VERIFY_SERVICE_SID in Render environment variables.";
     } else if (code === 20429) {
       friendlyMessage = "Rate limit reached. Please wait a moment before trying again.";
     } else if (error.message) {
       friendlyMessage = error.message;
     }
 
-    console.error(`[Twilio Verify Send Error] Code: ${code || "N/A"} - ${friendlyMessage}`);
+    console.error(`[Twilio Verify Send Error] Phone: ${maskedPhone} | Code: ${code || "N/A"} | Error: ${error.message}`);
     throw new Error(friendlyMessage);
   }
 };
@@ -110,12 +117,15 @@ const sendVerifyOtp = async (phone) => {
  */
 const checkVerifyOtp = async (phone, otp) => {
   const normalizedPhone = normalizePhoneNumber(phone);
+  const maskedPhone = maskPhoneNumber(normalizedPhone);
   const config = getVerifyConfig();
 
+  console.log(`[Twilio Verify] Verify OTP check received for ${maskedPhone}`);
+
   if (!config.isConfigured) {
-    throw new Error(
-      `Twilio Verify is not configured. Missing: ${config.missing.join(", ")}`
-    );
+    const errorMsg = `Twilio Verify service not configured. Missing environment variable(s): ${config.missing.join(", ")}`;
+    console.error(`[Twilio Verify Config Error] Phone: ${maskedPhone} | ${errorMsg}`);
+    throw new Error(errorMsg);
   }
 
   const client = getTwilioClient();
@@ -129,39 +139,36 @@ const checkVerifyOtp = async (phone, otp) => {
       });
 
     if (verificationCheck.status === "approved") {
+      console.log(`[Twilio Verify Success] OTP verified and approved for ${maskedPhone}`);
       return {
         success: true,
         status: verificationCheck.status,
       };
     }
 
+    console.warn(`[Twilio Verify Warning] OTP check not approved for ${maskedPhone} (Status: ${verificationCheck.status})`);
     return {
       success: false,
       message: "Invalid or expired OTP",
     };
   } catch (error) {
     const code = error.code;
+    let failureMsg = "Invalid or expired OTP";
 
-    // Twilio error 20404 = Verification expired or not found
-    if (code === 20404) {
-      return {
-        success: false,
-        message: "Invalid or expired OTP",
-      };
-    }
-
-    // Twilio error 60202 = Max check attempts reached
     if (code === 60202) {
-      return {
-        success: false,
-        message: "Too many incorrect attempts. Please request a new OTP.",
-      };
+      failureMsg = "Maximum OTP verification attempts reached. Please request a new OTP.";
+    } else if (code === 20404) {
+      failureMsg = "Verification code expired or not found. Please request a new OTP.";
+    } else if (code === 60200 || code === 21211) {
+      failureMsg = `Invalid phone number format (${maskedPhone}).`;
+    } else if (error.message) {
+      failureMsg = error.message;
     }
 
-    console.error(`[Twilio Verify Check Error] Code: ${code || "N/A"}`);
+    console.error(`[Twilio Verify Check Error] Phone: ${maskedPhone} | Code: ${code || "N/A"} | Error: ${error.message}`);
     return {
       success: false,
-      message: "Invalid or expired OTP",
+      message: failureMsg,
     };
   }
 };

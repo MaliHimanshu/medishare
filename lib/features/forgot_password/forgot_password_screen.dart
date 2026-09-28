@@ -78,9 +78,19 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     try {
       final auth = context.read<AuthProvider>();
       final typeStr = _selectedType == RecoveryType.email ? 'email' : 'phone';
-      final rawTarget = _selectedType == RecoveryType.email
-          ? _emailCtrl.text.trim()
-          : '$_selectedCountryCode${_phoneCtrl.text.trim().replaceAll(RegExp(r'\D'), '')}';
+      final String rawTarget;
+      if (_selectedType == RecoveryType.email) {
+        rawTarget = _emailCtrl.text.trim();
+      } else {
+        String cleanPhone = _phoneCtrl.text.trim().replaceAll(RegExp(r'\D'), '');
+        if (cleanPhone.startsWith('91') && cleanPhone.length > 10) {
+          cleanPhone = cleanPhone.substring(2);
+        }
+        while (cleanPhone.startsWith('0')) {
+          cleanPhone = cleanPhone.substring(1);
+        }
+        rawTarget = '+91$cleanPhone';
+      }
 
       final success = await auth.sendForgotPasswordOtp(rawTarget, typeStr);
 

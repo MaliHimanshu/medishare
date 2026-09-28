@@ -41,6 +41,8 @@ const register = async (req, res) => {
       message: "User registered successfully",
       data: result.user,
       token: result.token,
+      otpSent: result.otpSent,
+      ...(result.otpError ? { otpError: result.otpError } : {}),
     });
   } catch (error) {
     return res.status(400).json({

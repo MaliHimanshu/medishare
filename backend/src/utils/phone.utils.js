@@ -38,6 +38,10 @@ function normalizePhoneNumber(phone) {
     while (rest.startsWith("0")) {
       rest = rest.slice(1);
     }
+    // If redundant '91' was prefixed (e.g. +91918000917657)
+    if (rest.startsWith("91") && rest.length === 12) {
+      rest = rest.slice(2);
+    }
     cleaned = `+91${rest}`;
   }
   // Case 2: Starts with '0091' (international dialing prefix)
@@ -45,6 +49,9 @@ function normalizePhoneNumber(phone) {
     let rest = cleaned.slice(4);
     while (rest.startsWith("0")) {
       rest = rest.slice(1);
+    }
+    if (rest.startsWith("91") && rest.length === 12) {
+      rest = rest.slice(2);
     }
     cleaned = `+91${rest}`;
   }
@@ -84,6 +91,24 @@ function normalizePhoneNumber(phone) {
   return cleaned;
 }
 
+/**
+ * Masks a phone number for safe server-side logging.
+ * Example: '+918000917657' -> '+91******7657'
+ *
+ * @param {string} phone
+ * @returns {string} Masked phone number
+ */
+function maskPhoneNumber(phone) {
+  if (!phone || typeof phone !== "string") return "[HIDDEN]";
+  const cleaned = phone.replace(/[\s\-]/g, "").trim();
+  if (cleaned.length <= 6) return "***";
+  const start = cleaned.slice(0, 3);
+  const end = cleaned.slice(-4);
+  const maskLength = Math.max(cleaned.length - 7, 2);
+  return `${start}${"*".repeat(maskLength)}${end}`;
+}
+
 module.exports = {
   normalizePhoneNumber,
+  maskPhoneNumber,
 };

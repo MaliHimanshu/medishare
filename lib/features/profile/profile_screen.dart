@@ -528,12 +528,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   )
                 else
                   GestureDetector(
-                    onTap: () {
-                      context.read<AuthProvider>().sendOtp(user.phone!);
-                      Navigator.push(
-                        context,
-                        AppPageTransitions.slideRight(OtpVerificationScreen(phone: user.phone!)),
-                      );
+                    onTap: () async {
+                      final auth = context.read<AuthProvider>();
+                      final messenger = ScaffoldMessenger.of(context);
+                      final success = await auth.sendOtp(user.phone!);
+                      if (!context.mounted) return;
+                      if (success) {
+                        Navigator.push(
+                          context,
+                          AppPageTransitions.slideRight(OtpVerificationScreen(phone: user.phone!)),
+                        );
+                      } else {
+                        messenger.showSnackBar(
+                          SnackBar(
+                            content: Text(auth.errorMessage ?? 'Failed to send OTP'),
+                            backgroundColor: AppColors.error,
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        );
+                      }
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),

@@ -96,6 +96,9 @@ class AuthProvider extends ChangeNotifier {
         equipmentPreference: equipmentPreference,
       );
       _user = result.user;
+      if (result.otpError != null && result.otpError!.isNotEmpty) {
+        _errorMessage = result.otpError;
+      }
       _setStatus(AuthStatus.authenticated);
       return true;
     } catch (e) {

@@ -128,9 +128,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
       }
 
       final phone = _phoneCtrl.text.trim();
+      final cleanDigits = phone.replaceAll(RegExp(r'\D'), '');
       if (phone.isEmpty) {
         _phoneError = 'Mobile number is required';
-      } else if (phone.replaceAll(RegExp(r'\D'), '').length != 10) {
+      } else if (cleanDigits.length < 10 || cleanDigits.length > 13) {
         _phoneError = 'Enter a valid 10-digit mobile number';
       } else {
         _phoneError = null;
@@ -162,14 +163,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Future<void> _submit() async {
     if (!_validate()) return;
 
-    final phone = _phoneCtrl.text.trim();
+    String cleanDigits = _phoneCtrl.text.trim().replaceAll(RegExp(r'\D'), '');
+    if (cleanDigits.startsWith('91') && cleanDigits.length > 10) {
+      cleanDigits = cleanDigits.substring(2);
+    }
+    while (cleanDigits.startsWith('0')) {
+      cleanDigits = cleanDigits.substring(1);
+    }
+    final normalizedPhone = '+91$cleanDigits';
+
     final auth = context.read<AuthProvider>();
     final success = await auth.register(
       name:                _nameCtrl.text.trim(),
       email:               _emailCtrl.text.trim(),
       password:            _passCtrl.text,
       role:                _selectedRole,
-      phone:               phone,
+      phone:               normalizedPhone,
       address:             _addressCtrl.text.trim().isEmpty ? null : _addressCtrl.text.trim(),
       organizationName:   _orgNameCtrl.text.trim().isEmpty ? null : _orgNameCtrl.text.trim(),
       registrationNumber: _regNumberCtrl.text.trim().isEmpty ? null : _regNumberCtrl.text.trim(),
@@ -194,17 +203,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
           AppPageTransitions.slideRight(const HomeScreen()),
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Account created! Verification code sent 📲'),
-            backgroundColor: AppColors.success,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-        );
+        if (auth.errorMessage != null && auth.errorMessage!.isNotEmpty) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(auth.errorMessage!),
+              backgroundColor: AppColors.error,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Account created! Verification code sent 📲'),
+              backgroundColor: AppColors.success,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          );
+        }
         Navigator.pushReplacement(
           context,
-          AppPageTransitions.slideRight(OtpVerificationScreen(phone: phone)),
+          AppPageTransitions.slideRight(
+            OtpVerificationScreen(
+              phone: normalizedPhone,
+              initialErrorMessage: auth.errorMessage,
+            ),
+          ),
         );
       }
     } else {

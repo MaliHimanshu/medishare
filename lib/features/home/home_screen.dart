@@ -688,12 +688,26 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           SizedBox(
             height: 36,
             child: ElevatedButton(
-              onPressed: () {
-                context.read<AuthProvider>().sendOtp(phone);
-                Navigator.push(
-                  context,
-                  AppPageTransitions.slideRight(OtpVerificationScreen(phone: phone)),
-                );
+              onPressed: () async {
+                final auth = context.read<AuthProvider>();
+                final messenger = ScaffoldMessenger.of(context);
+                final success = await auth.sendOtp(phone);
+                if (!context.mounted) return;
+                if (success) {
+                  Navigator.push(
+                    context,
+                    AppPageTransitions.slideRight(OtpVerificationScreen(phone: phone)),
+                  );
+                } else {
+                  messenger.showSnackBar(
+                    SnackBar(
+                      content: Text(auth.errorMessage ?? 'Failed to send OTP'),
+                      backgroundColor: AppColors.error,
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  );
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFF97316),

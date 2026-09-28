@@ -15,12 +15,14 @@ class OtpScreen extends StatefulWidget {
   final String target;
   final String type; // 'email' or 'phone'
   final bool isForgotPassword;
+  final String? initialErrorMessage;
 
   const OtpScreen({
     super.key,
     required this.target,
     required this.type,
     this.isForgotPassword = true,
+    this.initialErrorMessage,
   });
 
   @override
@@ -58,6 +60,10 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
 
     for (var node in _focusNodes) {
       node.addListener(() => setState(() {}));
+    }
+
+    if (widget.initialErrorMessage != null && widget.initialErrorMessage!.isNotEmpty) {
+      _errorMessage = widget.initialErrorMessage;
     }
 
     _startResendTimer();
