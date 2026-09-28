@@ -19,8 +19,35 @@ import '../providers/tracking_provider.dart';
 import '../providers/chat_provider.dart';
 import '../features/splash/splash_screen.dart';
 
-class MediShareApp extends StatelessWidget {
+import '../core/network/dio_client.dart';
+import '../features/auth/login_screen.dart';
+
+class MediShareApp extends StatefulWidget {
   const MediShareApp({super.key});
+
+  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+  @override
+  State<MediShareApp> createState() => _MediShareAppState();
+}
+
+class _MediShareAppState extends State<MediShareApp> {
+  @override
+  void initState() {
+    super.initState();
+    DioClient.onUnauthorized = () {
+      final context = MediShareApp.navigatorKey.currentContext;
+      if (context != null) {
+        try {
+          Provider.of<AuthProvider>(context, listen: false).logout();
+        } catch (_) {}
+      }
+      MediShareApp.navigatorKey.currentState?.pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        (route) => false,
+      );
+    };
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,6 +71,7 @@ class MediShareApp extends StatelessWidget {
       child: Consumer<ThemeProvider>(
         builder: (context, themeProv, child) {
           return MaterialApp(
+            navigatorKey: MediShareApp.navigatorKey,
             debugShowCheckedModeBanner: false,
             title: AppStrings.appName,
             theme: AppTheme.lightTheme,

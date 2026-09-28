@@ -14,6 +14,9 @@ class DioClient {
 
   static Dio? _instance;
 
+  /// Global callback for 401 unauthorized handling
+  static void Function()? onUnauthorized;
+
   static Dio get instance {
     _instance ??= _createDio();
     return _instance!;
@@ -38,7 +41,8 @@ class DioClient {
       InterceptorsWrapper(
         onRequest: (options, handler) async {
           try {
-            final token = await _storage.read(key: 'medishare_token');
+            String? token = await _storage.read(key: 'auth_token');
+            token ??= await _storage.read(key: 'medishare_token');
             if (token != null && token.isNotEmpty) {
               options.headers['Authorization'] = 'Bearer $token';
             }
@@ -49,9 +53,11 @@ class DioClient {
           // Handle 401 globally
           if (error.response?.statusCode == 401) {
             try {
+              await _storage.delete(key: 'auth_token');
               await _storage.delete(key: 'medishare_token');
               await _storage.delete(key: 'medishare_user');
             } catch (_) {}
+            onUnauthorized?.call();
           }
           return handler.next(error);
         },

@@ -53,6 +53,11 @@
             android:name="flutterEmbedding"
             android:value="2" />
 
+        <!-- Disable Impeller to prevent black screen on Android emulators / OpenGLES -->
+        <meta-data
+            android:name="io.flutter.embedding.android.EnableImpeller"
+            android:value="false" />
+
     </application>
 
     <!-- Required by Flutter -->

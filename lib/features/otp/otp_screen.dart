@@ -9,15 +9,18 @@ import '../../core/theme/app_page_transitions.dart';
 import '../../providers/auth_provider.dart';
 import '../../shared/widgets/ms_logo.dart';
 import '../reset_password/reset_password_screen.dart';
+import '../home/home_screen.dart';
 
 class OtpScreen extends StatefulWidget {
   final String target;
   final String type; // 'email' or 'phone'
+  final bool isForgotPassword;
 
   const OtpScreen({
     super.key,
     required this.target,
     required this.type,
+    this.isForgotPassword = true,
   });
 
   @override
@@ -32,10 +35,13 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
   bool _isVerifying = false;
   String? _errorMessage;
 
-  // Timer
+  // Timer (30-second countdown)
   Timer? _resendTimer;
-  int _secondsRemaining = 60;
+  int _secondsRemaining = 30;
   bool get _canResend => _secondsRemaining == 0;
+  bool get _isOtpComplete =>
+      _controllers.every((c) => c.text.trim().isNotEmpty) &&
+      _controllers.map((c) => c.text.trim()).join().length == _otpLength;
 
   // Animations
   late AnimationController _entranceCtrl;
@@ -88,7 +94,7 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
   }
 
   void _startResendTimer() {
-    setState(() => _secondsRemaining = 60);
+    setState(() => _secondsRemaining = 30);
     _resendTimer?.cancel();
     _resendTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_secondsRemaining > 0) {
@@ -110,14 +116,16 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
     }
     _focusNodes[0].requestFocus();
 
-    final success = await auth.sendForgotPasswordOtp(widget.target, widget.type);
+    final success = widget.isForgotPassword
+        ? await auth.sendForgotPasswordOtp(widget.target, widget.type)
+        : await auth.resendOtp(widget.target);
     if (!mounted) return;
 
     if (success) {
       _startResendTimer();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('New verification code sent'),
+          content: Text('OTP sent to ${_getFormattedTarget(widget.target, widget.type)} 📲'),
           backgroundColor: AppColors.success,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -172,6 +180,17 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
     }
   }
 
+  String _getFormattedTarget(String target, String type) {
+    if (type == 'email') return target;
+    final clean = target.replaceAll(RegExp(r'\D'), '');
+    if (clean.length == 10) {
+      return '+91 ${clean.substring(0, 5)} ${clean.substring(5)}';
+    } else if (clean.length == 12 && clean.startsWith('91')) {
+      return '+91 ${clean.substring(2, 7)} ${clean.substring(7)}';
+    }
+    return target;
+  }
+
   String _getMaskedTarget(String target, String type) {
     if (type == 'email') {
       final parts = target.split('@');
@@ -182,9 +201,12 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
       return '${name.substring(0, 2)}***${name.substring(name.length - 1)}@$domain';
     } else {
       final clean = target.replaceAll(RegExp(r'\D'), '');
-      if (clean.length < 6) return target;
-      final last4 = clean.substring(clean.length - 4);
-      return '+${clean.substring(0, math.min(2, clean.length - 4))} •••••• $last4';
+      if (clean.length == 10) {
+        return '+91 ${clean.substring(0, 5)} ${clean.substring(5)}';
+      } else if (clean.length == 12 && clean.startsWith('91')) {
+        return '+91 ${clean.substring(2, 7)} ${clean.substring(7)}';
+      }
+      return target;
     }
   }
 
@@ -202,33 +224,75 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
     });
 
     final auth = context.read<AuthProvider>();
-    final resetToken = await auth.verifyForgotPasswordOtp(
-      widget.target,
-      widget.type,
-      otp,
-    );
 
-    if (!mounted) return;
-
-    if (resetToken != null && resetToken.isNotEmpty) {
-      setState(() => _isVerifying = false);
-
-      Navigator.pushReplacement(
-        context,
-        AppPageTransitions.slideRight(
-          ResetPasswordScreen(
-            target: widget.target,
-            type: widget.type,
-            resetToken: resetToken,
-          ),
-        ),
+    if (widget.isForgotPassword) {
+      final resetToken = await auth.verifyForgotPasswordOtp(
+        widget.target,
+        widget.type,
+        otp,
       );
+
+      if (!mounted) return;
+
+      if (resetToken != null && resetToken.isNotEmpty) {
+        setState(() => _isVerifying = false);
+
+        Navigator.pushReplacement(
+          context,
+          AppPageTransitions.slideRight(
+            ResetPasswordScreen(
+              target: widget.target,
+              type: widget.type,
+              resetToken: resetToken,
+            ),
+          ),
+        );
+      } else {
+        setState(() {
+          _isVerifying = false;
+          _errorMessage = auth.errorMessage ?? "Invalid or expired OTP";
+        });
+        _shakeCtrl.forward(from: 0.0);
+      }
     } else {
-      setState(() {
-        _isVerifying = false;
-        _errorMessage = auth.errorMessage ?? "Invalid verification code";
-      });
-      _shakeCtrl.forward(from: 0.0);
+      final success = await auth.verifyOtp(widget.target, otp);
+
+      if (!mounted) return;
+
+      if (success) {
+        setState(() => _isVerifying = false);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Phone number verified successfully! 🎉'),
+            backgroundColor: AppColors.success,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+
+        if (auth.isAuthenticated) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            AppPageTransitions.slideRight(const HomeScreen()),
+            (route) => false,
+          );
+        } else if (Navigator.canPop(context)) {
+          Navigator.pop(context, true);
+        } else {
+          Navigator.pushAndRemoveUntil(
+            context,
+            AppPageTransitions.slideRight(const HomeScreen()),
+            (route) => false,
+          );
+        }
+      } else {
+        setState(() {
+          _isVerifying = false;
+          _errorMessage = auth.errorMessage ?? "Invalid or expired OTP";
+        });
+        _shakeCtrl.forward(from: 0.0);
+      }
     }
   }
 
@@ -391,22 +455,31 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
                   height: 54,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
-                    gradient: const LinearGradient(
-                      colors: [AppColors.primary, AppColors.accent],
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withAlpha(50),
-                        blurRadius: 12,
-                        offset: const Offset(0, 5),
-                      )
-                    ],
+                    gradient: (_isOtpComplete && !_isVerifying)
+                        ? const LinearGradient(
+                            colors: [AppColors.primary, AppColors.accent],
+                          )
+                        : LinearGradient(
+                            colors: [
+                              context.isDarkMode ? Colors.grey.shade800 : Colors.grey.shade300,
+                              context.isDarkMode ? Colors.grey.shade800 : Colors.grey.shade300,
+                            ],
+                          ),
+                    boxShadow: (_isOtpComplete && !_isVerifying)
+                        ? [
+                            BoxShadow(
+                              color: AppColors.primary.withAlpha(50),
+                              blurRadius: 12,
+                              offset: const Offset(0, 5),
+                            )
+                          ]
+                        : null,
                   ),
                   child: Material(
                     color: Colors.transparent,
                     child: InkWell(
                       borderRadius: BorderRadius.circular(16),
-                      onTap: _isVerifying ? null : _verifyOtp,
+                      onTap: (_isOtpComplete && !_isVerifying) ? _verifyOtp : null,
                       child: Center(
                         child: _isVerifying
                             ? const SizedBox(
@@ -417,10 +490,12 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
                                   strokeWidth: 2.5,
                                 ),
                               )
-                            : const Text(
+                            : Text(
                                 "Verify OTP →",
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  color: (_isOtpComplete && !_isVerifying)
+                                      ? Colors.white
+                                      : (context.isDarkMode ? Colors.grey.shade500 : Colors.grey.shade600),
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,
                                 ),

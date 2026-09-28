@@ -106,16 +106,33 @@ const sendOtpController = async (req, res) => {
 const verifyOtpController = async (req, res) => {
   try {
     const data = otpVerifySchema.parse(req.body);
-    await verifyOtp(data.phone, data.otp);
+    const result = await verifyOtp(data.phone, data.otp);
 
-    return res.status(200).json({
+    if (!result.success) {
+      return res.status(400).json({
+        success: false,
+        message: result.message || "Invalid or expired OTP",
+      });
+    }
+
+    const responsePayload = {
       success: true,
-      message: "Mobile verified successfully",
-    });
+      message: "Phone number verified successfully",
+    };
+
+    if (result.token) {
+      responsePayload.token = result.token;
+    }
+    if (result.user) {
+      responsePayload.user = result.user;
+      responsePayload.data = result.user;
+    }
+
+    return res.status(200).json(responsePayload);
   } catch (error) {
     return res.status(400).json({
       success: false,
-      message: error.message,
+      message: error.message || "Invalid or expired OTP",
     });
   }
 };

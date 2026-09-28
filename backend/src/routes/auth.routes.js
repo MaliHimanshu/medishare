@@ -87,6 +87,62 @@
 
 /**
  * @swagger
+ * /api/auth/send-otp:
+ *   post:
+ *     summary: Send SMS OTP
+ *     description: Send a 6-digit OTP to the specified phone number using Twilio Verify.
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - phone
+ *             properties:
+ *               phone:
+ *                 type: string
+ *                 example: "+918000917657"
+ *     responses:
+ *       200:
+ *         description: OTP sent successfully.
+ *       400:
+ *         description: Validation error or provider error.
+ */
+
+/**
+ * @swagger
+ * /api/auth/verify-otp:
+ *   post:
+ *     summary: Verify SMS OTP
+ *     description: Check a 6-digit OTP code using Twilio Verify.
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - phone
+ *               - otp
+ *             properties:
+ *               phone:
+ *                 type: string
+ *                 example: "+918000917657"
+ *               otp:
+ *                 type: string
+ *                 example: "123456"
+ *     responses:
+ *       200:
+ *         description: Phone number verified successfully.
+ *       400:
+ *         description: Invalid or expired OTP.
+ */
+
+/**
+ * @swagger
  * /api/auth/me:
  *   get:
  *     summary: Get logged-in user profile

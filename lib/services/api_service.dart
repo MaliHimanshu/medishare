@@ -11,7 +11,7 @@ import '../models/user_model.dart';
 /// and JWT storage via flutter_secure_storage.
 class AuthService {
   static const FlutterSecureStorage _storage = FlutterSecureStorage();
-  static const String _tokenKey = 'medishare_token';
+  static const String _tokenKey = 'auth_token';
   static const String _userKey  = 'medishare_user';
 
   final Dio _dio = DioClient.instance;
@@ -88,13 +88,23 @@ class AuthService {
 
   Future<bool> verifyOtp(String phone, String otp) async {
     try {
-      await _dio.post(ApiEndpoints.verifyOtp, data: {'phone': phone, 'otp': otp});
-      // After verification, refresh the user profile to get phoneVerified = true
-      final user = await getMe();
-      if (user != null) {
-        final token = await getToken();
-        if (token != null) {
+      final response = await _dio.post(ApiEndpoints.verifyOtp, data: {'phone': phone, 'otp': otp});
+      final data = response.data;
+      if (data is Map<String, dynamic>) {
+        final token = data['token']?.toString();
+        final rawUser = data['user'] ?? data['data'];
+        if (token != null && token.isNotEmpty && rawUser is Map<String, dynamic>) {
+          final user = UserModel.fromJson(rawUser);
           await _persistAuth(token, user);
+        } else {
+          // If already logged in, refresh user profile to update phoneVerified
+          final user = await getMe();
+          if (user != null) {
+            final existingToken = await getToken();
+            if (existingToken != null) {
+              await _persistAuth(existingToken, user);
+            }
+          }
         }
       }
       return true;
@@ -161,9 +171,21 @@ class AuthService {
     try {
       final response = await _dio.get(ApiEndpoints.me);
       final data = response.data as Map<String, dynamic>;
-      return UserModel.fromJson(data['data'] as Map<String, dynamic>);
-    } on DioException {
+      final userMap = (data['user'] ?? data['data']) as Map<String, dynamic>?;
+      if (userMap != null) {
+        final user = UserModel.fromJson(userMap);
+        await _storage.write(key: _userKey, value: jsonEncode(user.toJson()));
+        return user;
+      }
       return null;
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        await clearAuth();
+        return null;
+      }
+      return await getCachedUser();
+    } catch (_) {
+      return await getCachedUser();
     }
   }
 
@@ -173,13 +195,15 @@ class AuthService {
       await _storage.write(key: _tokenKey, value: token);
       await _storage.write(key: _userKey,  value: jsonEncode(user.toJson()));
     } catch (e) {
-      // Log storage error safely
+      // Safe storage error handling without exposing secrets
     }
   }
 
   Future<String?> getToken() async {
     try {
-      return await _storage.read(key: _tokenKey);
+      final token = await _storage.read(key: _tokenKey);
+      if (token != null && token.isNotEmpty) return token;
+      return await _storage.read(key: 'medishare_token');
     } catch (_) {
       return null;
     }
@@ -198,6 +222,7 @@ class AuthService {
   Future<void> clearAuth() async {
     try {
       await _storage.delete(key: _tokenKey);
+      await _storage.delete(key: 'medishare_token');
       await _storage.delete(key: _userKey);
     } catch (_) {}
   }

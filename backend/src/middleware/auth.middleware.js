@@ -30,13 +30,16 @@ const protect = async (req, res, next) => {
         name: true,
         email: true,
         phone: true,
+        phoneVerified: true,
         address: true,
+        profileImage: true,
         role: true,
         organizationName: true,
         registrationNumber: true,
         contactPerson: true,
         equipmentPreference: true,
         verificationStatus: true,
+        createdAt: true,
       },
     });
 
@@ -51,7 +54,10 @@ const protect = async (req, res, next) => {
 
     next();
   } catch (error) {
-    next(error);
+    return res.status(401).json({
+      success: false,
+      message: "Invalid or expired token.",
+    });
   }
 };
 

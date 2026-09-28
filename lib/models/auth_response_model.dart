@@ -18,7 +18,7 @@ class AuthResponseModel {
     return AuthResponseModel(
       success: json['success'] as bool? ?? false,
       message: json['message']?.toString() ?? '',
-      user:    UserModel.fromJson(json['data'] as Map<String, dynamic>),
+      user:    UserModel.fromJson((json['user'] ?? json['data']) as Map<String, dynamic>),
       token:   json['token']?.toString() ?? '',
     );
   }

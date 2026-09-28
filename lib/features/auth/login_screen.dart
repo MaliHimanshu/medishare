@@ -10,6 +10,7 @@ import '../../shared/widgets/ms_text_field.dart';
 import '../home/home_screen.dart';
 import '../forgot_password/forgot_password_screen.dart';
 import 'register_screen.dart';
+import 'otp_verification_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -23,9 +24,14 @@ class _LoginScreenState extends State<LoginScreen>
   final _formKey   = GlobalKey<FormState>();
   final _emailCtrl = TextEditingController();
   final _passCtrl  = TextEditingController();
+  final _phoneCtrl = TextEditingController();
+
+  bool _isPhoneMode = false;
+  bool _isSendingOtp = false;
 
   String? _emailError;
   String? _passError;
+  String? _phoneError;
 
   late AnimationController _animCtrl;
   late Animation<double> _logoFade;
@@ -71,6 +77,7 @@ class _LoginScreenState extends State<LoginScreen>
   void dispose() {
     _emailCtrl.dispose();
     _passCtrl.dispose();
+    _phoneCtrl.dispose();
     _animCtrl.dispose();
     super.dispose();
   }
@@ -131,6 +138,62 @@ class _LoginScreenState extends State<LoginScreen>
     }
   }
 
+  Future<void> _handleSendOtp() async {
+    final rawPhone = _phoneCtrl.text.replaceAll(RegExp(r'\D'), '');
+    if (rawPhone.isEmpty) {
+      setState(() => _phoneError = 'Mobile number is required');
+      return;
+    }
+    if (rawPhone.length != 10) {
+      setState(() => _phoneError = 'Enter a valid 10-digit mobile number');
+      return;
+    }
+    if (!RegExp(r'^[6-9]\d{9}$').hasMatch(rawPhone)) {
+      setState(() => _phoneError = 'Enter a valid Indian mobile number starting with 6-9');
+      return;
+    }
+
+    final formattedPhone = '+91$rawPhone';
+    setState(() {
+      _phoneError = null;
+      _isSendingOtp = true;
+    });
+
+    final auth = context.read<AuthProvider>();
+    final success = await auth.sendOtp(formattedPhone);
+
+    if (!mounted) return;
+    setState(() => _isSendingOtp = false);
+
+    if (success) {
+      final masked = '+91 ${rawPhone.substring(0, 5)} ${rawPhone.substring(5)}';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('OTP sent to $masked 📲'),
+          backgroundColor: AppColors.success,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+
+      Navigator.push(
+        context,
+        AppPageTransitions.slideRight(
+          OtpVerificationScreen(phone: formattedPhone),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(auth.errorMessage ?? 'Failed to send OTP'),
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final auth      = context.watch<AuthProvider>();
@@ -181,72 +244,218 @@ class _LoginScreenState extends State<LoginScreen>
                             fontWeight: FontWeight.w400,
                           ),
                         ),
-                        const SizedBox(height: 36),
+                        const SizedBox(height: 24),
 
-                        // ── Email ──────────────────────────
-                        MsTextField(
-                          label: 'Email Address',
-                          hint: 'you@example.com',
-                          controller: _emailCtrl,
-                          keyboardType: TextInputType.emailAddress,
-                          prefixIcon: Icons.email_outlined,
-                          errorText: _emailError,
-                          textInputAction: TextInputAction.next,
-                          autofocus: true,
-                          onChanged: (_) {
-                            if (_emailError != null) {
-                              setState(() => _emailError = null);
-                            }
-                          },
-                        ),
-                        const SizedBox(height: 20),
-
-                        // ── Password ───────────────────────
-                        MsTextField(
-                          label: 'Password',
-                          hint: 'Enter your password',
-                          controller: _passCtrl,
-                          isPassword: true,
-                          prefixIcon: Icons.lock_outline,
-                          errorText: _passError,
-                          textInputAction: TextInputAction.done,
-                          onChanged: (_) {
-                            if (_passError != null) {
-                              setState(() => _passError = null);
-                            }
-                          },
-                          onSubmitted: (_) => _submit(),
-                        ),
-                        const SizedBox(height: 12),
-
-                        // ── Forgot Password ─────────────────
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton(
-                            onPressed: () => Navigator.push(
-                              context,
-                              AppPageTransitions.slideRight(
-                                  const ForgotPasswordScreen()),
+                        // ── Mode Toggle: Email vs Phone OTP ──
+                        Container(
+                          height: 48,
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: context.isDarkMode ? AppColors.dark2 : const Color(0xFFF1F5F9),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: context.isDarkMode ? Colors.grey.shade800 : const Color(0xFFE2E8F0),
                             ),
-                            child: const Text(
-                              'Forgot Password?',
-                              style: TextStyle(
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 13,
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () => setState(() => _isPhoneMode = false),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: !_isPhoneMode
+                                          ? (context.isDarkMode ? context.cardBg : Colors.white)
+                                          : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(10),
+                                      boxShadow: !_isPhoneMode
+                                          ? [
+                                              BoxShadow(
+                                                color: Colors.black.withAlpha(15),
+                                                blurRadius: 4,
+                                                offset: const Offset(0, 1),
+                                              )
+                                            ]
+                                          : null,
+                                    ),
+                                    child: Center(
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.email_outlined,
+                                            size: 16,
+                                            color: !_isPhoneMode ? AppColors.primary : context.textSecondaryColor,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'Email',
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: !_isPhoneMode ? FontWeight.w700 : FontWeight.w500,
+                                              color: !_isPhoneMode ? context.textPrimaryColor : context.textSecondaryColor,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () => setState(() => _isPhoneMode = true),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: _isPhoneMode
+                                          ? (context.isDarkMode ? context.cardBg : Colors.white)
+                                          : Colors.transparent,
+                                      borderRadius: BorderRadius.circular(10),
+                                      boxShadow: _isPhoneMode
+                                          ? [
+                                              BoxShadow(
+                                                color: Colors.black.withAlpha(15),
+                                                blurRadius: 4,
+                                                offset: const Offset(0, 1),
+                                              )
+                                            ]
+                                          : null,
+                                    ),
+                                    child: Center(
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.phone_android_rounded,
+                                            size: 16,
+                                            color: _isPhoneMode ? AppColors.primary : context.textSecondaryColor,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'Phone OTP',
+                                            style: TextStyle(
+                                              fontSize: 13,
+                                              fontWeight: _isPhoneMode ? FontWeight.w700 : FontWeight.w500,
+                                              color: _isPhoneMode ? context.textPrimaryColor : context.textSecondaryColor,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 28),
+
+                        if (!_isPhoneMode) ...[
+                          // ── Email ──────────────────────────
+                          MsTextField(
+                            label: 'Email Address',
+                            hint: 'you@example.com',
+                            controller: _emailCtrl,
+                            keyboardType: TextInputType.emailAddress,
+                            prefixIcon: Icons.email_outlined,
+                            errorText: _emailError,
+                            textInputAction: TextInputAction.next,
+                            autofocus: true,
+                            onChanged: (_) {
+                              if (_emailError != null) {
+                                setState(() => _emailError = null);
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 20),
+
+                          // ── Password ───────────────────────
+                          MsTextField(
+                            label: 'Password',
+                            hint: 'Enter your password',
+                            controller: _passCtrl,
+                            isPassword: true,
+                            prefixIcon: Icons.lock_outline,
+                            errorText: _passError,
+                            textInputAction: TextInputAction.done,
+                            onChanged: (_) {
+                              if (_passError != null) {
+                                setState(() => _passError = null);
+                              }
+                            },
+                            onSubmitted: (_) => _submit(),
+                          ),
+                          const SizedBox(height: 12),
+
+                          // ── Forgot Password ─────────────────
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: TextButton(
+                              onPressed: () => Navigator.push(
+                                context,
+                                AppPageTransitions.slideRight(
+                                    const ForgotPasswordScreen()),
+                              ),
+                              child: const Text(
+                                'Forgot Password?',
+                                style: TextStyle(
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 24),
+                          const SizedBox(height: 24),
 
-                        // ── Login Button ────────────────────
-                        MsButton(
-                          label: 'Sign In',
-                          onPressed: isLoading ? null : _submit,
-                          isLoading: isLoading,
-                          icon: Icons.login_rounded,
-                        ),
+                          // ── Login Button ────────────────────
+                          MsButton(
+                            label: 'Sign In',
+                            onPressed: isLoading ? null : _submit,
+                            isLoading: isLoading,
+                            icon: Icons.login_rounded,
+                          ),
+                        ] else ...[
+                          // ── Phone Input ────────────────────
+                          MsTextField(
+                            label: 'Mobile Number',
+                            hint: '98765 43210',
+                            controller: _phoneCtrl,
+                            keyboardType: TextInputType.phone,
+                            prefixIcon: Icons.phone_outlined,
+                            errorText: _phoneError,
+                            textInputAction: TextInputAction.done,
+                            onChanged: (_) {
+                              if (_phoneError != null) {
+                                setState(() => _phoneError = null);
+                              }
+                            },
+                            onSubmitted: (_) => _handleSendOtp(),
+                          ),
+                          const SizedBox(height: 12),
+                          Row(
+                            children: [
+                              Icon(Icons.verified_user_outlined, size: 16, color: context.textSecondaryColor),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'A 6-digit OTP will be sent to your phone via SMS.',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: context.textSecondaryColor,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 24),
+                          MsButton(
+                            label: 'Send OTP',
+                            onPressed: _isSendingOtp ? null : _handleSendOtp,
+                            isLoading: _isSendingOtp,
+                            icon: Icons.sms_outlined,
+                          ),
+                        ],
                         const SizedBox(height: 20),
 
                         // ── OR Divider ──────────────────────

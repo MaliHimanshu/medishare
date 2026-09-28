@@ -101,32 +101,36 @@ class AuthProvider extends ChangeNotifier {
 
   // ── OTP ───────────────────────────────────────────────
   Future<bool> sendOtp(String phone) async {
-    _setStatus(AuthStatus.loading);
     _errorMessage = null;
     try {
-      final success = await _authService.sendOtp(phone);
-      _setStatus(AuthStatus.authenticated);
-      return success;
+      return await _authService.sendOtp(phone);
     } catch (e) {
       _errorMessage = e.toString().replaceAll('Exception: ', '');
-      _setStatus(AuthStatus.authenticated); // don't move to error state just for otp failure
+      notifyListeners();
       return false;
     }
   }
 
   Future<bool> verifyOtp(String phone, String otp) async {
-    _setStatus(AuthStatus.loading);
     _errorMessage = null;
     try {
       final success = await _authService.verifyOtp(phone, otp);
       if (success) {
-        _user = await _authService.getCachedUser();
+        final cachedUser = await _authService.getCachedUser();
+        if (cachedUser != null) {
+          _user = cachedUser;
+        }
+        final hasToken = await _authService.hasToken();
+        if (hasToken) {
+          _setStatus(AuthStatus.authenticated);
+        } else {
+          notifyListeners();
+        }
       }
-      _setStatus(AuthStatus.authenticated);
       return success;
     } catch (e) {
       _errorMessage = e.toString().replaceAll('Exception: ', '');
-      _setStatus(AuthStatus.authenticated);
+      notifyListeners();
       return false;
     }
   }

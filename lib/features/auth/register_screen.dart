@@ -9,6 +9,7 @@ import '../../shared/widgets/ms_logo.dart';
 import '../../shared/widgets/ms_text_field.dart';
 import 'login_screen.dart';
 import 'otp_verification_screen.dart';
+import '../home/home_screen.dart';
 
 // Role option data
 class _Role {
@@ -53,7 +54,14 @@ const _roles = [
 ];
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+  final String? initialPhone;
+  final bool isPhoneVerified;
+
+  const RegisterScreen({
+    super.key,
+    this.initialPhone,
+    this.isPhoneVerified = false,
+  });
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -72,6 +80,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _confirmCtrl       = TextEditingController();
 
   String _selectedRole = 'DONOR';
+  bool _phoneVerified = false;
 
   // Field errors
   String? _nameError;
@@ -79,6 +88,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String? _phoneError;
   String? _passError;
   String? _confirmError;
+
+  @override
+  void initState() {
+    super.initState();
+    _phoneVerified = widget.isPhoneVerified;
+    if (widget.initialPhone != null && widget.initialPhone!.isNotEmpty) {
+      final clean = widget.initialPhone!.replaceAll(RegExp(r'\D'), '');
+      _phoneCtrl.text = clean.length >= 10 ? clean.substring(clean.length - 10) : clean;
+    }
+  }
 
   @override
   void dispose() {
@@ -161,18 +180,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!mounted) return;
 
     if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Account created! Verification code sent 📲'),
-          backgroundColor: AppColors.success,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-      );
-      Navigator.pushReplacement(
-        context,
-        AppPageTransitions.slideRight(OtpVerificationScreen(phone: phone)),
-      );
+      if (_phoneVerified) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Account created successfully! 🎉'),
+            backgroundColor: AppColors.success,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+        Navigator.pushReplacement(
+          context,
+          AppPageTransitions.slideRight(const HomeScreen()),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Account created! Verification code sent 📲'),
+            backgroundColor: AppColors.success,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+        Navigator.pushReplacement(
+          context,
+          AppPageTransitions.slideRight(OtpVerificationScreen(phone: phone)),
+        );
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

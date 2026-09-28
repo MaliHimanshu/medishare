@@ -14,6 +14,7 @@ class OtpVerificationScreen extends StatelessWidget {
     return OtpScreen(
       target: phone,
       type: 'phone',
+      isForgotPassword: false,
     );
   }
 }
