@@ -48,3 +48,9 @@ app.*.map.json
 backend/*.dump
 
 *.apk
+
+# Environment Variables & Secrets
+.env
+.env.*
+*.env
+!*.env.example
