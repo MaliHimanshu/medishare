@@ -32,7 +32,9 @@ class NotificationModel {
       final lowerTitle = titleText.toLowerCase();
       final lowerMsg = msgText.toLowerCase();
 
-      if (rawType == 'DONATION' || lowerTitle.contains('donat') || lowerMsg.contains('donat')) {
+      if (rawType.contains('EMERGENCY') || lowerTitle.contains('emergency') || lowerMsg.contains('emergency')) {
+        parsedModule = 'Emergency';
+      } else if (rawType == 'DONATION' || lowerTitle.contains('donat') || lowerMsg.contains('donat')) {
         parsedModule = 'Donations';
       } else if (rawType == 'REQUEST' || lowerTitle.contains('request') || lowerMsg.contains('request')) {
         parsedModule = 'Requests';

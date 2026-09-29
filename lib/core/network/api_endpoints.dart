@@ -95,4 +95,9 @@ class ApiEndpoints {
 
   // ── Tracking ────────────────────────────────────────────
   static const String tracking        = '/tracking';      // append /{rentalId}/...
+
+  // ── Emergency Alerts ────────────────────────────────────
+  static const String emergencyAlerts           = '/emergency-alerts';
+  static const String emergencyAlertsMy         = '/emergency-alerts/my';
+  static const String emergencyAlertDeviceToken = '/emergency-alerts/device-token';
 }

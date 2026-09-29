@@ -15,7 +15,8 @@ import '../../equipment/equipment_list_screen.dart';
 import '../../equipment/equipment_detail_screen.dart';
 import '../../requests/request_screen.dart';
 import '../../requests/create_request_screen.dart';
-import '../../chatbot/chat_home_screen.dart';
+import '../../../providers/emergency_alert_provider.dart';
+import '../../emergency_alerts/ngo_emergency_alerts_screen.dart';
 
 class NgoDashboard extends StatefulWidget {
   final UserModel user;
@@ -35,6 +36,7 @@ class _NgoDashboardState extends State<NgoDashboard> {
       context.read<EquipmentProvider>().fetchEquipment();
       context.read<RequestProvider>().fetchRequests();
       context.read<DonationProvider>().fetchDonations();
+      context.read<EmergencyAlertProvider>().fetchActiveAlerts();
     });
   }
 
@@ -177,6 +179,100 @@ class _NgoDashboardState extends State<NgoDashboard> {
         ),
         const SizedBox(height: 24),
 
+        // ── Emergency Alerts Banner ────────────────────────────
+        Consumer<EmergencyAlertProvider>(
+          builder: (context, emProv, _) {
+            final activeCount = emProv.activeNgoAlertsCount;
+            final hasCritical = emProv.activeNgoAlerts.any((a) => a.isCritical && a.isActive);
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 24),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: hasCritical
+                      ? [const Color(0xFF7F1D1D), const Color(0xFFDC2626)]
+                      : [const Color(0xFF0F766E), const Color(0xFF0D9488)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: (hasCritical ? Colors.red : Colors.teal).withAlpha(40),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withAlpha(40),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.crisis_alert_rounded, color: Colors.white, size: 24),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              hasCritical
+                                  ? "🚨 CRITICAL EQUIPMENT SHORTAGE"
+                                  : "Emergency Equipment Alerts 🚨",
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
+                            Text(
+                              activeCount > 0
+                                  ? "$activeCount hospital request(s) awaiting partner response"
+                                  : "Hospital emergency equipment requests in your area",
+                              style: const TextStyle(color: Colors.white70, fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          AppPageTransitions.slideRight(const NgoEmergencyAlertsScreen()),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: hasCritical ? const Color(0xFFDC2626) : const Color(0xFF0F766E),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(vertical: 11),
+                      ),
+                      icon: const Icon(Icons.emergency_rounded, size: 18),
+                      label: Text(
+                        activeCount > 0 ? "VIEW $activeCount EMERGENCY ALERTS 🚨" : "VIEW EMERGENCY ALERTS",
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+
         // ── NGO Stats 2x2 Grid ─────────────────────────────────
         Row(
           children: [
@@ -241,6 +337,12 @@ class _NgoDashboardState extends State<NgoDashboard> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             _NgoActionButton(
+              title: "Alerts 🚨",
+              icon: Icons.crisis_alert_rounded,
+              color: Colors.red,
+              onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const NgoEmergencyAlertsScreen())),
+            ),
+            _NgoActionButton(
               title: "Browse Equip",
               icon: Icons.search_rounded,
               color: Colors.teal,
@@ -257,12 +359,6 @@ class _NgoDashboardState extends State<NgoDashboard> {
               icon: Icons.favorite_border_outlined,
               color: Colors.pink,
               onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const MyDonationsScreen())),
-            ),
-            _NgoActionButton(
-              title: "Assistant",
-              icon: Icons.smart_toy_outlined,
-              color: Colors.blue,
-              onTap: () => Navigator.push(context, AppPageTransitions.slideUp(const ChatHomeScreen())),
             ),
           ],
         ),

@@ -30,17 +30,20 @@ model User {
   contactPerson      String?
   equipmentPreference String?
   verificationStatus String?   @default("PENDING")
+  fcmToken           String?
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
-  chatHistory   ChatHistory[]
-  donations     Donation[]
-  equipment     Equipment[]
-  notifications Notification[]
-  requests      Request[]
-  rentals       Rental[]       @relation("Renter")
-  conversations ConversationParticipant[]
-  messages      Message[]
+  chatHistory        ChatHistory[]
+  donations          Donation[]
+  equipment          Equipment[]
+  notifications      Notification[]
+  requests           Request[]
+  rentals            Rental[]                 @relation("Renter")
+  conversations      ConversationParticipant[]
+  messages           Message[]
+  emergencyAlerts    EmergencyAlert[]         @relation("HospitalAlerts")
+  emergencyResponses EmergencyAlertResponse[] @relation("NgoResponses")
 
   @@index([role])
   @@index([createdAt])
@@ -319,6 +322,8 @@ enum NotificationType {
   APPROVAL
   REJECTION
   GENERAL
+  EMERGENCY_ALERT
+  EMERGENCY_RESPONSE
 }
 
 // ======================================================
@@ -375,3 +380,84 @@ enum MessageType {
   IMAGE
   FILE
 }
+
+// ======================================================
+// EMERGENCY EQUIPMENT ALERT
+// ======================================================
+
+model EmergencyAlert {
+  id                String                 @id @default(cuid())
+  hospitalId        String
+  equipmentName     String
+  equipmentCategory String?
+  quantityRequired  Int
+  description       String?
+  priority          EmergencyAlertPriority @default(HIGH)
+  status            EmergencyAlertStatus   @default(ACTIVE)
+
+  latitude  Float?
+  longitude Float?
+  address   String?
+
+  expiresAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  hospital  User                     @relation("HospitalAlerts", fields: [hospitalId], references: [id], onDelete: Cascade)
+  responses EmergencyAlertResponse[]
+
+  @@index([hospitalId])
+  @@index([status])
+  @@index([priority])
+  @@index([status, priority])
+  @@index([createdAt])
+  @@map("emergency_alerts")
+}
+
+// ======================================================
+// EMERGENCY EQUIPMENT ALERT RESPONSE
+// ======================================================
+
+model EmergencyAlertResponse {
+  id                String                  @id @default(cuid())
+  emergencyAlertId  String
+  ngoId             String
+  quantityAvailable Int
+  message           String?
+  status            EmergencyResponseStatus @default(OFFERED)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  emergencyAlert EmergencyAlert @relation(fields: [emergencyAlertId], references: [id], onDelete: Cascade)
+  ngo            User           @relation("NgoResponses", fields: [ngoId], references: [id], onDelete: Cascade)
+
+  @@unique([emergencyAlertId, ngoId])
+  @@index([emergencyAlertId])
+  @@index([ngoId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("emergency_alert_responses")
+}
+
+enum EmergencyAlertPriority {
+  NORMAL
+  HIGH
+  CRITICAL
+}
+
+enum EmergencyAlertStatus {
+  ACTIVE
+  PARTIALLY_FULFILLED
+  FULFILLED
+  CANCELLED
+  EXPIRED
+}
+
+enum EmergencyResponseStatus {
+  OFFERED
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
+

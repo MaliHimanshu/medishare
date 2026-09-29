@@ -17,6 +17,7 @@ import '../providers/global_search_provider.dart';
 import '../providers/rental_provider.dart';
 import '../providers/tracking_provider.dart';
 import '../providers/chat_provider.dart';
+import '../providers/emergency_alert_provider.dart';
 import '../features/splash/splash_screen.dart';
 
 import '../core/network/dio_client.dart';
@@ -67,6 +68,7 @@ class _MediShareAppState extends State<MediShareApp> {
         ChangeNotifierProvider<RentalProvider>(create: (_) => RentalProvider()),
         ChangeNotifierProvider<TrackingProvider>(create: (_) => TrackingProvider()),
         ChangeNotifierProvider<ChatProvider>(create: (_) => ChatProvider()),
+        ChangeNotifierProvider<EmergencyAlertProvider>(create: (_) => EmergencyAlertProvider()),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProv, child) {

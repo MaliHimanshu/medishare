@@ -11,7 +11,6 @@ import '../../../providers/request_provider.dart';
 import '../../../providers/rental_provider.dart';
 import '../../../providers/donation_provider.dart';
 import '../../../shared/widgets/ms_skeleton.dart';
-import '../../donations/my_donations_screen.dart';
 import '../../equipment/add_equipment_screen.dart';
 import '../../equipment/equipment_list_screen.dart';
 import '../../equipment/equipment_detail_screen.dart';
@@ -19,6 +18,9 @@ import '../../equipment/my_equipment_screen.dart';
 import '../../requests/request_screen.dart';
 import '../../requests/create_request_screen.dart';
 import '../../rental/my_rentals_screen.dart';
+import '../../../providers/emergency_alert_provider.dart';
+import '../../emergency_alerts/create_emergency_alert_screen.dart';
+import '../../emergency_alerts/hospital_emergency_alerts_screen.dart';
 
 class HospitalDashboard extends StatefulWidget {
   final UserModel user;
@@ -39,6 +41,7 @@ class _HospitalDashboardState extends State<HospitalDashboard> {
       context.read<RequestProvider>().fetchRequests();
       context.read<RentalProvider>().fetchRentals();
       context.read<DonationProvider>().fetchDonations();
+      context.read<EmergencyAlertProvider>().fetchHospitalAlerts();
     });
   }
 
@@ -177,6 +180,113 @@ class _HospitalDashboardState extends State<HospitalDashboard> {
         ),
         const SizedBox(height: 24),
 
+        // ── Emergency Alerts High-Priority Banner ───────────────
+        Consumer<EmergencyAlertProvider>(
+          builder: (context, emProv, _) {
+            final activeCount = emProv.hospitalActiveAlertsCount;
+            return Container(
+              margin: const EdgeInsets.only(bottom: 24),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF7F1D1D), Color(0xFFDC2626)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.red.withAlpha(50),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withAlpha(40),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.crisis_alert_rounded, color: Colors.white, size: 24),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Emergency Equipment Alerts 🚨",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            Text(
+                              activeCount > 0
+                                  ? "$activeCount active emergency request(s)"
+                                  : "Broadcast urgent equipment shortage to partner NGOs",
+                              style: const TextStyle(color: Colors.white70, fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              AppPageTransitions.slideUp(const CreateEmergencyAlertScreen()),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: const Color(0xFFDC2626),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                          ),
+                          icon: const Icon(Icons.add_alert_rounded, size: 18),
+                          label: const Text(
+                            "New Alert 🚨",
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      OutlinedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            AppPageTransitions.slideRight(const HospitalEmergencyAlertsScreen()),
+                          );
+                        },
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          side: const BorderSide(color: Colors.white70),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        ),
+                        child: const Text("View All", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+
         // ── Hospital Stats 2x2 Grid ────────────────────────────
         Row(
           children: [
@@ -241,6 +351,12 @@ class _HospitalDashboardState extends State<HospitalDashboard> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             _HospitalActionButton(
+              title: "Alert 🚨",
+              icon: Icons.crisis_alert_rounded,
+              color: Colors.red,
+              onTap: () => Navigator.push(context, AppPageTransitions.slideUp(const CreateEmergencyAlertScreen())),
+            ),
+            _HospitalActionButton(
               title: "Add Equip",
               icon: Icons.add_circle_outline,
               color: Colors.blue,
@@ -257,12 +373,6 @@ class _HospitalDashboardState extends State<HospitalDashboard> {
               icon: Icons.handshake_outlined,
               color: Colors.teal,
               onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const EquipmentListScreen())),
-            ),
-            _HospitalActionButton(
-              title: "Donate",
-              icon: Icons.volunteer_activism_outlined,
-              color: Colors.pink,
-              onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const MyDonationsScreen())),
             ),
           ],
         ),

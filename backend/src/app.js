@@ -20,6 +20,7 @@ const uploadRoutes = require("./routes/upload.routes");
 const rentalRoutes = require("./routes/rental.routes");
 const trackingRoutes = require("./routes/tracking.routes");
 const chatRoutes = require("./routes/chat.routes");
+const emergencyAlertRoutes = require("./routes/emergencyAlert.routes");
 
 const app = express();
 
@@ -71,6 +72,7 @@ app.use("/api/upload", uploadRoutes);
 app.use("/api/rental", rentalRoutes);
 app.use("/api/tracking", trackingRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/emergency-alerts", emergencyAlertRoutes);
 
 // ── Health Checks (for Render / Railway / Docker) ────────────────────────────
 app.get("/api/health", (req, res) => {

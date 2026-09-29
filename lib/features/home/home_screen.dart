@@ -30,6 +30,9 @@ import '../auth/login_screen.dart';
 import '../auth/otp_verification_screen.dart';
 import '../rental/my_rentals_screen.dart';
 import '../../core/theme/app_page_transitions.dart';
+import '../../providers/emergency_alert_provider.dart';
+import '../emergency_alerts/hospital_emergency_alerts_screen.dart';
+import '../emergency_alerts/ngo_emergency_alerts_screen.dart';
 
 // Role Dashboards
 import 'dashboards/donor_dashboard.dart';
@@ -71,6 +74,12 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<DashboardProvider>().fetchAll();
       context.read<NotificationProvider>().fetchNotifications();
+      final user = context.read<AuthProvider>().user;
+      if (user?.role.toUpperCase() == 'HOSPITAL') {
+        context.read<EmergencyAlertProvider>().fetchHospitalAlerts();
+      } else if (user?.role.toUpperCase() == 'NGO') {
+        context.read<EmergencyAlertProvider>().fetchActiveAlerts();
+      }
       _animController.forward();
     });
   }
@@ -427,6 +436,22 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(context, AppPageTransitions.slideRight(const MyEquipmentScreen()));
+              },
+            ),
+          if (role == 'HOSPITAL' || role == 'NGO' || role == 'ADMIN')
+            ListTile(
+              leading: const Icon(Icons.crisis_alert_rounded, color: Color(0xFFDC2626)),
+              title: Text(
+                role == 'HOSPITAL' ? "Emergency Alerts 🚨" : "Emergency Shortages 🚨",
+                style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFDC2626)),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                if (role == 'HOSPITAL' || role == 'ADMIN') {
+                  Navigator.push(context, AppPageTransitions.slideRight(const HospitalEmergencyAlertsScreen()));
+                } else {
+                  Navigator.push(context, AppPageTransitions.slideRight(const NgoEmergencyAlertsScreen()));
+                }
               },
             ),
           if (role == 'NGO' || role == 'RECIPIENT' || role == 'ADMIN')

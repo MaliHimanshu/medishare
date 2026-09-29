@@ -71,6 +71,7 @@ extension ThemeContextExtension on BuildContext {
   Color get scaffoldBg => Theme.of(this).scaffoldBackgroundColor;
   Color get surfaceBg => Theme.of(this).colorScheme.surface;
   Color get cardBg => isDarkMode ? const Color(0xFF242424) : AppColors.surface;
+  Color get cardColor => cardBg;
   Color get inputBg => isDarkMode ? const Color(0xFF2C2C2C) : AppColors.background;
 
   Color get textPrimaryColor => Theme.of(this).colorScheme.onSurface;
