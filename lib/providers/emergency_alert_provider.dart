@@ -7,6 +7,9 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 
+import 'package:socket_io_client/socket_io_client.dart' as io;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
 import '../core/network/dio_client.dart';
 import '../core/network/api_endpoints.dart';
 import '../core/utils/emergency_audio_util.dart';
@@ -14,6 +17,9 @@ import '../models/emergency_alert_model.dart';
 
 class EmergencyAlertProvider extends ChangeNotifier {
   final Dio _dio = DioClient.instance;
+  final FlutterSecureStorage _storage = const FlutterSecureStorage();
+  
+  io.Socket? _socket;
 
   // ── State ─────────────────────────────────────────────
   List<EmergencyAlertModel> _hospitalAlerts = [];
@@ -45,12 +51,40 @@ class EmergencyAlertProvider extends ChangeNotifier {
 
   void clearLiveIncomingAlert() {
     _liveIncomingAlert = null;
+    EmergencyAudioUtil.stopEmergencyAlertTone();
     notifyListeners();
   }
 
   void clearError() {
     _errorMessage = null;
     notifyListeners();
+  }
+
+  // ── Socket Initialization ───────────────────────────────
+  Future<void> initSocket() async {
+    if (_socket != null) return;
+
+    final token = await _storage.read(key: 'jwt_token');
+    if (token == null) return;
+
+    final serverUrl = ApiEndpoints.baseUrl.replaceAll('/api', '');
+    
+    _socket = io.io(serverUrl, <String, dynamic>{
+      'transports': ['websocket'],
+      'autoConnect': false,
+      'auth': {'token': token}
+    });
+
+    _socket?.connect();
+
+    _socket?.onConnect((_) {
+      debugPrint('🚨 Emergency Socket Connected');
+    });
+
+    _socket?.on('emergency:new_alert', (data) {
+      debugPrint('🚨 Emergency event received');
+      handleIncomingSocketAlert(data);
+    });
   }
 
   // ── Socket Handler for Incoming Emergency Event ───────
@@ -149,6 +183,7 @@ class EmergencyAlertProvider extends ChangeNotifier {
 
   // ── Hospital: Fetch Hospital's Alerts ─────────────────
   Future<void> fetchHospitalAlerts() async {
+    await initSocket();
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -174,6 +209,7 @@ class EmergencyAlertProvider extends ChangeNotifier {
 
   // ── NGO: Fetch Active Relevant Alerts ─────────────────
   Future<void> fetchActiveAlerts() async {
+    await initSocket();
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
