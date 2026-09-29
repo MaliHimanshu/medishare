@@ -96,10 +96,19 @@ const registerUser = async (data) => {
     },
   });
 
-  // Trigger OTP sending if phone is provided
+  // Trigger OTP sending (email or phone)
   let otpSent = false;
   let otpError = null;
-  if (normalizedPhone) {
+
+  if (data.otpChannel === "email" || data.verificationType === "email") {
+    try {
+      await sendOtp(user.email, "email");
+      otpSent = true;
+    } catch (emailErr) {
+      otpError = emailErr.message;
+      console.warn("Could not automatically send email OTP during registration:", emailErr.message);
+    }
+  } else if (normalizedPhone) {
     try {
       await sendOtp(normalizedPhone);
       otpSent = true;

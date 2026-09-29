@@ -10,13 +10,39 @@
 const nodemailer = require("nodemailer");
 
 /**
+ * Helper to clean and strip quotes or whitespace from environment variables
+ */
+const cleanEnvVar = (val) => {
+  if (!val) return "";
+  return val.trim().replace(/^["']|["']$/g, "");
+};
+
+/**
+ * Detect whether the server is running in production or on a hosted provider (Render, Railway)
+ */
+const isProduction = () => {
+  return (
+    process.env.NODE_ENV === "production" ||
+    Boolean(process.env.RENDER) ||
+    Boolean(process.env.RENDER_SERVICE_ID) ||
+    Boolean(process.env.RAILWAY_ENVIRONMENT)
+  );
+};
+
+/**
+ * DEV MODE can only be explicitly enabled for local development, NEVER on production/Render
+ */
+const isDevModeAllowed = () => {
+  if (isProduction()) return false;
+  return process.env.ENABLE_DEV_OTP === "true" || process.env.EMAIL_DEV_MODE === "true";
+};
+
+/**
  * Get and validate Gmail configuration from environment variables
  */
 const getEmailConfig = () => {
-  const user = process.env.GMAIL_USER ? process.env.GMAIL_USER.trim() : "";
-  const pass = process.env.GMAIL_APP_PASSWORD
-    ? process.env.GMAIL_APP_PASSWORD.trim().replace(/\s+/g, "")
-    : "";
+  const user = cleanEnvVar(process.env.GMAIL_USER);
+  const pass = cleanEnvVar(process.env.GMAIL_APP_PASSWORD).replace(/\s+/g, "");
 
   const missing = [];
   if (!user) missing.push("GMAIL_USER");
@@ -31,6 +57,7 @@ const getEmailConfig = () => {
     from: user ? `"MediShare" <${user}>` : '"MediShare"',
     missing,
     isConfigured: missing.length === 0,
+    isProduction: isProduction(),
   };
 };
 
@@ -72,9 +99,15 @@ const sendEmailOtp = async (toEmail, otp, options = {}) => {
   const config = getEmailConfig();
 
   if (!config.isConfigured) {
-    throw new Error(
-      `Gmail service is not configured. Missing required environment variable(s): ${config.missing.join(", ")}`
-    );
+    if (!isDevModeAllowed()) {
+      throw new Error(
+        `Gmail service is not configured. Missing required environment variable(s): ${config.missing.join(", ")}. Please configure GMAIL_USER and GMAIL_APP_PASSWORD in production environment variables.`
+      );
+    }
+
+    // Explicit local development fallback only (never logs OTP code)
+    console.log(`[Email Service - LOCAL DEV MOCK] Simulated sending verification code to ${toEmail}`);
+    return { success: true, method: "dev_mock" };
   }
 
   const transporter = getTransporter();
@@ -114,7 +147,7 @@ const sendEmailOtp = async (toEmail, otp, options = {}) => {
   `;
 
   try {
-    await transporter.sendMail({
+    const info = await transporter.sendMail({
       from: config.from,
       to: toEmail,
       subject,
@@ -123,7 +156,7 @@ const sendEmailOtp = async (toEmail, otp, options = {}) => {
     });
 
     console.log(`[Email Service] OTP successfully sent to ${toEmail}`);
-    return { success: true, method: "gmail_smtp" };
+    return { success: true, method: "gmail_smtp", messageId: info?.messageId };
   } catch (err) {
     console.error(`[Email Service Error] Failed to send email to ${toEmail}:`, err.message);
     throw new Error(`Failed to send email OTP: ${err.message}`);
@@ -134,4 +167,6 @@ module.exports = {
   getEmailConfig,
   getTransporter,
   sendEmailOtp,
+  isProduction,
+  isDevModeAllowed,
 };

@@ -41,6 +41,8 @@ const registerSchema = z.object({
   registrationNumber: z.string().trim().max(100).optional(),
   contactPerson: z.string().trim().max(100).optional(),
   equipmentPreference: z.string().trim().max(150).optional(),
+  otpChannel: z.enum(["phone", "email"]).optional(),
+  verificationType: z.enum(["phone", "email"]).optional(),
 });
 
 const loginSchema = z.object({

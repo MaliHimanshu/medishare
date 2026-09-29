@@ -80,6 +80,28 @@ const login = async (req, res) => {
 };
 
 /**
+ * Helper to determine OTP target and channel safely
+ */
+const resolveOtpTarget = (data) => {
+  const type =
+    data.type ||
+    (data.email
+      ? "email"
+      : data.phone
+      ? "phone"
+      : data.target && data.target.includes("@")
+      ? "email"
+      : "phone");
+
+  const destination =
+    type === "email"
+      ? data.email || data.target || data.phone
+      : data.phone || data.target || data.email;
+
+  return { destination, type };
+};
+
+/**
  * Send OTP Controller
  * POST /api/auth/send-otp
  * POST /api/auth/resend-otp
@@ -87,8 +109,7 @@ const login = async (req, res) => {
 const sendOtpController = async (req, res) => {
   try {
     const data = otpSendSchema.parse(req.body);
-    const destination = data.phone || data.email || data.target;
-    const type = data.type || (data.email || (destination && destination.includes("@")) ? "email" : "phone");
+    const { destination, type } = resolveOtpTarget(data);
     const result = await sendOtp(destination, type);
 
     return res.status(200).json({
@@ -110,8 +131,7 @@ const sendOtpController = async (req, res) => {
 const verifyOtpController = async (req, res) => {
   try {
     const data = otpVerifySchema.parse(req.body);
-    const destination = data.phone || data.email || data.target;
-    const type = data.type || (data.email || (destination && destination.includes("@")) ? "email" : "phone");
+    const { destination, type } = resolveOtpTarget(data);
     const result = await verifyOtp(destination, data.otp, type);
 
     if (!result.success) {
