@@ -45,11 +45,14 @@ class ChatProvider with ChangeNotifier {
     // Connect to WebSocket server using the base URL
     final serverUrl = ApiEndpoints.baseUrl.replaceAll('/api', '');
 
-    _socket = io.io(serverUrl, <String, dynamic>{
-      'transports': ['websocket'],
-      'autoConnect': false,
-      'auth': {'token': token}
-    });
+    _socket = io.io(
+      serverUrl,
+      io.OptionBuilder()
+          .setTransports(['websocket'])
+          .disableAutoConnect()
+          .setAuth({'token': token})
+          .build(),
+    );
 
     _socket?.connect();
 

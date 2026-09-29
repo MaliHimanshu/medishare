@@ -76,6 +76,7 @@ const notifyNgosOfEmergency = async ({ alert, hospitalName, targetNgos, io }) =>
 
   // 2. Real-time WebSocket delivery
   if (io) {
+    console.log(`[Notification Service] IO is present. Broadcasting emergency:new_alert to ${targetNgos.length} NGOs.`);
     const payload = {
       type: "EMERGENCY_ALERT",
       alertId: alert.id,
@@ -89,8 +90,11 @@ const notifyNgosOfEmergency = async ({ alert, hospitalName, targetNgos, io }) =>
     };
 
     targetNgos.forEach((ngo) => {
+      console.log(`[Notification Service] Emitting to user_${ngo.id}`);
       io.to(`user_${ngo.id}`).emit("emergency:new_alert", payload);
     });
+  } else {
+    console.warn("[Notification Service] WARNING: io object is undefined. Cannot broadcast WebSocket event.");
   }
 
   // 3. FCM Push Notifications (if configured and tokens available)

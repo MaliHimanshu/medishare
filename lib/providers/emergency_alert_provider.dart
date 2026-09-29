@@ -69,11 +69,15 @@ class EmergencyAlertProvider extends ChangeNotifier {
 
     final serverUrl = ApiEndpoints.baseUrl.replaceAll('/api', '');
     
-    _socket = io.io(serverUrl, <String, dynamic>{
-      'transports': ['websocket'],
-      'autoConnect': false,
-      'auth': {'token': token}
-    });
+    _socket = io.io(
+      serverUrl,
+      io.OptionBuilder()
+          .setTransports(['websocket'])
+          .disableAutoConnect()
+          .enableForceNewConnection()
+          .setAuth({'token': token})
+          .build(),
+    );
 
     _socket?.connect();
 
@@ -82,8 +86,10 @@ class EmergencyAlertProvider extends ChangeNotifier {
     });
 
     _socket?.on('emergency:new_alert', (data) {
-      debugPrint('🚨 Emergency event received');
-      handleIncomingSocketAlert(data);
+      debugPrint('🚨 Emergency event received: $data');
+      if (data is Map) {
+        handleIncomingSocketAlert(Map<String, dynamic>.from(data));
+      }
     });
   }
 
@@ -118,7 +124,9 @@ class EmergencyAlertProvider extends ChangeNotifier {
       }
 
       notifyListeners();
-    } catch (_) {}
+    } catch (e, stack) {
+      debugPrint('🚨 Error parsing emergency alert: $e\n$stack');
+    }
   }
 
   // ── Hospital: Create Alert ────────────────────────────

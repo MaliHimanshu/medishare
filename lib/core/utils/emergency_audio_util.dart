@@ -8,6 +8,7 @@
  */
 
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:audioplayers/audioplayers.dart';
 
 class EmergencyAudioUtil {
@@ -33,8 +34,8 @@ class EmergencyAudioUtil {
       _player ??= AudioPlayer();
       await _player!.setReleaseMode(ReleaseMode.loop);
       await _player!.play(AssetSource('audio/emergency_siren.wav'));
-    } catch (_) {
-      // Respect device audio hardware state without throwing
+    } catch (e, stack) {
+      debugPrint('🚨 Audio Player Error: $e\n$stack');
     }
   }
 
