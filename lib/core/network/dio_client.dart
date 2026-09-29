@@ -67,8 +67,8 @@ class DioClient {
     // ── Log Interceptor ───────────────────────────────────
     dio.interceptors.add(
       LogInterceptor(
-        requestBody: true,
-        responseBody: true,
+        requestBody: false,
+        responseBody: false,
         error: true,
         logPrint: (obj) => debugLog(obj.toString()),
       ),

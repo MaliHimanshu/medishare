@@ -206,8 +206,7 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
     }
   }
 
-  String _getFormattedTarget(String target, String type) {
-    if (type == 'email') return target;
+  String _getFormattedTarget(String target, [String? type]) {
     final clean = target.replaceAll(RegExp(r'\D'), '');
     if (clean.length == 10) {
       return '+91 ${clean.substring(0, 5)} ${clean.substring(5)}';
@@ -217,23 +216,17 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
     return target;
   }
 
-  String _getMaskedTarget(String target, String type) {
-    if (type == 'email') {
-      final parts = target.split('@');
-      if (parts.length < 2) return target;
-      final name = parts[0];
-      final domain = parts[1];
-      if (name.length <= 2) return '$name***@$domain';
-      return '${name.substring(0, 2)}***${name.substring(name.length - 1)}@$domain';
-    } else {
-      final clean = target.replaceAll(RegExp(r'\D'), '');
-      if (clean.length == 10) {
-        return '+91 ${clean.substring(0, 5)} ${clean.substring(5)}';
-      } else if (clean.length == 12 && clean.startsWith('91')) {
-        return '+91 ${clean.substring(2, 7)} ${clean.substring(7)}';
-      }
-      return target;
+  String _getMaskedTarget(String target, [String? type]) {
+    final clean = target.replaceAll(RegExp(r'\D'), '');
+    if (clean.length == 10) {
+      return '+91 ${clean.substring(0, 5)} *****';
+    } else if (clean.length == 12 && clean.startsWith('91')) {
+      final sub = clean.substring(2);
+      return '+91 ${sub.substring(0, 5)} *****';
+    } else if (clean.length > 5) {
+      return '${clean.substring(0, clean.length - 4)}****';
     }
+    return target;
   }
 
   Future<void> _verifyOtp() async {
@@ -336,10 +329,7 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
     final screenWidth = MediaQuery.of(context).size.width;
     final boxWidth = ((screenWidth - 48 - ((_otpLength - 1) * 8)) / _otpLength).clamp(42.0, 56.0);
 
-    final isEmail = widget.type == 'email';
-    final subtitleText = isEmail
-        ? "Enter the 6-digit OTP sent to your email"
-        : "Enter the 6-digit OTP sent to your phone";
+    const subtitleText = "Enter the 6-digit OTP sent to your phone";
 
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -372,8 +362,8 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
                     color: AppColors.primary.withAlpha(20),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    isEmail ? Icons.mark_email_read_rounded : Icons.phonelink_ring_rounded,
+                  child: const Icon(
+                    Icons.phonelink_ring_rounded,
                     size: 42,
                     color: AppColors.primary,
                   ),

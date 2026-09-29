@@ -145,7 +145,6 @@ class AuthService {
         ApiEndpoints.forgotPasswordVerifyOtp,
         data: {'target': target, 'type': type, 'otp': otp},
       );
-      DioClient.debugLog('verifyForgotPasswordOtp response: ${response.data}');
       final data = response.data;
       if (data is Map && data['resetToken'] != null) {
         return data['resetToken'].toString();
@@ -161,7 +160,7 @@ class AuthService {
 
   Future<bool> resetPassword(String target, String type, String resetToken, String newPassword) async {
     try {
-      final response = await _dio.post(
+      await _dio.post(
         ApiEndpoints.resetPassword,
         data: {
           'target': target,
@@ -170,7 +169,6 @@ class AuthService {
           'newPassword': newPassword,
         },
       );
-      DioClient.debugLog('resetPassword response: ${response.data}');
       return true;
     } on DioException catch (e) {
       throw Exception(DioClient.handleError(e));

@@ -41,8 +41,6 @@ const registerSchema = z.object({
   registrationNumber: z.string().trim().max(100).optional(),
   contactPerson: z.string().trim().max(100).optional(),
   equipmentPreference: z.string().trim().max(150).optional(),
-  otpChannel: z.enum(["phone", "email"]).optional(),
-  verificationType: z.enum(["phone", "email"]).optional(),
 });
 
 const loginSchema = z.object({
@@ -62,10 +60,10 @@ const otpSendSchema = z
     phone: z.string().trim().optional(),
     email: z.string().trim().toLowerCase().optional(),
     target: z.string().trim().optional(),
-    type: z.enum(["phone", "email"]).optional(),
+    type: z.string().optional(),
   })
   .refine((data) => data.phone || data.email || data.target, {
-    message: "Phone or email is required",
+    message: "Phone number is required",
     path: ["phone"],
   });
 
@@ -74,30 +72,28 @@ const otpVerifySchema = z
     phone: z.string().trim().optional(),
     email: z.string().trim().toLowerCase().optional(),
     target: z.string().trim().optional(),
-    type: z.enum(["phone", "email"]).optional(),
+    type: z.string().optional(),
     otp: z
       .string({ required_error: "OTP is required" })
       .length(6, "OTP must be exactly 6 digits"),
   })
   .refine((data) => data.phone || data.email || data.target, {
-    message: "Phone or email is required",
+    message: "Phone number is required",
     path: ["phone"],
   });
 
 const forgotPasswordSendSchema = z.object({
   target: z
-    .string({ required_error: "Target is required" })
+    .string({ required_error: "Target phone number or email is required" })
     .trim(),
-  type: z.enum(["email", "phone"], {
-    required_error: "Type must be either email or phone",
-  }),
+  type: z.string().optional().default("phone"),
 });
 
 const forgotPasswordVerifySchema = z.object({
   target: z
-    .string({ required_error: "Target is required" })
+    .string({ required_error: "Target phone number or email is required" })
     .trim(),
-  type: z.enum(["email", "phone"]),
+  type: z.string().optional().default("phone"),
   otp: z
     .string({ required_error: "OTP is required" })
     .length(6, "OTP must be exactly 6 digits"),
@@ -107,7 +103,7 @@ const resetPasswordSchema = z.object({
   target: z
     .string({ required_error: "Target is required" })
     .trim(),
-  type: z.enum(["email", "phone"]),
+  type: z.string().optional().default("phone"),
   resetToken: z
     .string({ required_error: "Reset token is required" }),
   newPassword: z

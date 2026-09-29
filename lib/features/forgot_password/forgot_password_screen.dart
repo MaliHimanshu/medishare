@@ -9,8 +9,6 @@ import '../../shared/widgets/ms_logo.dart';
 import '../../shared/widgets/ms_text_field.dart';
 import '../otp/otp_screen.dart';
 
-enum RecoveryType { email, phone }
-
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
 
@@ -20,10 +18,8 @@ class ForgotPasswordScreen extends StatefulWidget {
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
 
-  RecoveryType _selectedType = RecoveryType.email;
   String _selectedCountryCode = '+91';
   String? _inputError;
   bool _isSending = false;
@@ -32,17 +28,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   void dispose() {
-    _emailCtrl.dispose();
     _phoneCtrl.dispose();
     super.dispose();
-  }
-
-  String? _validateEmail(String? v) {
-    if (v == null || v.trim().isEmpty) return 'Email address is required';
-    if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(v.trim())) {
-      return 'Enter a valid email address';
-    }
-    return null;
   }
 
   String? _validatePhone(String? v) {
@@ -59,47 +46,33 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
     setState(() => _inputError = null);
 
-    if (_selectedType == RecoveryType.email) {
-      final err = _validateEmail(_emailCtrl.text);
-      if (err != null) {
-        setState(() => _inputError = err);
-        return;
-      }
-    } else {
-      final err = _validatePhone(_phoneCtrl.text);
-      if (err != null) {
-        setState(() => _inputError = err);
-        return;
-      }
+    final err = _validatePhone(_phoneCtrl.text);
+    if (err != null) {
+      setState(() => _inputError = err);
+      return;
     }
 
     setState(() => _isSending = true);
 
     try {
       final auth = context.read<AuthProvider>();
-      final typeStr = _selectedType == RecoveryType.email ? 'email' : 'phone';
-      final String rawTarget;
-      if (_selectedType == RecoveryType.email) {
-        rawTarget = _emailCtrl.text.trim();
-      } else {
-        String cleanPhone = _phoneCtrl.text.trim().replaceAll(RegExp(r'\D'), '');
-        if (cleanPhone.startsWith('91') && cleanPhone.length > 10) {
-          cleanPhone = cleanPhone.substring(2);
-        }
-        while (cleanPhone.startsWith('0')) {
-          cleanPhone = cleanPhone.substring(1);
-        }
-        rawTarget = '+91$cleanPhone';
+      String cleanPhone = _phoneCtrl.text.trim().replaceAll(RegExp(r'\D'), '');
+      if (cleanPhone.startsWith('91') && cleanPhone.length > 10) {
+        cleanPhone = cleanPhone.substring(2);
       }
+      while (cleanPhone.startsWith('0')) {
+        cleanPhone = cleanPhone.substring(1);
+      }
+      final rawTarget = '+91$cleanPhone';
 
-      final success = await auth.sendForgotPasswordOtp(rawTarget, typeStr);
+      final success = await auth.sendForgotPasswordOtp(rawTarget, 'phone');
 
       if (!mounted) return;
 
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('OTP sent to your ${_selectedType == RecoveryType.email ? 'email' : 'phone'} 📲'),
+            content: const Text('OTP sent to your phone via SMS 📲'),
             backgroundColor: AppColors.success,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -111,7 +84,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           AppPageTransitions.slideRight(
             OtpScreen(
               target: rawTarget,
-              type: typeStr,
+              type: 'phone',
               isForgotPassword: true,
             ),
           ),
@@ -198,7 +171,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Select how you would like to receive your 6-digit verification code to reset your password.',
+                  'Enter your registered phone number to receive a 6-digit SMS verification code to reset your password.',
                   style: TextStyle(
                     fontSize: 14,
                     color: context.textSecondaryColor,
@@ -207,153 +180,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 ),
                 const SizedBox(height: 28),
 
-                // ── Segmented Control (Tabs) ─────────────────
-                Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: context.isDarkMode ? Colors.grey.shade900 : Colors.grey.shade200,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _selectedType = RecoveryType.email;
-                              _inputError = null;
-                            });
-                          },
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 250),
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            decoration: BoxDecoration(
-                              color: _selectedType == RecoveryType.email
-                                  ? (context.isDarkMode ? AppColors.dark2 : Colors.white)
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: _selectedType == RecoveryType.email
-                                  ? [
-                                      BoxShadow(
-                                        color: Colors.black.withAlpha(10),
-                                        blurRadius: 6,
-                                        offset: const Offset(0, 2),
-                                      )
-                                    ]
-                                  : [],
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.email_outlined,
-                                  size: 18,
-                                  color: _selectedType == RecoveryType.email
-                                      ? AppColors.primary
-                                      : context.textSecondaryColor,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Email',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: _selectedType == RecoveryType.email
-                                        ? FontWeight.w700
-                                        : FontWeight.w500,
-                                    color: _selectedType == RecoveryType.email
-                                        ? context.textPrimaryColor
-                                        : context.textSecondaryColor,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _selectedType = RecoveryType.phone;
-                              _inputError = null;
-                            });
-                          },
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 250),
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            decoration: BoxDecoration(
-                              color: _selectedType == RecoveryType.phone
-                                  ? (context.isDarkMode ? AppColors.dark2 : Colors.white)
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: _selectedType == RecoveryType.phone
-                                  ? [
-                                      BoxShadow(
-                                        color: Colors.black.withAlpha(10),
-                                        blurRadius: 6,
-                                        offset: const Offset(0, 2),
-                                      )
-                                    ]
-                                  : [],
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.phone_android_outlined,
-                                  size: 18,
-                                  color: _selectedType == RecoveryType.phone
-                                      ? AppColors.primary
-                                      : context.textSecondaryColor,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Phone Number',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: _selectedType == RecoveryType.phone
-                                        ? FontWeight.w700
-                                        : FontWeight.w500,
-                                    color: _selectedType == RecoveryType.phone
-                                        ? context.textPrimaryColor
-                                        : context.textSecondaryColor,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                Text(
+                  'Phone Number',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: context.textPrimaryColor,
                   ),
                 ),
-                const SizedBox(height: 28),
-
-                // ── Input Fields ─────────────────────────────
-                if (_selectedType == RecoveryType.email) ...[
-                  MsTextField(
-                    label: 'Email Address',
-                    hint: 'Enter your registered email',
-                    controller: _emailCtrl,
-                    keyboardType: TextInputType.emailAddress,
-                    prefixIcon: Icons.email_outlined,
-                    errorText: _inputError,
-                    onChanged: (_) {
-                      if (_inputError != null) setState(() => _inputError = null);
-                    },
-                    onSubmitted: (_) => _submit(),
-                  ),
-                ] else ...[
-                  Text(
-                    'Phone Number',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: context.textPrimaryColor,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
+                const SizedBox(height: 8),
+                Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Country Code Picker
@@ -411,7 +247,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       ),
                     ],
                   ),
-                ],
 
                 const SizedBox(height: 36),
 
