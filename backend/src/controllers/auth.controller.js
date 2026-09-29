@@ -155,7 +155,6 @@ const forgotPasswordSendController = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: result?.message || `OTP sent successfully to your ${data.type}`,
-      ...(result?.devOtp ? { devOtp: result.devOtp } : {}),
     });
   } catch (error) {
     return res.status(400).json({

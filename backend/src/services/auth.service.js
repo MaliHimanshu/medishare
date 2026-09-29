@@ -179,8 +179,12 @@ const sendOtp = async (destination, type) => {
     const email = destination.trim().toLowerCase();
     const user = await prisma.user.findFirst({ where: { email } });
 
+    if (!user) {
+      throw new Error("No account found with this email address");
+    }
+
     // 30-second cooldown check if user exists
-    if (user && user.phoneOtpLastSentAt) {
+    if (user.phoneOtpLastSentAt) {
       const timeSinceLastSent = Date.now() - new Date(user.phoneOtpLastSentAt).getTime();
       if (timeSinceLastSent < 30000) {
         const waitSeconds = Math.ceil((30000 - timeSinceLastSent) / 1000);
@@ -192,19 +196,20 @@ const sendOtp = async (destination, type) => {
     const otpHash = await bcrypt.hash(`email:${otp}`, 10);
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
-    await sendEmailOtp(email, otp);
+    await sendEmailOtp(user.email, otp, {
+      subject: "MediShare Verification Code",
+      message: "We received a request to verify your MediShare account. Use the verification code below to complete verification:",
+    });
 
-    if (user) {
-      await prisma.user.update({
-        where: { id: user.id },
-        data: {
-          phoneOtpHash: otpHash,
-          phoneOtpExpiresAt: expiresAt,
-          phoneOtpLastSentAt: new Date(),
-          phoneOtpAttempts: 0,
-        },
-      });
-    }
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        phoneOtpHash: otpHash,
+        phoneOtpExpiresAt: expiresAt,
+        phoneOtpLastSentAt: new Date(),
+        phoneOtpAttempts: 0,
+      },
+    });
 
     return {
       success: true,
@@ -291,7 +296,11 @@ const verifyOtp = async (destination, otp, type) => {
       };
     }
 
-    const isValid = await bcrypt.compare(`email:${otp.trim()}`, user.phoneOtpHash);
+    let isValid = await bcrypt.compare(`email:${otp.trim()}`, user.phoneOtpHash);
+    if (!isValid) {
+      isValid = await bcrypt.compare(otp.trim(), user.phoneOtpHash);
+    }
+
     if (!isValid) {
       await prisma.user.update({
         where: { id: user.id },
@@ -426,8 +435,11 @@ const sendForgotPasswordOtp = async (target, type) => {
   const otpHash = await bcrypt.hash(`email:${otp}`, 10);
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
-  // Send real email or dev log via email service
-  const emailResult = await sendEmailOtp(user.email, otp);
+  // Send real email via Gmail SMTP
+  await sendEmailOtp(user.email, otp, {
+    subject: "MediShare Password Reset Code",
+    message: "We received a request to reset the password for your MediShare account. Use the verification code below to complete your password reset:",
+  });
 
   await prisma.user.update({
     where: { id: user.id },
@@ -442,7 +454,6 @@ const sendForgotPasswordOtp = async (target, type) => {
   return {
     success: true,
     message: "OTP sent successfully to your email",
-    ...(process.env.NODE_ENV !== "production" && emailResult?.otp ? { devOtp: emailResult.otp } : {}),
   };
 };
 
