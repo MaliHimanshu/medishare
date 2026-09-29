@@ -72,8 +72,8 @@ class EmergencyAlertProvider extends ChangeNotifier {
         ),
       );
 
-      // Play emergency tone once
-      await EmergencyAudioUtil.playEmergencyAlertTone();
+      // Play emergency siren once if CRITICAL/HIGH
+      await EmergencyAudioUtil.playEmergencyAlertTone(newAlert.id, newAlert.priority);
 
       _liveIncomingAlert = newAlert;
 
@@ -116,7 +116,7 @@ class EmergencyAlertProvider extends ChangeNotifier {
           'address': address.trim(),
         if (latitude != null) 'latitude': latitude,
         if (longitude != null) 'longitude': longitude,
-        if (expiresAt != null) 'expiresAt': expiresAt.toIso8601String(),
+        if (expiresAt != null) 'expiresAt': expiresAt.toUtc().toIso8601String(),
       };
 
       final response = await _dio.post(
@@ -204,6 +204,9 @@ class EmergencyAlertProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      // Acknowledged by viewing details
+      EmergencyAudioUtil.stopEmergencyAlertTone();
+
       final response = await _dio.get('${ApiEndpoints.emergencyAlerts}/$alertId');
       final data = response.data;
       if (data is Map && data['data'] != null) {
