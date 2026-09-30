@@ -57,7 +57,6 @@ class DefaultFirebaseOptions {
     projectId: 'medishare-e6b5c',
     storageBucket: 'medishare-e6b5c.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyCVlBUWKtLjNtLfCf8G5We1m9fMtc3gXLI',
     appId: '1:1070100510061:ios:340a11e2c5d3a34e5a5664',
@@ -66,7 +65,6 @@ class DefaultFirebaseOptions {
     storageBucket: 'medishare-e6b5c.firebasestorage.app',
     iosBundleId: 'com.example.medishare',
   );
-
   static const FirebaseOptions macos = FirebaseOptions(
     apiKey: 'AIzaSyCVlBUWKtLjNtLfCf8G5We1m9fMtc3gXLI',
     appId: '1:1070100510061:ios:340a11e2c5d3a34e5a5664',
