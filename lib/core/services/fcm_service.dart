@@ -62,7 +62,7 @@ class FcmService {
 
   Future<void> _initLocalNotifications() async {
     const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('ic_launcher');
+        AndroidInitializationSettings('@mipmap/ic_launcher');
 
     const InitializationSettings initializationSettings = InitializationSettings(
       android: initializationSettingsAndroid,
@@ -120,7 +120,7 @@ class FcmService {
             channelDescription: _channel.description,
             importance: Importance.max,
             priority: Priority.high,
-            icon: 'ic_launcher',
+            icon: '@mipmap/ic_launcher',
             playSound: true,
           ),
         ),
