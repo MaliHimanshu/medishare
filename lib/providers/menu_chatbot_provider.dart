@@ -34,7 +34,8 @@ class MenuChatbotProvider extends ChangeNotifier {
     ChatConversationModel(
       id: 'hospital_help',
       name: 'Hospital Network Desk',
-      lastMessage: 'Verified hospital partners ready for equipment coordination.',
+      lastMessage:
+          'Verified hospital partners ready for equipment coordination.',
       lastTimestamp: DateTime.now().subtract(const Duration(hours: 3)),
       unreadCount: 0,
       isOnline: true,
@@ -74,12 +75,13 @@ class MenuChatbotProvider extends ChangeNotifier {
 
   List<ChatConversationModel> get filteredConversations {
     return _conversations.where((conv) {
-      final matchesSearch = conv.name
-              .toLowerCase()
-              .contains(_conversationSearchQuery.toLowerCase()) ||
-          conv.lastMessage
-              .toLowerCase()
-              .contains(_conversationSearchQuery.toLowerCase());
+      final matchesSearch =
+          conv.name.toLowerCase().contains(
+            _conversationSearchQuery.toLowerCase(),
+          ) ||
+          conv.lastMessage.toLowerCase().contains(
+            _conversationSearchQuery.toLowerCase(),
+          );
 
       if (_activeFilter == ChatFilter.unread) {
         return matchesSearch && conv.unreadCount > 0;
@@ -144,7 +146,8 @@ class MenuChatbotProvider extends ChangeNotifier {
 
     switch (_currentRole) {
       case 'DONOR':
-        greeting = "Hi 👋 Welcome to MediShare.\nHow can I help you today?\n\n"
+        greeting =
+            "Hi 👋 Welcome to MediShare.\nHow can I help you today?\n\n"
             "1️⃣ My Equipment\n"
             "2️⃣ Add Equipment\n"
             "3️⃣ Rental Requests\n"
@@ -160,7 +163,8 @@ class MenuChatbotProvider extends ChangeNotifier {
         break;
 
       case 'NGO':
-        greeting = "Hi 👋 Welcome to MediShare.\nHow can I help you today?\n\n"
+        greeting =
+            "Hi 👋 Welcome to MediShare.\nHow can I help you today?\n\n"
             "1️⃣ View Equipment\n"
             "2️⃣ Request Equipment\n"
             "3️⃣ My Requests\n"
@@ -176,7 +180,8 @@ class MenuChatbotProvider extends ChangeNotifier {
         break;
 
       case 'HOSPITAL':
-        greeting = "Hi 👋 Welcome to MediShare.\nHow can I help you today?\n\n"
+        greeting =
+            "Hi 👋 Welcome to MediShare.\nHow can I help you today?\n\n"
             "1️⃣ Hospital Equipment\n"
             "2️⃣ Request Equipment\n"
             "3️⃣ Rent Equipment\n"
@@ -192,7 +197,8 @@ class MenuChatbotProvider extends ChangeNotifier {
         break;
 
       case 'RECIPIENT':
-        greeting = "Hi 👋 Welcome to MediShare.\nHow can I help you today?\n\n"
+        greeting =
+            "Hi 👋 Welcome to MediShare.\nHow can I help you today?\n\n"
             "1️⃣ View Available Equipment\n"
             "2️⃣ Search Equipment\n"
             "3️⃣ Rent Equipment\n"
@@ -208,7 +214,8 @@ class MenuChatbotProvider extends ChangeNotifier {
         break;
 
       default:
-        greeting = "Hi 👋 Welcome to MediShare Support.\nHow can I help you today?\n\n"
+        greeting =
+            "Hi 👋 Welcome to MediShare Support.\nHow can I help you today?\n\n"
             "1️⃣ Find Available Equipment\n"
             "2️⃣ Find Nearby Hospitals\n"
             "3️⃣ My Equipment Requests\n"
@@ -331,72 +338,132 @@ class MenuChatbotProvider extends ChangeNotifier {
 
     // ── Role-Specific Menu Routing ────────────────────────────────────
     if (_currentRole == 'DONOR') {
-      if (trimmed == '1' || trimmed.startsWith('1️⃣') || normalized.contains('my equipment')) {
+      if (trimmed == '1' ||
+          trimmed.startsWith('1️⃣') ||
+          normalized.contains('my equipment')) {
         await handleDonorMyEquipment();
-      } else if (trimmed == '2' || trimmed.startsWith('2️⃣') || normalized.contains('add equipment')) {
+      } else if (trimmed == '2' ||
+          trimmed.startsWith('2️⃣') ||
+          normalized.contains('add equipment')) {
         await handleDonorAddEquipment();
-      } else if (trimmed == '3' || trimmed.startsWith('3️⃣') || normalized.contains('rental request')) {
+      } else if (trimmed == '3' ||
+          trimmed.startsWith('3️⃣') ||
+          normalized.contains('rental request')) {
         await handleDonorRentalRequests();
-      } else if (trimmed == '4' || trimmed.startsWith('4️⃣') || normalized.contains('donate')) {
+      } else if (trimmed == '4' ||
+          trimmed.startsWith('4️⃣') ||
+          normalized.contains('donate')) {
         await handleOption5DonationHelp();
-      } else if (trimmed == '5' || trimmed.startsWith('5️⃣') || normalized.contains('rental') || normalized.contains('my rentals')) {
+      } else if (trimmed == '5' ||
+          trimmed.startsWith('5️⃣') ||
+          normalized.contains('rental') ||
+          normalized.contains('my rentals')) {
         await handleOption4TrackRental();
       } else {
         _showMainMenu();
       }
     } else if (_currentRole == 'NGO') {
-      if (trimmed == '1' || trimmed.startsWith('1️⃣') || normalized.contains('view equipment') || normalized.contains('available')) {
+      if (trimmed == '1' ||
+          trimmed.startsWith('1️⃣') ||
+          normalized.contains('view equipment') ||
+          normalized.contains('available')) {
         await handleOption1AvailableEquipment();
-      } else if (trimmed == '2' || trimmed.startsWith('2️⃣') || normalized.contains('request equipment')) {
+      } else if (trimmed == '2' ||
+          trimmed.startsWith('2️⃣') ||
+          normalized.contains('request equipment')) {
         await handleNgoRequestEquipment();
-      } else if (trimmed == '3' || trimmed.startsWith('3️⃣') || normalized.contains('my requests') || normalized.contains('request')) {
+      } else if (trimmed == '3' ||
+          trimmed.startsWith('3️⃣') ||
+          normalized.contains('my requests') ||
+          normalized.contains('request')) {
         await handleOption3MyRequests();
-      } else if (trimmed == '4' || trimmed.startsWith('4️⃣') || normalized.contains('donation')) {
+      } else if (trimmed == '4' ||
+          trimmed.startsWith('4️⃣') ||
+          normalized.contains('donation')) {
         await handleNgoDonations();
-      } else if (trimmed == '5' || trimmed.startsWith('5️⃣') || normalized.contains('beneficiar')) {
+      } else if (trimmed == '5' ||
+          trimmed.startsWith('5️⃣') ||
+          normalized.contains('beneficiar')) {
         await handleNgoBeneficiaries();
       } else {
         _showMainMenu();
       }
     } else if (_currentRole == 'HOSPITAL') {
-      if (trimmed == '1' || trimmed.startsWith('1️⃣') || normalized.contains('hospital equipment') || normalized.contains('my equipment')) {
+      if (trimmed == '1' ||
+          trimmed.startsWith('1️⃣') ||
+          normalized.contains('hospital equipment') ||
+          normalized.contains('my equipment')) {
         await handleHospitalEquipment();
-      } else if (trimmed == '2' || trimmed.startsWith('2️⃣') || normalized.contains('request equipment')) {
+      } else if (trimmed == '2' ||
+          trimmed.startsWith('2️⃣') ||
+          normalized.contains('request equipment')) {
         await handleHospitalRequestEquipment();
-      } else if (trimmed == '3' || trimmed.startsWith('3️⃣') || normalized.contains('rent equipment') || normalized.contains('rent')) {
+      } else if (trimmed == '3' ||
+          trimmed.startsWith('3️⃣') ||
+          normalized.contains('rent equipment') ||
+          normalized.contains('rent')) {
         await handleHospitalRentEquipment();
-      } else if (trimmed == '4' || trimmed.startsWith('4️⃣') || normalized.contains('donation')) {
+      } else if (trimmed == '4' ||
+          trimmed.startsWith('4️⃣') ||
+          normalized.contains('donation')) {
         await handleNgoDonations();
-      } else if (trimmed == '5' || trimmed.startsWith('5️⃣') || normalized.contains('my requests') || normalized.contains('request')) {
+      } else if (trimmed == '5' ||
+          trimmed.startsWith('5️⃣') ||
+          normalized.contains('my requests') ||
+          normalized.contains('request')) {
         await handleOption3MyRequests();
       } else {
         _showMainMenu();
       }
     } else if (_currentRole == 'RECIPIENT') {
-      if (trimmed == '1' || trimmed.startsWith('1️⃣') || normalized.contains('view available') || normalized.contains('available')) {
+      if (trimmed == '1' ||
+          trimmed.startsWith('1️⃣') ||
+          normalized.contains('view available') ||
+          normalized.contains('available')) {
         await handleOption1AvailableEquipment();
-      } else if (trimmed == '2' || trimmed.startsWith('2️⃣') || normalized.contains('search')) {
+      } else if (trimmed == '2' ||
+          trimmed.startsWith('2️⃣') ||
+          normalized.contains('search')) {
         await handleRecipientSearchEquipment();
-      } else if (trimmed == '3' || trimmed.startsWith('3️⃣') || normalized.contains('rent')) {
+      } else if (trimmed == '3' ||
+          trimmed.startsWith('3️⃣') ||
+          normalized.contains('rent')) {
         await handleRecipientRentEquipment();
-      } else if (trimmed == '4' || trimmed.startsWith('4️⃣') || normalized.contains('my requests') || normalized.contains('request')) {
+      } else if (trimmed == '4' ||
+          trimmed.startsWith('4️⃣') ||
+          normalized.contains('my requests') ||
+          normalized.contains('request')) {
         await handleOption3MyRequests();
-      } else if (trimmed == '5' || trimmed.startsWith('5️⃣') || normalized.contains('rental') || normalized.contains('my rentals')) {
+      } else if (trimmed == '5' ||
+          trimmed.startsWith('5️⃣') ||
+          normalized.contains('rental') ||
+          normalized.contains('my rentals')) {
         await handleOption4TrackRental();
       } else {
         _showMainMenu();
       }
     } else {
       // Default (ADMIN / other)
-      if (trimmed == '1' || trimmed.startsWith('1️⃣') || normalized.contains('equipment')) {
+      if (trimmed == '1' ||
+          trimmed.startsWith('1️⃣') ||
+          normalized.contains('equipment')) {
         await handleOption1AvailableEquipment();
-      } else if (trimmed == '2' || trimmed.startsWith('2️⃣') || normalized.contains('hospital')) {
+      } else if (trimmed == '2' ||
+          trimmed.startsWith('2️⃣') ||
+          normalized.contains('hospital')) {
         await handleOption2NearbyHospitals();
-      } else if (trimmed == '3' || trimmed.startsWith('3️⃣') || normalized.contains('request')) {
+      } else if (trimmed == '3' ||
+          trimmed.startsWith('3️⃣') ||
+          normalized.contains('request')) {
         await handleOption3MyRequests();
-      } else if (trimmed == '4' || trimmed.startsWith('4️⃣') || normalized.contains('rental') || normalized.contains('track')) {
+      } else if (trimmed == '4' ||
+          trimmed.startsWith('4️⃣') ||
+          normalized.contains('rental') ||
+          normalized.contains('track')) {
         await handleOption4TrackRental();
-      } else if (trimmed == '5' || trimmed.startsWith('5️⃣') || normalized.contains('donate')) {
+      } else if (trimmed == '5' ||
+          trimmed.startsWith('5️⃣') ||
+          normalized.contains('donate')) {
         await handleOption5DonationHelp();
       } else {
         _showMainMenu();
@@ -413,7 +480,8 @@ class MenuChatbotProvider extends ChangeNotifier {
 
     switch (_currentRole) {
       case 'DONOR':
-        greeting = "Hi 👋 Welcome to MediShare.\nHow can I help you today?\n\n"
+        greeting =
+            "Hi 👋 Welcome to MediShare.\nHow can I help you today?\n\n"
             "1️⃣ My Equipment\n"
             "2️⃣ Add Equipment\n"
             "3️⃣ Rental Requests\n"
@@ -429,7 +497,8 @@ class MenuChatbotProvider extends ChangeNotifier {
         break;
 
       case 'NGO':
-        greeting = "Hi 👋 Welcome to MediShare.\nHow can I help you today?\n\n"
+        greeting =
+            "Hi 👋 Welcome to MediShare.\nHow can I help you today?\n\n"
             "1️⃣ View Equipment\n"
             "2️⃣ Request Equipment\n"
             "3️⃣ My Requests\n"
@@ -445,7 +514,8 @@ class MenuChatbotProvider extends ChangeNotifier {
         break;
 
       case 'HOSPITAL':
-        greeting = "Hi 👋 Welcome to MediShare.\nHow can I help you today?\n\n"
+        greeting =
+            "Hi 👋 Welcome to MediShare.\nHow can I help you today?\n\n"
             "1️⃣ Hospital Equipment\n"
             "2️⃣ Request Equipment\n"
             "3️⃣ Rent Equipment\n"
@@ -461,7 +531,8 @@ class MenuChatbotProvider extends ChangeNotifier {
         break;
 
       case 'RECIPIENT':
-        greeting = "Hi 👋 Welcome to MediShare.\nHow can I help you today?\n\n"
+        greeting =
+            "Hi 👋 Welcome to MediShare.\nHow can I help you today?\n\n"
             "1️⃣ View Available Equipment\n"
             "2️⃣ Search Equipment\n"
             "3️⃣ Rent Equipment\n"
@@ -477,7 +548,8 @@ class MenuChatbotProvider extends ChangeNotifier {
         break;
 
       default:
-        greeting = "Hi 👋 Welcome to MediShare Support.\nHow can I help you today?\n\n"
+        greeting =
+            "Hi 👋 Welcome to MediShare Support.\nHow can I help you today?\n\n"
             "1️⃣ Find Available Equipment\n"
             "2️⃣ Find Nearby Hospitals\n"
             "3️⃣ My Equipment Requests\n"
@@ -609,8 +681,9 @@ class MenuChatbotProvider extends ChangeNotifier {
       if (response.data != null && response.data['success'] == true) {
         final listData = response.data['equipment'] as List<dynamic>? ?? [];
         final items = listData
-            .map((item) =>
-                EquipmentModel.fromJson(item as Map<String, dynamic>))
+            .map(
+              (item) => EquipmentModel.fromJson(item as Map<String, dynamic>),
+            )
             .where((e) => e.status.toUpperCase() == 'AVAILABLE')
             .toList();
 
@@ -653,8 +726,9 @@ class MenuChatbotProvider extends ChangeNotifier {
       if (response.data != null && response.data['success'] == true) {
         final listData = response.data['data'] as List<dynamic>? ?? [];
         final items = listData
-            .map((item) =>
-                EquipmentModel.fromJson(item as Map<String, dynamic>))
+            .map(
+              (item) => EquipmentModel.fromJson(item as Map<String, dynamic>),
+            )
             .where((e) => e.status.toUpperCase() == 'AVAILABLE')
             .toList();
 
@@ -712,12 +786,16 @@ class MenuChatbotProvider extends ChangeNotifier {
         } else {
           String text = "🏥 Partner Hospitals registered with MediShare:\n\n";
           for (final h in hospitals) {
-            text += "• ${h.hospitalName}\n  📍 ${h.address}\n  📞 ${h.phone}\n\n";
+            text +=
+                "• ${h.hospitalName}\n  📍 ${h.address}\n  📞 ${h.phone}\n\n";
           }
           _addBotMessage(
             text.trim(),
             messageType: ChatMessageType.hospitalList,
-            options: const ["Open Hospital Directory", "View Available Equipment"],
+            options: const [
+              "Open Hospital Directory",
+              "View Available Equipment",
+            ],
             showMainMenuButton: true,
           );
         }
@@ -760,12 +838,16 @@ class MenuChatbotProvider extends ChangeNotifier {
           for (int i = 0; i < requests.length && i < 4; i++) {
             final r = requests[i];
             final equipName = r.equipment?.name ?? 'Medical Equipment';
-            msg += "${i + 1}. $equipName\n   Status: [${r.status}]\n   Hospital: ${r.hospital}\n   Reason: ${r.reason}\n\n";
+            msg +=
+                "${i + 1}. $equipName\n   Status: [${r.status}]\n   Hospital: ${r.hospital}\n   Reason: ${r.reason}\n\n";
           }
           _addBotMessage(
             msg.trim(),
             messageType: ChatMessageType.requestList,
-            options: const ["View All Requests", "1️⃣ Find Available Equipment"],
+            options: const [
+              "View All Requests",
+              "1️⃣ Find Available Equipment",
+            ],
             showMainMenuButton: true,
           );
         }
@@ -811,12 +893,16 @@ class MenuChatbotProvider extends ChangeNotifier {
           String msg = "🚚 Real-time Equipment Rentals:\n\n";
           for (final r in rentals.take(3)) {
             final equipName = r.equipment?.name ?? 'Equipment #${r.id}';
-            msg += "• $equipName\n  Status: ${r.status}\n  Duration: ${r.startDate.substring(0, 10)} to ${r.endDate.substring(0, 10)}\n\n";
+            msg +=
+                "• $equipName\n  Status: ${r.status}\n  Duration: ${r.startDate.substring(0, 10)} to ${r.endDate.substring(0, 10)}\n\n";
           }
           _addBotMessage(
             msg.trim(),
             messageType: ChatMessageType.trackingList,
-            options: const ["Open Rentals & Tracking", "1️⃣ Find Available Equipment"],
+            options: const [
+              "Open Rentals & Tracking",
+              "1️⃣ Find Available Equipment",
+            ],
             showMainMenuButton: true,
           );
         }
@@ -895,7 +981,9 @@ class MenuChatbotProvider extends ChangeNotifier {
       final response = await _dio.post(ApiEndpoints.request, data: payload);
       if (response.data != null && response.data['success'] == true) {
         final reqData = response.data['data'] as Map<String, dynamic>?;
-        final reqId = reqData?['id']?.toString() ?? 'REQ-${DateTime.now().millisecondsSinceEpoch}';
+        final reqId =
+            reqData?['id']?.toString() ??
+            'REQ-${DateTime.now().millisecondsSinceEpoch}';
         final status = reqData?['status']?.toString() ?? 'PENDING';
 
         _addBotMessage(
@@ -946,14 +1034,19 @@ class MenuChatbotProvider extends ChangeNotifier {
       if (response.data != null && response.data['success'] == true) {
         final listData = response.data['data'] as List<dynamic>? ?? [];
         final items = listData
-            .map((item) => EquipmentModel.fromJson(item as Map<String, dynamic>))
+            .map(
+              (item) => EquipmentModel.fromJson(item as Map<String, dynamic>),
+            )
             .where((e) => _currentUserId == null || e.ownerId == _currentUserId)
             .toList();
 
         if (items.isEmpty) {
           _addBotMessage(
             "📦 You haven't listed any equipment yet.\n\nYou can list medical equipment to donate or rent to those in need.",
-            options: const ["Open Add Equipment Form", "View Available Equipment"],
+            options: const [
+              "Open Add Equipment Form",
+              "View Available Equipment",
+            ],
             showMainMenuButton: true,
           );
         } else {
@@ -1015,7 +1108,8 @@ class MenuChatbotProvider extends ChangeNotifier {
           for (final r in rentals.take(4)) {
             final equipName = r.equipment?.name ?? 'Equipment Item';
             final renter = r.renterName.isNotEmpty ? r.renterName : 'User';
-            msg += "• $equipName\n  Renter: $renter\n  Status: [${r.status}]\n  Duration: ${r.startDate.substring(0, 10)} to ${r.endDate.substring(0, 10)}\n\n";
+            msg +=
+                "• $equipName\n  Renter: $renter\n  Status: [${r.status}]\n  Duration: ${r.startDate.substring(0, 10)} to ${r.endDate.substring(0, 10)}\n\n";
           }
           _addBotMessage(
             msg.trim(),
@@ -1063,7 +1157,8 @@ class MenuChatbotProvider extends ChangeNotifier {
             showMainMenuButton: true,
           );
         } else {
-          String msg = "🎁 Community Healthcare Donations (${listData.length} active):\n\n";
+          String msg =
+              "🎁 Community Healthcare Donations (${listData.length} active):\n\n";
           for (final d in listData.take(3)) {
             final name = d['equipment']?['name'] ?? 'Medical Item';
             final donor = d['donor']?['name'] ?? 'Verified Donor';

@@ -18,7 +18,10 @@ class MSDialogs {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: Text(title, style: TextStyle(color: context.textPrimaryColor)),
-        content: Text(message, style: TextStyle(color: context.textSecondaryColor)),
+        content: Text(
+          message,
+          style: TextStyle(color: context.textSecondaryColor),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -42,7 +45,8 @@ class MSDialogs {
     return showConfirm(
       context: context,
       title: 'Delete Item',
-      message: 'Are you sure you want to delete "$itemName"? This action cannot be undone.',
+      message:
+          'Are you sure you want to delete "$itemName"? This action cannot be undone.',
       confirmLabel: 'Delete',
       confirmColor: AppColors.error,
     );
@@ -71,12 +75,19 @@ class MSDialogs {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: Row(
           children: [
-            const Icon(Icons.check_circle_outline, color: AppColors.success, size: 28),
+            const Icon(
+              Icons.check_circle_outline,
+              color: AppColors.success,
+              size: 28,
+            ),
             const SizedBox(width: 10),
             Text(title, style: TextStyle(color: context.textPrimaryColor)),
           ],
         ),
-        content: Text(message, style: TextStyle(color: context.textSecondaryColor)),
+        content: Text(
+          message,
+          style: TextStyle(color: context.textSecondaryColor),
+        ),
         actions: [
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
@@ -105,7 +116,10 @@ class MSDialogs {
             Text(title, style: TextStyle(color: context.textPrimaryColor)),
           ],
         ),
-        content: Text(message, style: TextStyle(color: context.textSecondaryColor)),
+        content: Text(
+          message,
+          style: TextStyle(color: context.textSecondaryColor),
+        ),
         actions: [
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: AppColors.error),

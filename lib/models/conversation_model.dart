@@ -56,7 +56,9 @@ class ChatConversation {
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
       participants: pList
-          .map((i) => ConversationParticipant.fromJson(i as Map<String, dynamic>))
+          .map(
+            (i) => ConversationParticipant.fromJson(i as Map<String, dynamic>),
+          )
           .toList(),
       messages: mList
           .map((i) => ChatMessage.fromJson(i as Map<String, dynamic>))
@@ -67,9 +69,7 @@ class ChatConversation {
   // Helper to get the other participant in a 1-on-1 chat
   ChatUser? getOtherUser(String currentUserId) {
     try {
-      return participants
-          .firstWhere((p) => p.userId != currentUserId)
-          .user;
+      return participants.firstWhere((p) => p.userId != currentUserId).user;
     } catch (_) {
       return null;
     }
@@ -79,10 +79,13 @@ class ChatConversation {
   int getUnreadCount(String currentUserId) {
     try {
       final me = participants.firstWhere((p) => p.userId == currentUserId);
-      return messages.where((m) => 
-        m.senderId != currentUserId && 
-        m.createdAt.isAfter(me.lastReadAt)
-      ).length;
+      return messages
+          .where(
+            (m) =>
+                m.senderId != currentUserId &&
+                m.createdAt.isAfter(me.lastReadAt),
+          )
+          .length;
     } catch (_) {
       return 0;
     }

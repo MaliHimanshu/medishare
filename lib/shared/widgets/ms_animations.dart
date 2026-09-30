@@ -88,9 +88,10 @@ class _TapScaleState extends State<TapScale>
       vsync: this,
       duration: const Duration(milliseconds: 100),
     );
-    _scale = Tween<double>(begin: 1.0, end: widget.scale).animate(
-      CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut),
-    );
+    _scale = Tween<double>(
+      begin: 1.0,
+      end: widget.scale,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeInOut));
   }
 
   @override
@@ -143,9 +144,10 @@ class _AnimatedFABState extends State<AnimatedFAB>
       vsync: this,
       duration: const Duration(milliseconds: 500),
     );
-    _scale = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _ctrl, curve: Curves.elasticOut),
-    );
+    _scale = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.elasticOut));
     _fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
 
     Future.delayed(const Duration(milliseconds: 300), () {
@@ -167,11 +169,15 @@ class _AnimatedFABState extends State<AnimatedFAB>
         scale: _scale,
         child: FloatingActionButton.extended(
           onPressed: widget.onPressed,
-          backgroundColor: widget.backgroundColor ?? Theme.of(context).colorScheme.primary,
+          backgroundColor:
+              widget.backgroundColor ?? Theme.of(context).colorScheme.primary,
           icon: Icon(widget.icon, color: Colors.white),
           label: Text(
             widget.label,
-            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
       ),

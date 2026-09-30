@@ -15,7 +15,7 @@ class FindUsersScreen extends StatefulWidget {
 class _FindUsersScreenState extends State<FindUsersScreen> {
   final ChatService _chatService = ChatService();
   final TextEditingController _searchCtrl = TextEditingController();
-  
+
   List<ChatUser> _users = [];
   bool _isLoading = false;
 
@@ -24,7 +24,7 @@ class _FindUsersScreenState extends State<FindUsersScreen> {
       setState(() => _users = []);
       return;
     }
-    
+
     setState(() => _isLoading = true);
     try {
       final results = await _chatService.searchUsers(query);
@@ -40,22 +40,20 @@ class _FindUsersScreenState extends State<FindUsersScreen> {
     try {
       final chatProv = context.read<ChatProvider>();
       final conv = await chatProv.getOrCreateConversation(user.id);
-      
+
       if (!mounted) return;
-      
+
       Navigator.pushReplacement(
-        context, 
+        context,
         MaterialPageRoute(
-          builder: (_) => PrivateChatScreen(
-            conversationId: conv.id,
-            otherUser: user,
-          )
-        )
+          builder: (_) =>
+              PrivateChatScreen(conversationId: conv.id, otherUser: user),
+        ),
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to start chat: $e'))
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Failed to start chat: $e')));
     }
   }
 
@@ -64,8 +62,14 @@ class _FindUsersScreenState extends State<FindUsersScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF7FAFC),
       appBar: AppBar(
-        title: const Text('New Message', style: TextStyle(color: Color(0xFF172033), fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
+        title: const Text(
+          'New Message',
+          style: TextStyle(
+            color: Color(0xFF172033),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
         iconTheme: const IconThemeData(color: Color(0xFF172033)),
       ),
@@ -90,44 +94,63 @@ class _FindUsersScreenState extends State<FindUsersScreen> {
             ),
           ),
           Expanded(
-            child: _isLoading 
-              ? const Center(child: CircularProgressIndicator(color: Color(0xFF2563EB)))
-              : _users.isEmpty
+            child: _isLoading
+                ? const Center(
+                    child: CircularProgressIndicator(color: Color(0xFF2563EB)),
+                  )
+                : _users.isEmpty
                 ? Center(
                     child: Text(
-                      _searchCtrl.text.isEmpty 
-                        ? 'Type to search users' 
-                        : 'No users found',
+                      _searchCtrl.text.isEmpty
+                          ? 'Type to search users'
+                          : 'No users found',
                       style: const TextStyle(color: Color(0xFF64748B)),
                     ),
                   )
                 : ListView.separated(
                     itemCount: _users.length,
-                    separatorBuilder: (context, index) => const Divider(height: 1),
+                    separatorBuilder: (context, index) =>
+                        const Divider(height: 1),
                     itemBuilder: (context, index) {
                       final user = _users[index];
                       return ListTile(
                         leading: CircleAvatar(
                           backgroundColor: const Color(0xFFCCFBF1),
-                          backgroundImage: user.profileImage != null ? NetworkImage(user.profileImage!) : null,
-                          child: user.profileImage == null 
-                            ? Text(user.name[0].toUpperCase(), style: const TextStyle(color: Color(0xFF14B8A6), fontWeight: FontWeight.bold))
-                            : null,
+                          backgroundImage: user.profileImage != null
+                              ? NetworkImage(user.profileImage!)
+                              : null,
+                          child: user.profileImage == null
+                              ? Text(
+                                  user.name[0].toUpperCase(),
+                                  style: const TextStyle(
+                                    color: Color(0xFF14B8A6),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                )
+                              : null,
                         ),
-                        title: Text(user.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                        title: Text(
+                          user.name,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
                         subtitle: Text(user.role),
                         trailing: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF2563EB),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
                           ),
                           onPressed: () => _startChat(user),
-                          child: const Text('Message', style: TextStyle(color: Colors.white)),
+                          child: const Text(
+                            'Message',
+                            style: TextStyle(color: Colors.white),
+                          ),
                         ),
                       );
                     },
                   ),
-          )
+          ),
         ],
       ),
     );

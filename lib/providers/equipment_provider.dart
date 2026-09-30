@@ -87,17 +87,33 @@ class EquipmentProvider extends ChangeNotifier {
 
     // 2. Filter by Category
     if (_selectedCategory.isNotEmpty && _selectedCategory != 'All') {
-      list = list.where((item) => item.category.toLowerCase() == _selectedCategory.toLowerCase()).toList();
+      list = list
+          .where(
+            (item) =>
+                item.category.toLowerCase() == _selectedCategory.toLowerCase(),
+          )
+          .toList();
     }
 
     // 3. Filter by Condition
     if (_selectedCondition.isNotEmpty && _selectedCondition != 'All') {
-      list = list.where((item) => item.condition.toUpperCase() == _selectedCondition.toUpperCase()).toList();
+      list = list
+          .where(
+            (item) =>
+                item.condition.toUpperCase() ==
+                _selectedCondition.toUpperCase(),
+          )
+          .toList();
     }
 
     // 4. Filter by Status
     if (_selectedStatus.isNotEmpty && _selectedStatus != 'All') {
-      list = list.where((item) => item.status.toUpperCase() == _selectedStatus.toUpperCase()).toList();
+      list = list
+          .where(
+            (item) =>
+                item.status.toUpperCase() == _selectedStatus.toUpperCase(),
+          )
+          .toList();
     }
 
     // 5. Sort Options
@@ -133,12 +149,22 @@ class EquipmentProvider extends ChangeNotifier {
       final response = await _dio.get(ApiEndpoints.equipment);
       if (response.data is List) {
         final listData = response.data as List<dynamic>;
-        _equipment = listData.map((item) => EquipmentModel.fromJson(item as Map<String, dynamic>)).toList();
+        _equipment = listData
+            .map(
+              (item) => EquipmentModel.fromJson(item as Map<String, dynamic>),
+            )
+            .toList();
       } else if (response.data is Map && response.data['data'] is List) {
         final listData = response.data['data'] as List<dynamic>;
-        _equipment = listData.map((item) => EquipmentModel.fromJson(item as Map<String, dynamic>)).toList();
+        _equipment = listData
+            .map(
+              (item) => EquipmentModel.fromJson(item as Map<String, dynamic>),
+            )
+            .toList();
       } else {
-        _errorMessage = (response.data is Map ? response.data['message'] : null) ?? 'Failed to load equipment catalog.';
+        _errorMessage =
+            (response.data is Map ? response.data['message'] : null) ??
+            'Failed to load equipment catalog.';
       }
     } on DioException catch (e) {
       _errorMessage = DioClient.handleError(e);
@@ -179,19 +205,24 @@ class EquipmentProvider extends ChangeNotifier {
           'rentalPricePerDay': rentalPricePerDay,
         if (mode.toUpperCase() != 'DONATE' && securityDeposit != null)
           'securityDeposit': securityDeposit,
-        if (manufacturer != null && manufacturer.isNotEmpty) 'manufacturer': manufacturer,
-        if (description != null && description.isNotEmpty) 'description': description,
+        if (manufacturer != null && manufacturer.isNotEmpty)
+          'manufacturer': manufacturer,
+        if (description != null && description.isNotEmpty)
+          'description': description,
         if (location != null && location.isNotEmpty) 'location': location,
         if (image != null && image.isNotEmpty) 'image': image,
       };
 
       final response = await _dio.post(ApiEndpoints.equipment, data: payload);
       if (response.data != null && response.data['success'] == true) {
-        final newEquip = EquipmentModel.fromJson(response.data['data'] as Map<String, dynamic>);
+        final newEquip = EquipmentModel.fromJson(
+          response.data['data'] as Map<String, dynamic>,
+        );
         _equipment.insert(0, newEquip);
         return true;
       } else {
-        _errorMessage = response.data?['message'] ?? 'Failed to list equipment.';
+        _errorMessage =
+            response.data?['message'] ?? 'Failed to list equipment.';
         return false;
       }
     } on DioException catch (e) {
@@ -241,25 +272,33 @@ class EquipmentProvider extends ChangeNotifier {
           'rentalPricePerDay': rentalPricePerDay,
         if (mode.toUpperCase() != 'DONATE' && securityDeposit != null)
           'securityDeposit': securityDeposit,
-        'latitude':? latitude,
-        'longitude':? longitude,
+        'latitude': ?latitude,
+        'longitude': ?longitude,
         if (address != null && address.isNotEmpty) 'address': address,
-        if (manufacturer != null && manufacturer.isNotEmpty) 'manufacturer': manufacturer,
-        if (description != null && description.isNotEmpty) 'description': description,
+        if (manufacturer != null && manufacturer.isNotEmpty)
+          'manufacturer': manufacturer,
+        if (description != null && description.isNotEmpty)
+          'description': description,
         if (location != null && location.isNotEmpty) 'location': location,
         if (image != null && image.isNotEmpty) 'image': image,
       };
 
-      final response = await _dio.put('${ApiEndpoints.equipment}/$id', data: payload);
+      final response = await _dio.put(
+        '${ApiEndpoints.equipment}/$id',
+        data: payload,
+      );
       if (response.data != null && response.data['success'] == true) {
-        final updated = EquipmentModel.fromJson(response.data['data'] as Map<String, dynamic>);
+        final updated = EquipmentModel.fromJson(
+          response.data['data'] as Map<String, dynamic>,
+        );
         final idx = _equipment.indexWhere((item) => item.id == id);
         if (idx != -1) {
           _equipment[idx] = updated;
         }
         return true;
       } else {
-        _errorMessage = response.data?['message'] ?? 'Failed to update equipment listing.';
+        _errorMessage =
+            response.data?['message'] ?? 'Failed to update equipment listing.';
         return false;
       }
     } on DioException catch (e) {
@@ -286,7 +325,8 @@ class EquipmentProvider extends ChangeNotifier {
         _equipment.removeWhere((item) => item.id == id);
         return true;
       } else {
-        _errorMessage = response.data?['message'] ?? 'Failed to delete equipment listing.';
+        _errorMessage =
+            response.data?['message'] ?? 'Failed to delete equipment listing.';
         return false;
       }
     } on DioException catch (e) {
@@ -311,14 +351,15 @@ class EquipmentProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _dio.post(ApiEndpoints.request, data: {
-        'equipmentId': equipmentId,
-        'reason': reason,
-      });
+      final response = await _dio.post(
+        ApiEndpoints.request,
+        data: {'equipmentId': equipmentId, 'reason': reason},
+      );
       if (response.data != null && response.data['success'] == true) {
         return true;
       } else {
-        _errorMessage = response.data?['message'] ?? 'Failed to request equipment.';
+        _errorMessage =
+            response.data?['message'] ?? 'Failed to request equipment.';
         return false;
       }
     } on DioException catch (e) {
@@ -364,8 +405,9 @@ class EquipmentProvider extends ChangeNotifier {
       if (response.data != null && response.data['success'] == true) {
         final listData = response.data['equipment'] as List<dynamic>? ?? [];
         _nearbyEquipment = listData
-            .map((item) =>
-                EquipmentModel.fromJson(item as Map<String, dynamic>))
+            .map(
+              (item) => EquipmentModel.fromJson(item as Map<String, dynamic>),
+            )
             .toList();
         _nearbyMeta = {
           'count': response.data['count'] ?? _nearbyEquipment.length,

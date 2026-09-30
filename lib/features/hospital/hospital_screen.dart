@@ -48,7 +48,9 @@ class _HospitalScreenState extends State<HospitalScreen> {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Delete Hospital'),
-        content: Text('Are you sure you want to delete "${hospital.hospitalName}"?'),
+        content: Text(
+          'Are you sure you want to delete "${hospital.hospitalName}"?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -73,9 +75,11 @@ class _HospitalScreenState extends State<HospitalScreen> {
                 } else {
                   messenger.showSnackBar(
                     SnackBar(
-                      content: Text(provider.errorMessage.isNotEmpty
-                          ? provider.errorMessage
-                          : 'Failed to delete hospital.'),
+                      content: Text(
+                        provider.errorMessage.isNotEmpty
+                            ? provider.errorMessage
+                            : 'Failed to delete hospital.',
+                      ),
                       backgroundColor: AppColors.error,
                     ),
                   );
@@ -167,7 +171,8 @@ class _HospitalScreenState extends State<HospitalScreen> {
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: availableCities.map((cityName) {
-                        final isSelected = hospitalProvider.selectedCity == cityName;
+                        final isSelected =
+                            hospitalProvider.selectedCity == cityName;
                         return Padding(
                           padding: const EdgeInsets.only(right: 8),
                           child: FilterChip(
@@ -175,8 +180,12 @@ class _HospitalScreenState extends State<HospitalScreen> {
                               cityName == 'All' ? 'All Cities' : cityName,
                               style: TextStyle(
                                 fontSize: 12,
-                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                                color: isSelected ? AppColors.primary : context.textPrimaryColor,
+                                fontWeight: isSelected
+                                    ? FontWeight.bold
+                                    : FontWeight.normal,
+                                color: isSelected
+                                    ? AppColors.primary
+                                    : context.textPrimaryColor,
                               ),
                             ),
                             selected: isSelected,
@@ -206,7 +215,9 @@ class _HospitalScreenState extends State<HospitalScreen> {
   }
 
   Widget _buildContent(
-      HospitalProvider hospitalProvider, List<HospitalModel> filtered) {
+    HospitalProvider hospitalProvider,
+    List<HospitalModel> filtered,
+  ) {
     if (hospitalProvider.isLoading) {
       return ListView.builder(
         padding: const EdgeInsets.all(16),
@@ -233,7 +244,10 @@ class _HospitalScreenState extends State<HospitalScreen> {
               Text(
                 hospitalProvider.errorMessage,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14, color: context.textSecondaryColor),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: context.textSecondaryColor,
+                ),
               ),
               const SizedBox(height: 20),
               ElevatedButton.icon(
@@ -279,14 +293,19 @@ class _HospitalScreenState extends State<HospitalScreen> {
               Text(
                 'No medical facilities match your search query or city filters.',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 13, color: context.textSecondaryColor),
+                style: TextStyle(
+                  fontSize: 13,
+                  color: context.textSecondaryColor,
+                ),
               ),
               const SizedBox(height: 24),
               FilledButton.icon(
                 onPressed: () async {
                   final res = await Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const AddHospitalScreen()),
+                    MaterialPageRoute(
+                      builder: (_) => const AddHospitalScreen(),
+                    ),
                   );
                   if (res == true && mounted) {
                     hospitalProvider.fetchHospitals();
@@ -294,7 +313,9 @@ class _HospitalScreenState extends State<HospitalScreen> {
                 },
                 icon: const Icon(Icons.add),
                 label: const Text('Add Hospital'),
-                style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                ),
               ),
             ],
           ),
@@ -311,165 +332,190 @@ class _HospitalScreenState extends State<HospitalScreen> {
         return AnimatedListItem(
           index: index,
           child: Card(
-          margin: const EdgeInsets.only(bottom: 14),
-          elevation: 0,
-          color: context.cardBg,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: BorderSide(color: context.borderColor),
-          ),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(16),
-            onTap: () {
-              Navigator.push(
-                context,
-                AppPageTransitions.slideUp(
-                  HospitalDetailScreen(hospital: item),
-                ),
-              );
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Hospital Logo Hero image
-                      Hero(
-                        tag: 'hospital_logo_${item.id}',
-                        child: MsImage(
-                          imageUrl: item.image,
-                          width: 56,
-                          height: 56,
-                          borderRadius: BorderRadius.circular(14),
-                          placeholderIcon: Icons.local_hospital,
+            margin: const EdgeInsets.only(bottom: 14),
+            elevation: 0,
+            color: context.cardBg,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(color: context.borderColor),
+            ),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  AppPageTransitions.slideUp(
+                    HospitalDetailScreen(hospital: item),
+                  ),
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Hospital Logo Hero image
+                        Hero(
+                          tag: 'hospital_logo_${item.id}',
+                          child: MsImage(
+                            imageUrl: item.image,
+                            width: 56,
+                            height: 56,
+                            borderRadius: BorderRadius.circular(14),
+                            placeholderIcon: Icons.local_hospital,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 14),
+                        const SizedBox(width: 14),
 
-                      // Hospital Name & Address
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    item.hospitalName,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                      color: context.textPrimaryColor,
+                        // Hospital Name & Address
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      item.hospitalName,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                        color: context.textPrimaryColor,
+                                      ),
                                     ),
                                   ),
-                                ),
 
-                                // Actions (Edit / Delete)
-                                Row(
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.edit_outlined,
-                                          size: 18, color: AppColors.primary),
-                                      tooltip: 'Edit Hospital',
-                                      constraints: const BoxConstraints(),
-                                      padding: const EdgeInsets.all(4),
-                                      onPressed: () async {
-                                        final res = await Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (_) => EditHospitalScreen(hospital: item),
-                                          ),
-                                        );
-                                        if (res == true && context.mounted) {
-                                          hospitalProvider.fetchHospitals();
-                                        }
-                                      },
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.delete_outline,
-                                          size: 18, color: Colors.red),
-                                      tooltip: 'Delete Hospital',
-                                      constraints: const BoxConstraints(),
-                                      padding: const EdgeInsets.all(4),
-                                      onPressed: () => _confirmDelete(item),
-                                    ),
-                                  ],
+                                  // Actions (Edit / Delete)
+                                  Row(
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.edit_outlined,
+                                          size: 18,
+                                          color: AppColors.primary,
+                                        ),
+                                        tooltip: 'Edit Hospital',
+                                        constraints: const BoxConstraints(),
+                                        padding: const EdgeInsets.all(4),
+                                        onPressed: () async {
+                                          final res = await Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (_) =>
+                                                  EditHospitalScreen(
+                                                    hospital: item,
+                                                  ),
+                                            ),
+                                          );
+                                          if (res == true && context.mounted) {
+                                            hospitalProvider.fetchHospitals();
+                                          }
+                                        },
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(
+                                          Icons.delete_outline,
+                                          size: 18,
+                                          color: Colors.red,
+                                        ),
+                                        tooltip: 'Delete Hospital',
+                                        constraints: const BoxConstraints(),
+                                        padding: const EdgeInsets.all(4),
+                                        onPressed: () => _confirmDelete(item),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '${item.address}, ${item.city}, ${item.state}',
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: context.textSecondaryColor,
                                 ),
-                              ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 12),
+                    Divider(height: 1, color: context.borderColor),
+                    const SizedBox(height: 10),
+
+                    // Bottom Grid Metadata (Contact, Equipment Count, Rating)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.phone_outlined,
+                              size: 14,
+                              color: AppColors.primary,
                             ),
-                            const SizedBox(height: 2),
+                            const SizedBox(width: 4),
                             Text(
-                              '${item.address}, ${item.city}, ${item.state}',
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
+                              item.phone,
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 11,
                                 color: context.textSecondaryColor,
                               ),
                             ),
                           ],
                         ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 12),
-                  Divider(height: 1, color: context.borderColor),
-                  const SizedBox(height: 10),
-
-                  // Bottom Grid Metadata (Contact, Equipment Count, Rating)
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.phone_outlined, size: 14, color: AppColors.primary),
-                          const SizedBox(width: 4),
-                          Text(
-                            item.phone,
-                            style: TextStyle(fontSize: 11, color: context.textSecondaryColor),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          const Icon(Icons.medical_services_outlined, size: 14, color: Colors.teal),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${item.availableEquipmentCount} Items',
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.medical_services_outlined,
+                              size: 14,
                               color: Colors.teal,
                             ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          const Icon(Icons.star, size: 14, color: Colors.amber),
-                          const SizedBox(width: 2),
-                          Text(
-                            item.rating.toStringAsFixed(1),
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
+                            const SizedBox(width: 4),
+                            Text(
+                              '${item.availableEquipmentCount} Items',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.teal,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.star,
+                              size: 14,
                               color: Colors.amber,
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ), // end Padding
-          ), // end InkWell
-        ), // end Card
+                            const SizedBox(width: 2),
+                            Text(
+                              item.rating.toStringAsFixed(1),
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.amber,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ), // end Padding
+            ), // end InkWell
+          ), // end Card
         ); // end AnimatedListItem
       },
     );

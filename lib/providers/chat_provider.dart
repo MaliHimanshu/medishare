@@ -9,13 +9,13 @@ import '../core/network/api_endpoints.dart';
 class ChatProvider with ChangeNotifier {
   final ChatService _chatService = ChatService();
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
-  
+
   io.Socket? _socket;
-  
+
   List<ChatConversation> _conversations = [];
   bool _isLoading = false;
   String? _error;
-  
+
   List<ChatConversation> get conversations => _conversations;
   bool get isLoading => _isLoading;
   String? get error => _error;
@@ -26,10 +26,10 @@ class ChatProvider with ChangeNotifier {
   final Map<String, List<ChatMessage>> _activeChatMessages = {};
   final Map<String, bool> _typingStatus = {};
 
-  List<ChatMessage> getMessages(String conversationId) => 
+  List<ChatMessage> getMessages(String conversationId) =>
       _activeChatMessages[conversationId] ?? [];
-      
-  bool isTyping(String conversationId) => 
+
+  bool isTyping(String conversationId) =>
       _typingStatus[conversationId] ?? false;
 
   void init(String userId) {
@@ -63,19 +63,19 @@ class ChatProvider with ChangeNotifier {
 
     _socket?.on('message:new', (data) {
       final message = ChatMessage.fromJson(data);
-      
+
       // Add to active chat if open
       if (_activeChatMessages.containsKey(message.conversationId)) {
         // Insert at beginning because we show list reversed
         _activeChatMessages[message.conversationId]!.insert(0, message);
-        
+
         // Auto mark as read if it's the active screen
         _chatService.markAsRead(message.conversationId);
       }
-      
+
       // Update conversations list summary
       _updateConversationSummary(message);
-      
+
       notifyListeners();
     });
 
@@ -91,7 +91,9 @@ class ChatProvider with ChangeNotifier {
   }
 
   void _updateConversationSummary(ChatMessage message) {
-    final idx = _conversations.indexWhere((c) => c.id == message.conversationId);
+    final idx = _conversations.indexWhere(
+      (c) => c.id == message.conversationId,
+    );
     if (idx != -1) {
       final conv = _conversations[idx];
       // Quick deep copy to update messages
@@ -129,13 +131,13 @@ class ChatProvider with ChangeNotifier {
     try {
       final msgs = await _chatService.getMessages(conversationId);
       _activeChatMessages[conversationId] = msgs;
-      
+
       // Join socket room
       _socket?.emit('conversation:join', conversationId);
-      
+
       // Mark as read
       await _chatService.markAsRead(conversationId);
-      
+
       notifyListeners();
     } catch (e) {
       debugPrint("Load messages error: $e");
@@ -150,11 +152,11 @@ class ChatProvider with ChangeNotifier {
   Future<void> sendMessage(String conversationId, String content) async {
     try {
       final message = await _chatService.sendMessage(conversationId, content);
-      
+
       if (_activeChatMessages.containsKey(conversationId)) {
         _activeChatMessages[conversationId]!.insert(0, message);
       }
-      
+
       _updateConversationSummary(message);
       notifyListeners();
     } catch (e) {
@@ -172,14 +174,14 @@ class ChatProvider with ChangeNotifier {
 
   Future<ChatConversation> getOrCreateConversation(String targetUserId) async {
     final conv = await _chatService.getOrCreateConversation(targetUserId);
-    
+
     // Add to list if not already there
     final exists = _conversations.any((c) => c.id == conv.id);
     if (!exists) {
       _conversations.insert(0, conv);
       notifyListeners();
     }
-    
+
     return conv;
   }
 

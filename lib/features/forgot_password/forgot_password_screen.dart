@@ -75,27 +75,29 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             content: const Text('OTP sent to your phone via SMS 📲'),
             backgroundColor: AppColors.success,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
 
         Navigator.push(
           context,
           AppPageTransitions.slideRight(
-            OtpScreen(
-              target: rawTarget,
-              type: 'phone',
-              isForgotPassword: true,
-            ),
+            OtpScreen(target: rawTarget, type: 'phone', isForgotPassword: true),
           ),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(auth.errorMessage ?? 'Failed to send verification code'),
+            content: Text(
+              auth.errorMessage ?? 'Failed to send verification code',
+            ),
             backgroundColor: AppColors.error,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       }
@@ -106,7 +108,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             content: Text(e.toString().replaceAll('Exception: ', '')),
             backgroundColor: AppColors.error,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       }
@@ -119,14 +123,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: AppColors.textPrimary),
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            size: 18,
+            color: AppColors.textPrimary,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -190,63 +197,68 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 ),
                 const SizedBox(height: 8),
                 Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Country Code Picker
-                      Container(
-                        height: 54,
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        decoration: BoxDecoration(
-                          color: context.isDarkMode ? AppColors.dark2 : Colors.white,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(
-                            color: context.isDarkMode ? Colors.grey.shade800 : const Color(0xFFE2E8F0),
-                          ),
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Country Code Picker
+                    Container(
+                      height: 54,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: context.isDarkMode
+                            ? AppColors.dark2
+                            : Colors.white,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: context.isDarkMode
+                              ? Colors.grey.shade800
+                              : const Color(0xFFE2E8F0),
                         ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: _selectedCountryCode,
-                            icon: const Icon(Icons.keyboard_arrow_down, size: 20),
-                            items: _countryCodes.map((code) {
-                              return DropdownMenuItem<String>(
-                                value: code,
-                                child: Text(
-                                  code,
-                                  style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600,
-                                    color: context.textPrimaryColor,
-                                  ),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: _selectedCountryCode,
+                          icon: const Icon(Icons.keyboard_arrow_down, size: 20),
+                          items: _countryCodes.map((code) {
+                            return DropdownMenuItem<String>(
+                              value: code,
+                              child: Text(
+                                code,
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                  color: context.textPrimaryColor,
                                 ),
-                              );
-                            }).toList(),
-                            onChanged: (val) {
-                              if (val != null) {
-                                setState(() => _selectedCountryCode = val);
-                              }
-                            },
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-
-                      // Phone Input Box
-                      Expanded(
-                        child: MsTextField(
-                          label: 'Phone Number',
-                          hint: '9876543210',
-                          controller: _phoneCtrl,
-                          keyboardType: TextInputType.phone,
-                          prefixIcon: Icons.phone_outlined,
-                          errorText: _inputError,
-                          onChanged: (_) {
-                            if (_inputError != null) setState(() => _inputError = null);
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (val) {
+                            if (val != null) {
+                              setState(() => _selectedCountryCode = val);
+                            }
                           },
-                          onSubmitted: (_) => _submit(),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(width: 12),
+
+                    // Phone Input Box
+                    Expanded(
+                      child: MsTextField(
+                        label: 'Phone Number',
+                        hint: '9876543210',
+                        controller: _phoneCtrl,
+                        keyboardType: TextInputType.phone,
+                        prefixIcon: Icons.phone_outlined,
+                        errorText: _inputError,
+                        onChanged: (_) {
+                          if (_inputError != null)
+                            setState(() => _inputError = null);
+                        },
+                        onSubmitted: (_) => _submit(),
+                      ),
+                    ),
+                  ],
+                ),
 
                 const SizedBox(height: 36),
 

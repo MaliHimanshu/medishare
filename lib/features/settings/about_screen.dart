@@ -6,31 +6,20 @@ class AboutScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
-      appBar: AppBar(
-        title: const Text("About MediShare"),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text("About MediShare"), centerTitle: true),
 
       body: SingleChildScrollView(
-
         padding: const EdgeInsets.all(20),
 
         child: Column(
-
           crossAxisAlignment: CrossAxisAlignment.center,
 
           children: [
-
             const CircleAvatar(
               radius: 55,
               backgroundColor: Colors.blue,
 
-              child: Icon(
-                Icons.local_hospital,
-                size: 60,
-                color: Colors.white,
-              ),
+              child: Icon(Icons.local_hospital, size: 60, color: Colors.white),
             ),
 
             const SizedBox(height: 20),
@@ -38,10 +27,7 @@ class AboutScreen extends StatelessWidget {
             const Text(
               "MediShare",
 
-              style: TextStyle(
-                fontSize: 30,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 8),
@@ -51,17 +37,14 @@ class AboutScreen extends StatelessWidget {
 
               textAlign: TextAlign.center,
 
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 16,
-              ),
+              style: TextStyle(color: Colors.grey, fontSize: 16),
             ),
 
             const SizedBox(height: 25),
-                        //=================================
+
+            //=================================
             // APP INFORMATION
             //=================================
-
             Card(
               elevation: 4,
               shape: RoundedRectangleBorder(
@@ -70,12 +53,8 @@ class AboutScreen extends StatelessWidget {
 
               child: const Column(
                 children: [
-
                   ListTile(
-                    leading: Icon(
-                      Icons.verified,
-                      color: Colors.blue,
-                    ),
+                    leading: Icon(Icons.verified, color: Colors.blue),
                     title: Text("Version"),
                     subtitle: Text("1.0.0"),
                   ),
@@ -83,10 +62,7 @@ class AboutScreen extends StatelessWidget {
                   Divider(height: 1),
 
                   ListTile(
-                    leading: Icon(
-                      Icons.code,
-                      color: Colors.green,
-                    ),
+                    leading: Icon(Icons.code, color: Colors.green),
                     title: Text("Developer"),
                     subtitle: Text("MediShare Development Team"),
                   ),
@@ -94,23 +70,15 @@ class AboutScreen extends StatelessWidget {
                   Divider(height: 1),
 
                   ListTile(
-                    leading: Icon(
-                      Icons.school,
-                      color: Colors.orange,
-                    ),
+                    leading: Icon(Icons.school, color: Colors.orange),
                     title: Text("Project"),
-                    subtitle: Text(
-                      "Smart Medical Equipment Network",
-                    ),
+                    subtitle: Text("Smart Medical Equipment Network"),
                   ),
 
                   Divider(height: 1),
 
                   ListTile(
-                    leading: Icon(
-                      Icons.copyright,
-                      color: Colors.red,
-                    ),
+                    leading: Icon(Icons.copyright, color: Colors.red),
                     title: Text("Copyright"),
                     subtitle: Text("© 2026 MediShare"),
                   ),
@@ -123,15 +91,11 @@ class AboutScreen extends StatelessWidget {
             //=================================
             // FEATURES
             //=================================
-
             const Align(
               alignment: Alignment.centerLeft,
               child: Text(
                 "Key Features",
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
             ),
 
@@ -143,11 +107,9 @@ class AboutScreen extends StatelessWidget {
                 padding: EdgeInsets.all(15),
 
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
 
                   children: [
-
                     Text("✅ Medical Equipment Sharing"),
                     SizedBox(height: 10),
 
@@ -177,7 +139,6 @@ class AboutScreen extends StatelessWidget {
             //=================================
             // ABOUT
             //=================================
-
             const Text(
               "MediShare is designed to help hospitals, NGOs, "
               "and individuals donate and request medical equipment "
@@ -187,10 +148,7 @@ class AboutScreen extends StatelessWidget {
 
               textAlign: TextAlign.justify,
 
-              style: TextStyle(
-                fontSize: 16,
-                height: 1.6,
-              ),
+              style: TextStyle(fontSize: 16, height: 1.6),
             ),
 
             const SizedBox(height: 30),
@@ -198,7 +156,6 @@ class AboutScreen extends StatelessWidget {
             //=================================
             // THANK YOU
             //=================================
-
             const Text(
               "❤️ Thank you for using MediShare ❤️",
 
@@ -220,10 +177,7 @@ class AboutScreen extends StatelessWidget {
               child: ElevatedButton.icon(
                 icon: const Icon(Icons.arrow_back),
 
-                label: const Text(
-                  "Back",
-                  style: TextStyle(fontSize: 18),
-                ),
+                label: const Text("Back", style: TextStyle(fontSize: 18)),
 
                 onPressed: () {
                   Navigator.pop(context);
@@ -232,7 +186,6 @@ class AboutScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 20),
-
           ],
         ),
       ),

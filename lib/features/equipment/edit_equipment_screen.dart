@@ -19,10 +19,7 @@ import '../../shared/widgets/ms_image.dart';
 class EditEquipmentScreen extends StatefulWidget {
   final EquipmentModel equipment;
 
-  const EditEquipmentScreen({
-    super.key,
-    required this.equipment,
-  });
+  const EditEquipmentScreen({super.key, required this.equipment});
 
   @override
   State<EditEquipmentScreen> createState() => _EditEquipmentScreenState();
@@ -50,12 +47,7 @@ class _EditEquipmentScreenState extends State<EditEquipmentScreen> {
     "Other",
   ];
 
-  final List<String> conditions = [
-    "NEW",
-    "LIKE_NEW",
-    "GOOD",
-    "FAIR",
-  ];
+  final List<String> conditions = ["NEW", "LIKE_NEW", "GOOD", "FAIR"];
 
   final List<String> statuses = [
     "AVAILABLE",
@@ -73,10 +65,18 @@ class _EditEquipmentScreenState extends State<EditEquipmentScreen> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.equipment.name);
-    _manufacturerController = TextEditingController(text: widget.equipment.manufacturer);
-    _quantityController = TextEditingController(text: widget.equipment.quantity.toString());
-    _locationController = TextEditingController(text: widget.equipment.location);
-    _descriptionController = TextEditingController(text: widget.equipment.description);
+    _manufacturerController = TextEditingController(
+      text: widget.equipment.manufacturer,
+    );
+    _quantityController = TextEditingController(
+      text: widget.equipment.quantity.toString(),
+    );
+    _locationController = TextEditingController(
+      text: widget.equipment.location,
+    );
+    _descriptionController = TextEditingController(
+      text: widget.equipment.description,
+    );
     _existingImageUrl = widget.equipment.image;
 
     selectedCategory = categories.contains(widget.equipment.category)
@@ -158,11 +158,18 @@ class _EditEquipmentScreenState extends State<EditEquipmentScreen> {
               const SizedBox(height: 18),
               const Text(
                 "Update Equipment Image",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.textPrimary),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: AppColors.textPrimary,
+                ),
               ),
               const SizedBox(height: 12),
               ListTile(
-                leading: const Icon(Icons.camera_alt_outlined, color: AppColors.primary),
+                leading: const Icon(
+                  Icons.camera_alt_outlined,
+                  color: AppColors.primary,
+                ),
                 title: const Text("Take Photo"),
                 onTap: () {
                   Navigator.pop(ctx);
@@ -170,7 +177,10 @@ class _EditEquipmentScreenState extends State<EditEquipmentScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.photo_library_outlined, color: AppColors.primary),
+                leading: const Icon(
+                  Icons.photo_library_outlined,
+                  color: AppColors.primary,
+                ),
                 title: const Text("Choose from Gallery"),
                 onTap: () {
                   Navigator.pop(ctx);
@@ -198,7 +208,9 @@ class _EditEquipmentScreenState extends State<EditEquipmentScreen> {
     if (_imageFile != null) {
       setState(() => _isUploadingImage = true);
       try {
-        finalImageUrl = await ImageUploadService.instance.uploadImage(_imageFile!);
+        finalImageUrl = await ImageUploadService.instance.uploadImage(
+          _imageFile!,
+        );
       } catch (e) {
         setState(() {
           _isSaving = false;
@@ -207,7 +219,9 @@ class _EditEquipmentScreenState extends State<EditEquipmentScreen> {
         if (mounted) {
           messenger.showSnackBar(
             SnackBar(
-              content: Text("Image upload failed: ${e.toString().replaceAll('Exception: ', '')}"),
+              content: Text(
+                "Image upload failed: ${e.toString().replaceAll('Exception: ', '')}",
+              ),
               behavior: SnackBarBehavior.floating,
               backgroundColor: AppColors.error,
             ),
@@ -220,20 +234,20 @@ class _EditEquipmentScreenState extends State<EditEquipmentScreen> {
     }
 
     final success = await provider.updateEquipment(
-          widget.equipment.id,
-          name: _nameController.text.trim(),
-          category: selectedCategory,
-          condition: selectedCondition,
-          quantity: int.tryParse(_quantityController.text.trim()) ?? 1,
-          status: selectedStatus,
-          mode: widget.equipment.mode,
-          rentalPricePerDay: widget.equipment.rentalPricePerDay,
-          securityDeposit: widget.equipment.securityDeposit,
-          manufacturer: _manufacturerController.text.trim(),
-          description: _descriptionController.text.trim(),
-          location: _locationController.text.trim(),
-          image: finalImageUrl,
-        );
+      widget.equipment.id,
+      name: _nameController.text.trim(),
+      category: selectedCategory,
+      condition: selectedCondition,
+      quantity: int.tryParse(_quantityController.text.trim()) ?? 1,
+      status: selectedStatus,
+      mode: widget.equipment.mode,
+      rentalPricePerDay: widget.equipment.rentalPricePerDay,
+      securityDeposit: widget.equipment.securityDeposit,
+      manufacturer: _manufacturerController.text.trim(),
+      description: _descriptionController.text.trim(),
+      location: _locationController.text.trim(),
+      image: finalImageUrl,
+    );
 
     setState(() => _isSaving = false);
 
@@ -307,7 +321,10 @@ class _EditEquipmentScreenState extends State<EditEquipmentScreen> {
       backgroundColor: context.scaffoldBg,
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        title: const Text("Edit Medical Equipment", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          "Edit Medical Equipment",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
       ),
       body: SafeArea(
@@ -331,9 +348,16 @@ class _EditEquipmentScreenState extends State<EditEquipmentScreen> {
                               width: 110,
                               height: 110,
                               decoration: BoxDecoration(
-                                color: AppColors.primary.withValues(alpha: 0.15),
+                                color: AppColors.primary.withValues(
+                                  alpha: 0.15,
+                                ),
                                 shape: BoxShape.circle,
-                                border: Border.all(color: AppColors.primary.withValues(alpha: 0.3), width: 2),
+                                border: Border.all(
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.3,
+                                  ),
+                                  width: 2,
+                                ),
                               ),
                               child: _imageFile != null
                                   ? ClipRRect(
@@ -350,7 +374,8 @@ class _EditEquipmentScreenState extends State<EditEquipmentScreen> {
                                       width: 110,
                                       height: 110,
                                       borderRadius: BorderRadius.circular(55),
-                                      placeholderIcon: Icons.medical_services_outlined,
+                                      placeholderIcon:
+                                          Icons.medical_services_outlined,
                                     ),
                             ),
                           ),
@@ -380,7 +405,9 @@ class _EditEquipmentScreenState extends State<EditEquipmentScreen> {
                       controller: _nameController,
                       label: "Equipment Name *",
                       icon: Icons.medical_services_outlined,
-                      validator: (val) => val == null || val.trim().isEmpty ? "Name is required" : null,
+                      validator: (val) => val == null || val.trim().isEmpty
+                          ? "Name is required"
+                          : null,
                     ),
 
                     // Category Dropdown
@@ -392,21 +419,35 @@ class _EditEquipmentScreenState extends State<EditEquipmentScreen> {
                         style: TextStyle(color: context.textPrimaryColor),
                         decoration: InputDecoration(
                           labelText: "Category *",
-                          labelStyle: TextStyle(color: context.textSecondaryColor),
-                          prefixIcon: const Icon(Icons.category_outlined, color: AppColors.primary),
+                          labelStyle: TextStyle(
+                            color: context.textSecondaryColor,
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.category_outlined,
+                            color: AppColors.primary,
+                          ),
                           filled: true,
                           fillColor: context.inputBg,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: BorderSide(color: context.borderColor, width: 1.5),
+                            borderSide: BorderSide(
+                              color: context.borderColor,
+                              width: 1.5,
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: BorderSide(color: context.borderColor, width: 1.5),
+                            borderSide: BorderSide(
+                              color: context.borderColor,
+                              width: 1.5,
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                            borderSide: const BorderSide(
+                              color: AppColors.primary,
+                              width: 2,
+                            ),
                           ),
                         ),
                         items: categories.map((category) {
@@ -439,9 +480,11 @@ class _EditEquipmentScreenState extends State<EditEquipmentScreen> {
                       icon: Icons.inventory_2_outlined,
                       keyboard: TextInputType.number,
                       validator: (val) {
-                        if (val == null || val.trim().isEmpty) return "Quantity is required";
+                        if (val == null || val.trim().isEmpty)
+                          return "Quantity is required";
                         final parsed = int.tryParse(val.trim());
-                        if (parsed == null || parsed <= 0) return "Must be a valid positive number";
+                        if (parsed == null || parsed <= 0)
+                          return "Must be a valid positive number";
                         return null;
                       },
                     ),
@@ -455,21 +498,35 @@ class _EditEquipmentScreenState extends State<EditEquipmentScreen> {
                         style: TextStyle(color: context.textPrimaryColor),
                         decoration: InputDecoration(
                           labelText: "Condition *",
-                          labelStyle: TextStyle(color: context.textSecondaryColor),
-                          prefixIcon: const Icon(Icons.health_and_safety_outlined, color: AppColors.primary),
+                          labelStyle: TextStyle(
+                            color: context.textSecondaryColor,
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.health_and_safety_outlined,
+                            color: AppColors.primary,
+                          ),
                           filled: true,
                           fillColor: context.inputBg,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: BorderSide(color: context.borderColor, width: 1.5),
+                            borderSide: BorderSide(
+                              color: context.borderColor,
+                              width: 1.5,
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: BorderSide(color: context.borderColor, width: 1.5),
+                            borderSide: BorderSide(
+                              color: context.borderColor,
+                              width: 1.5,
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                            borderSide: const BorderSide(
+                              color: AppColors.primary,
+                              width: 2,
+                            ),
                           ),
                         ),
                         items: conditions.map((cond) {
@@ -497,21 +554,35 @@ class _EditEquipmentScreenState extends State<EditEquipmentScreen> {
                         style: TextStyle(color: context.textPrimaryColor),
                         decoration: InputDecoration(
                           labelText: "Availability Status *",
-                          labelStyle: TextStyle(color: context.textSecondaryColor),
-                          prefixIcon: const Icon(Icons.info_outline, color: AppColors.primary),
+                          labelStyle: TextStyle(
+                            color: context.textSecondaryColor,
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.info_outline,
+                            color: AppColors.primary,
+                          ),
                           filled: true,
                           fillColor: context.inputBg,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: BorderSide(color: context.borderColor, width: 1.5),
+                            borderSide: BorderSide(
+                              color: context.borderColor,
+                              width: 1.5,
+                            ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: BorderSide(color: context.borderColor, width: 1.5),
+                            borderSide: BorderSide(
+                              color: context.borderColor,
+                              width: 1.5,
+                            ),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
-                            borderSide: const BorderSide(color: AppColors.primary, width: 2),
+                            borderSide: const BorderSide(
+                              color: AppColors.primary,
+                              width: 2,
+                            ),
                           ),
                         ),
                         items: statuses.map((stat) {
@@ -535,7 +606,9 @@ class _EditEquipmentScreenState extends State<EditEquipmentScreen> {
                       controller: _locationController,
                       label: "Location *",
                       icon: Icons.location_on_outlined,
-                      validator: (val) => val == null || val.trim().isEmpty ? "Location is required" : null,
+                      validator: (val) => val == null || val.trim().isEmpty
+                          ? "Location is required"
+                          : null,
                     ),
 
                     // Description
@@ -557,13 +630,18 @@ class _EditEquipmentScreenState extends State<EditEquipmentScreen> {
                           backgroundColor: AppColors.primary,
                           foregroundColor: Colors.white,
                           elevation: 3,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                         ),
                         onPressed: _isSaving ? null : submitEquipment,
                         icon: const Icon(Icons.save_outlined),
                         label: Text(
                           _isSaving ? "Saving Updates..." : "Save Updates",
-                          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ),
@@ -575,20 +653,28 @@ class _EditEquipmentScreenState extends State<EditEquipmentScreen> {
 
             if (_isSaving)
               Container(
-                color: Colors.black.withValues(alpha: 0.5),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.5),
                 child: Center(
                   child: Card(
                     margin: const EdgeInsets.symmetric(horizontal: 32),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                     child: Padding(
                       padding: const EdgeInsets.all(24),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const CircularProgressIndicator(color: AppColors.primary),
+                          const CircularProgressIndicator(
+                            color: AppColors.primary,
+                          ),
                           const SizedBox(height: 18),
                           Text(
-                            _isUploadingImage ? "Uploading New Image..." : "Saving Listing Updates...",
+                            _isUploadingImage
+                                ? "Uploading New Image..."
+                                : "Saving Listing Updates...",
                             textAlign: TextAlign.center,
                             style: const TextStyle(
                               fontSize: 15,

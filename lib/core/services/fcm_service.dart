@@ -57,16 +57,17 @@ class FcmService {
       provisional: false,
       sound: true,
     );
-    debugPrint('[FCM] User granted permission: ${settings.authorizationStatus}');
+    debugPrint(
+      '[FCM] User granted permission: ${settings.authorizationStatus}',
+    );
   }
 
   Future<void> _initLocalNotifications() async {
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    const InitializationSettings initializationSettings = InitializationSettings(
-      android: initializationSettingsAndroid,
-    );
+    const InitializationSettings initializationSettings =
+        InitializationSettings(android: initializationSettingsAndroid);
 
     await _localNotificationsPlugin.initialize(
       settings: initializationSettings,
@@ -77,7 +78,8 @@ class FcmService {
 
     await _localNotificationsPlugin
         .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>()
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.createNotificationChannel(_channel);
   }
 
@@ -129,6 +131,8 @@ class FcmService {
   }
 
   void _handleMessageOpenedApp(RemoteMessage message) {
-    debugPrint('[FCM] Notification tapped (onMessageOpenedApp): ${message.messageId}');
+    debugPrint(
+      '[FCM] Notification tapped (onMessageOpenedApp): ${message.messageId}',
+    );
   }
 }

@@ -9,18 +9,9 @@ class MsLogo extends StatelessWidget {
   final bool useIcon;
   final Color? color;
 
-  const MsLogo({
-    super.key,
-    this.height = 38,
-    this.useIcon = false,
-    this.color,
-  });
+  const MsLogo({super.key, this.height = 38, this.useIcon = false, this.color});
 
-  const MsLogo.icon({
-    super.key,
-    this.height = 56,
-    this.color,
-  }) : useIcon = true;
+  const MsLogo.icon({super.key, this.height = 56, this.color}) : useIcon = true;
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +21,9 @@ class MsLogo extends StatelessWidget {
       duration: const Duration(milliseconds: 300),
       child: KeyedSubtree(
         key: ValueKey<bool>(isDark),
-        child: useIcon ? _buildIconOnly(height) : _buildFullLogo(context, isDark),
+        child: useIcon
+            ? _buildIconOnly(height)
+            : _buildFullLogo(context, isDark),
       ),
     );
   }
@@ -42,7 +35,8 @@ class MsLogo extends StatelessWidget {
       height: h,
       fit: BoxFit.contain,
       color: color,
-      errorBuilder: (ctx, err, stack) => _MedicalCrossBadge(size: h, iconSize: h * 0.55),
+      errorBuilder: (ctx, err, stack) =>
+          _MedicalCrossBadge(size: h, iconSize: h * 0.55),
     );
   }
 
@@ -66,7 +60,10 @@ class MsLogo extends StatelessWidget {
             height: iconHeight,
             fit: BoxFit.contain,
             errorBuilder: (ctx, err, stack) {
-              return _MedicalCrossBadge(size: iconHeight, iconSize: iconHeight * 0.55);
+              return _MedicalCrossBadge(
+                size: iconHeight,
+                iconSize: iconHeight * 0.55,
+              );
             },
           ),
           const SizedBox(width: 8),
@@ -107,10 +104,7 @@ class _MedicalCrossBadge extends StatelessWidget {
   final double size;
   final double iconSize;
 
-  const _MedicalCrossBadge({
-    required this.size,
-    required this.iconSize,
-  });
+  const _MedicalCrossBadge({required this.size, required this.iconSize});
 
   @override
   Widget build(BuildContext context) {
@@ -125,15 +119,11 @@ class _MedicalCrossBadge extends StatelessWidget {
             color: AppColors.primary.withAlpha(50),
             blurRadius: 8,
             offset: const Offset(0, 3),
-          )
+          ),
         ],
       ),
       child: Center(
-        child: Icon(
-          Icons.add_rounded,
-          color: Colors.white,
-          size: iconSize,
-        ),
+        child: Icon(Icons.add_rounded, color: Colors.white, size: iconSize),
       ),
     );
   }

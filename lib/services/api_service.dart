@@ -12,7 +12,7 @@ import '../models/user_model.dart';
 class AuthService {
   static const FlutterSecureStorage _storage = FlutterSecureStorage();
   static const String _tokenKey = 'auth_token';
-  static const String _userKey  = 'medishare_user';
+  static const String _userKey = 'medishare_user';
 
   final Dio _dio = DioClient.instance;
 
@@ -50,22 +50,23 @@ class AuthService {
   }) async {
     try {
       final payload = <String, dynamic>{
-        'name':     name,
-        'email':    email,
+        'name': name,
+        'email': email,
         'password': password,
-        'role':     role,
-        if (phone != null && phone.isNotEmpty)   'phone':   phone,
+        'role': role,
+        if (phone != null && phone.isNotEmpty) 'phone': phone,
         if (address != null && address.isNotEmpty) 'address': address,
-        if (organizationName != null && organizationName.isNotEmpty) 'organizationName': organizationName,
-        if (registrationNumber != null && registrationNumber.isNotEmpty) 'registrationNumber': registrationNumber,
-        if (contactPerson != null && contactPerson.isNotEmpty) 'contactPerson': contactPerson,
-        if (equipmentPreference != null && equipmentPreference.isNotEmpty) 'equipmentPreference': equipmentPreference,
+        if (organizationName != null && organizationName.isNotEmpty)
+          'organizationName': organizationName,
+        if (registrationNumber != null && registrationNumber.isNotEmpty)
+          'registrationNumber': registrationNumber,
+        if (contactPerson != null && contactPerson.isNotEmpty)
+          'contactPerson': contactPerson,
+        if (equipmentPreference != null && equipmentPreference.isNotEmpty)
+          'equipmentPreference': equipmentPreference,
       };
 
-      final response = await _dio.post(
-        ApiEndpoints.register,
-        data: payload,
-      );
+      final response = await _dio.post(ApiEndpoints.register, data: payload);
       final authResponse = AuthResponseModel.fromJson(
         response.data as Map<String, dynamic>,
       );
@@ -88,12 +89,17 @@ class AuthService {
 
   Future<bool> verifyOtp(String phone, String otp) async {
     try {
-      final response = await _dio.post(ApiEndpoints.verifyOtp, data: {'phone': phone, 'otp': otp});
+      final response = await _dio.post(
+        ApiEndpoints.verifyOtp,
+        data: {'phone': phone, 'otp': otp},
+      );
       final data = response.data;
       if (data is Map<String, dynamic>) {
         final token = data['token']?.toString();
         final rawUser = data['user'] ?? data['data'];
-        if (token != null && token.isNotEmpty && rawUser is Map<String, dynamic>) {
+        if (token != null &&
+            token.isNotEmpty &&
+            rawUser is Map<String, dynamic>) {
           final user = UserModel.fromJson(rawUser);
           await _persistAuth(token, user);
         } else {
@@ -139,7 +145,11 @@ class AuthService {
     }
   }
 
-  Future<String> verifyForgotPasswordOtp(String target, String type, String otp) async {
+  Future<String> verifyForgotPasswordOtp(
+    String target,
+    String type,
+    String otp,
+  ) async {
     try {
       final response = await _dio.post(
         ApiEndpoints.forgotPasswordVerifyOtp,
@@ -158,7 +168,12 @@ class AuthService {
     }
   }
 
-  Future<bool> resetPassword(String target, String type, String resetToken, String newPassword) async {
+  Future<bool> resetPassword(
+    String target,
+    String type,
+    String resetToken,
+    String newPassword,
+  ) async {
     try {
       await _dio.post(
         ApiEndpoints.resetPassword,
@@ -206,7 +221,7 @@ class AuthService {
   Future<void> _persistAuth(String token, UserModel user) async {
     try {
       await _storage.write(key: _tokenKey, value: token);
-      await _storage.write(key: _userKey,  value: jsonEncode(user.toJson()));
+      await _storage.write(key: _userKey, value: jsonEncode(user.toJson()));
     } catch (e) {
       // Safe storage error handling without exposing secrets
     }

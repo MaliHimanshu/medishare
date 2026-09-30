@@ -36,7 +36,7 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
     final prov = context.read<ChatProvider>();
     prov.setTyping(widget.conversationId, false);
     prov.leaveConversation(widget.conversationId);
-    
+
     _msgController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -44,15 +44,19 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
 
   void _sendMessage() {
     if (_msgController.text.trim().isEmpty) return;
-    
+
     final prov = context.read<ChatProvider>();
     prov.sendMessage(widget.conversationId, _msgController.text.trim());
-    
+
     _msgController.clear();
     prov.setTyping(widget.conversationId, false);
 
     if (_scrollController.hasClients) {
-      _scrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
+      _scrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
     }
   }
 
@@ -61,7 +65,7 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF7FAFC),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 1,
         iconTheme: const IconThemeData(color: Color(0xFF172033)),
         titleSpacing: 0,
@@ -70,9 +74,18 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
             CircleAvatar(
               radius: 18,
               backgroundColor: const Color(0xFFCCFBF1),
-              backgroundImage: widget.otherUser?.profileImage != null ? NetworkImage(widget.otherUser!.profileImage!) : null,
-              child: widget.otherUser?.profileImage == null 
-                  ? Text(widget.otherUser?.name[0].toUpperCase() ?? 'U', style: const TextStyle(color: Color(0xFF14B8A6), fontWeight: FontWeight.bold, fontSize: 14))
+              backgroundImage: widget.otherUser?.profileImage != null
+                  ? NetworkImage(widget.otherUser!.profileImage!)
+                  : null,
+              child: widget.otherUser?.profileImage == null
+                  ? Text(
+                      widget.otherUser?.name[0].toUpperCase() ?? 'U',
+                      style: const TextStyle(
+                        color: Color(0xFF14B8A6),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    )
                   : null,
             ),
             const SizedBox(width: 10),
@@ -82,17 +95,27 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
                 children: [
                   Text(
                     widget.otherUser?.name ?? 'Unknown User',
-                    style: const TextStyle(color: Color(0xFF172033), fontSize: 16, fontWeight: FontWeight.w600),
+                    style: const TextStyle(
+                      color: Color(0xFF172033),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   Consumer<ChatProvider>(
                     builder: (context, prov, child) {
                       final isTyping = prov.isTyping(widget.conversationId);
                       if (isTyping) {
-                        return const Text('typing...', style: TextStyle(color: Color(0xFF2563EB), fontSize: 12));
+                        return const Text(
+                          'typing...',
+                          style: TextStyle(
+                            color: Color(0xFF2563EB),
+                            fontSize: 12,
+                          ),
+                        );
                       }
                       return const SizedBox.shrink();
-                    }
-                  )
+                    },
+                  ),
                 ],
               ),
             ),
@@ -105,20 +128,28 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
             child: Consumer<ChatProvider>(
               builder: (context, prov, child) {
                 final messages = prov.getMessages(widget.conversationId);
-                
+
                 if (messages.isEmpty) {
-                  return const Center(child: Text("No messages yet", style: TextStyle(color: Colors.grey)));
+                  return const Center(
+                    child: Text(
+                      "No messages yet",
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  );
                 }
 
                 return ListView.builder(
                   controller: _scrollController,
                   reverse: true,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   itemCount: messages.length,
                   itemBuilder: (context, index) {
                     final msg = messages[index];
                     final isMe = msg.senderId == prov.currentUserId;
-                    
+
                     return _buildMessageBubble(msg, isMe);
                   },
                 );
@@ -140,14 +171,22 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
         decoration: BoxDecoration(
           color: isMe ? const Color(0xFF2563EB) : Colors.white,
           borderRadius: BorderRadius.circular(16).copyWith(
-            bottomRight: isMe ? const Radius.circular(4) : const Radius.circular(16),
-            bottomLeft: isMe ? const Radius.circular(16) : const Radius.circular(4),
+            bottomRight: isMe
+                ? const Radius.circular(4)
+                : const Radius.circular(16),
+            bottomLeft: isMe
+                ? const Radius.circular(16)
+                : const Radius.circular(4),
           ),
           border: isMe ? null : Border.all(color: Colors.grey.shade200),
         ),
-        constraints: BoxConstraints(maxWidth: MediaQuery.of(context).size.width * 0.75),
+        constraints: BoxConstraints(
+          maxWidth: MediaQuery.of(context).size.width * 0.75,
+        ),
         child: Column(
-          crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          crossAxisAlignment: isMe
+              ? CrossAxisAlignment.end
+              : CrossAxisAlignment.start,
           children: [
             Text(
               msg.content,
@@ -172,11 +211,13 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
                   Icon(
                     msg.isRead ? Icons.done_all : Icons.check,
                     size: 14,
-                    color: msg.isRead ? const Color(0xFF14B8A6) : Colors.white70,
-                  )
-                ]
+                    color: msg.isRead
+                        ? const Color(0xFF14B8A6)
+                        : Colors.white70,
+                  ),
+                ],
               ],
-            )
+            ),
           ],
         ),
       ),
@@ -206,7 +247,10 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
                   controller: _msgController,
                   textCapitalization: TextCapitalization.sentences,
                   onChanged: (text) {
-                    context.read<ChatProvider>().setTyping(widget.conversationId, text.isNotEmpty);
+                    context.read<ChatProvider>().setTyping(
+                      widget.conversationId,
+                      text.isNotEmpty,
+                    );
                   },
                   decoration: const InputDecoration(
                     hintText: 'Type a message...',

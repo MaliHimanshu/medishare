@@ -63,7 +63,10 @@ class _MSSearchBarState extends State<MSSearchBar> {
             : null,
         filled: true,
         fillColor: context.inputBg,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 18,
+          vertical: 12,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(color: context.borderColor, width: 1.5),

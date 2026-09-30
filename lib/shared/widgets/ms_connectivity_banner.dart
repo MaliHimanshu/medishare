@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 /// Animated connectivity banner that slides in from the top when internet is lost.
 /// Automatically handles show/hide based on a `isConnected` flag.
 class MsConnectivityBanner extends StatefulWidget {
@@ -84,8 +85,11 @@ class _MsConnectivityBannerState extends State<MsConnectivityBanner>
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.wifi_off_rounded,
-                          color: Colors.white, size: 16),
+                      Icon(
+                        Icons.wifi_off_rounded,
+                        color: Colors.white,
+                        size: 16,
+                      ),
                       SizedBox(width: 8),
                       Text(
                         'No internet connection',

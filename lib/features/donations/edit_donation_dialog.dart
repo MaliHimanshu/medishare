@@ -8,10 +8,7 @@ import '../../providers/donation_provider.dart';
 class EditDonationDialog extends StatefulWidget {
   final DonationModel donation;
 
-  const EditDonationDialog({
-    super.key,
-    required this.donation,
-  });
+  const EditDonationDialog({super.key, required this.donation});
 
   @override
   State<EditDonationDialog> createState() => _EditDonationDialogState();
@@ -28,9 +25,7 @@ class _EditDonationDialogState extends State<EditDonationDialog> {
     _quantityController = TextEditingController(
       text: widget.donation.quantity.toString(),
     );
-    _notesController = TextEditingController(
-      text: widget.donation.notes,
-    );
+    _notesController = TextEditingController(text: widget.donation.notes);
   }
 
   @override
@@ -47,7 +42,9 @@ class _EditDonationDialogState extends State<EditDonationDialog> {
     final navigator = Navigator.of(context);
     final donationProvider = context.read<DonationProvider>();
 
-    final qty = int.tryParse(_quantityController.text.trim()) ?? widget.donation.quantity;
+    final qty =
+        int.tryParse(_quantityController.text.trim()) ??
+        widget.donation.quantity;
     final notes = _notesController.text.trim();
 
     final success = await donationProvider.editDonation(
@@ -68,9 +65,11 @@ class _EditDonationDialogState extends State<EditDonationDialog> {
       } else {
         messenger.showSnackBar(
           SnackBar(
-            content: Text(donationProvider.errorMessage.isNotEmpty
-                ? donationProvider.errorMessage
-                : 'Failed to update donation.'),
+            content: Text(
+              donationProvider.errorMessage.isNotEmpty
+                  ? donationProvider.errorMessage
+                  : 'Failed to update donation.',
+            ),
             backgroundColor: AppColors.error,
           ),
         );
@@ -135,7 +134,10 @@ class _EditDonationDialogState extends State<EditDonationDialog> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
                 ),
                 validator: (val) {
                   if (val == null || val.trim().isEmpty) {

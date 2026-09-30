@@ -119,38 +119,40 @@ class _MyRentalsScreenState extends State<MyRentalsScreen> {
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
-                    children: [
-                      'All',
-                      'Pending',
-                      'Approved',
-                      'Active',
-                      'Returned',
-                      'Rejected',
-                    ].map((st) {
-                      final isSelected = rentalProvider.selectedStatus == st;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: FilterChip(
-                          label: Text(
-                            st == 'All' ? 'All Status' : st,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: isSelected
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                              color: isSelected
-                                  ? AppColors.primary
-                                  : context.textPrimaryColor,
+                    children:
+                        [
+                          'All',
+                          'Pending',
+                          'Approved',
+                          'Active',
+                          'Returned',
+                          'Rejected',
+                        ].map((st) {
+                          final isSelected =
+                              rentalProvider.selectedStatus == st;
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: FilterChip(
+                              label: Text(
+                                st == 'All' ? 'All Status' : st,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                  color: isSelected
+                                      ? AppColors.primary
+                                      : context.textPrimaryColor,
+                                ),
+                              ),
+                              selected: isSelected,
+                              selectedColor: AppColors.primary.withAlpha(35),
+                              onSelected: (val) {
+                                rentalProvider.setStatusFilter(st);
+                              },
                             ),
-                          ),
-                          selected: isSelected,
-                          selectedColor: AppColors.primary.withAlpha(35),
-                          onSelected: (val) {
-                            rentalProvider.setStatusFilter(st);
-                          },
-                        ),
-                      );
-                    }).toList(),
+                          );
+                        }).toList(),
                   ),
                 ),
               ],
@@ -170,7 +172,9 @@ class _MyRentalsScreenState extends State<MyRentalsScreen> {
   }
 
   Widget _buildContent(
-      RentalProvider rentalProvider, List<RentalModel> filtered) {
+    RentalProvider rentalProvider,
+    List<RentalModel> filtered,
+  ) {
     if (rentalProvider.isLoading) {
       return ListView.builder(
         padding: const EdgeInsets.all(16),
@@ -303,8 +307,11 @@ class _MyRentalsScreenState extends State<MyRentalsScreen> {
                       children: [
                         Row(
                           children: [
-                            Icon(Icons.date_range,
-                                size: 14, color: context.textSecondaryColor),
+                            Icon(
+                              Icons.date_range,
+                              size: 14,
+                              color: context.textSecondaryColor,
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               '${item.startDate.split('T').first} → ${item.endDate.split('T').first}',
@@ -325,7 +332,8 @@ class _MyRentalsScreenState extends State<MyRentalsScreen> {
                                     context: context,
                                     isScrollControlled: true,
                                     backgroundColor: Colors.transparent,
-                                    builder: (ctx) => RazorpayCheckoutSheet(rental: item),
+                                    builder: (ctx) =>
+                                        RazorpayCheckoutSheet(rental: item),
                                   );
                                   if (res == true && mounted) {
                                     rentalProvider.fetchRentals();
@@ -333,7 +341,10 @@ class _MyRentalsScreenState extends State<MyRentalsScreen> {
                                 },
                                 borderRadius: BorderRadius.circular(10),
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 3,
+                                  ),
                                   decoration: BoxDecoration(
                                     color: const Color(0xFF0C2340),
                                     borderRadius: BorderRadius.circular(8),
@@ -341,11 +352,19 @@ class _MyRentalsScreenState extends State<MyRentalsScreen> {
                                   child: const Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Icon(Icons.bolt, size: 10, color: Colors.blueAccent),
+                                      Icon(
+                                        Icons.bolt,
+                                        size: 10,
+                                        color: Colors.blueAccent,
+                                      ),
                                       SizedBox(width: 2),
                                       Text(
                                         "PAY NOW",
-                                        style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 8,
+                                          fontWeight: FontWeight.bold,
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -355,12 +374,15 @@ class _MyRentalsScreenState extends State<MyRentalsScreen> {
                             ],
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4),
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
                               decoration: BoxDecoration(
                                 color: statusColor.withAlpha(25),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
-                                    color: statusColor.withAlpha(80)),
+                                  color: statusColor.withAlpha(80),
+                                ),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,

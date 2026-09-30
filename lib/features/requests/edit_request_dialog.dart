@@ -8,10 +8,7 @@ import '../../providers/request_provider.dart';
 class EditRequestDialog extends StatefulWidget {
   final RequestModel request;
 
-  const EditRequestDialog({
-    super.key,
-    required this.request,
-  });
+  const EditRequestDialog({super.key, required this.request});
 
   @override
   State<EditRequestDialog> createState() => _EditRequestDialogState();
@@ -29,12 +26,8 @@ class _EditRequestDialogState extends State<EditRequestDialog> {
     _quantityController = TextEditingController(
       text: widget.request.quantity.toString(),
     );
-    _purposeController = TextEditingController(
-      text: widget.request.reason,
-    );
-    _notesController = TextEditingController(
-      text: widget.request.notes,
-    );
+    _purposeController = TextEditingController(text: widget.request.reason);
+    _notesController = TextEditingController(text: widget.request.notes);
   }
 
   @override
@@ -52,7 +45,9 @@ class _EditRequestDialogState extends State<EditRequestDialog> {
     final navigator = Navigator.of(context);
     final requestProvider = context.read<RequestProvider>();
 
-    final qty = int.tryParse(_quantityController.text.trim()) ?? widget.request.quantity;
+    final qty =
+        int.tryParse(_quantityController.text.trim()) ??
+        widget.request.quantity;
     final purpose = _purposeController.text.trim();
     final notes = _notesController.text.trim();
 
@@ -75,9 +70,11 @@ class _EditRequestDialogState extends State<EditRequestDialog> {
       } else {
         messenger.showSnackBar(
           SnackBar(
-            content: Text(requestProvider.errorMessage.isNotEmpty
-                ? requestProvider.errorMessage
-                : 'Failed to update request.'),
+            content: Text(
+              requestProvider.errorMessage.isNotEmpty
+                  ? requestProvider.errorMessage
+                  : 'Failed to update request.',
+            ),
             backgroundColor: AppColors.error,
           ),
         );
@@ -142,7 +139,10 @@ class _EditRequestDialogState extends State<EditRequestDialog> {
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 10,
+                  ),
                 ),
                 validator: (val) {
                   if (val == null || val.trim().isEmpty) {
@@ -176,7 +176,10 @@ class _EditRequestDialogState extends State<EditRequestDialog> {
                 maxLines: 2,
                 decoration: InputDecoration(
                   hintText: 'Reason for request...',
-                  prefixIcon: const Icon(Icons.medical_services_outlined, size: 20),
+                  prefixIcon: const Icon(
+                    Icons.medical_services_outlined,
+                    size: 20,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),

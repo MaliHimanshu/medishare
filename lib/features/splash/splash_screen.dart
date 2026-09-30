@@ -20,8 +20,8 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<double>    _scaleAnim;
-  late Animation<double>    _fadeAnim;
+  late Animation<double> _scaleAnim;
+  late Animation<double> _fadeAnim;
 
   @override
   void initState() {
@@ -32,9 +32,10 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(milliseconds: 1200),
     );
 
-    _scaleAnim = Tween<double>(begin: 0.6, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.elasticOut),
-    );
+    _scaleAnim = Tween<double>(
+      begin: 0.6,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
 
     _fadeAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
@@ -89,28 +90,20 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: AppColors.splashGradient,
-        ),
+        decoration: const BoxDecoration(gradient: AppColors.splashGradient),
         child: Stack(
           children: [
             // Background orb 1
             Positioned(
               top: -80,
               left: -80,
-              child: _Orb(
-                size: 300,
-                color: AppColors.primary.withAlpha(60),
-              ),
+              child: _Orb(size: 300, color: AppColors.primary.withAlpha(60)),
             ),
             // Background orb 2
             Positioned(
               bottom: -60,
               right: -60,
-              child: _Orb(
-                size: 250,
-                color: AppColors.accent.withAlpha(50),
-              ),
+              child: _Orb(size: 250, color: AppColors.accent.withAlpha(50)),
             ),
 
             // Center content
@@ -134,9 +127,7 @@ class _SplashScreenState extends State<SplashScreen>
                             width: 1.5,
                           ),
                         ),
-                        child: Center(
-                          child: MsLogo.icon(height: 72),
-                        ),
+                        child: Center(child: MsLogo.icon(height: 72)),
                       ),
 
                       const SizedBox(height: 28),
@@ -217,10 +208,7 @@ class _Orb extends StatelessWidget {
     return Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color,
-      ),
+      decoration: BoxDecoration(shape: BoxShape.circle, color: color),
     );
   }
 }

@@ -30,23 +30,34 @@ class _MessagesScreenState extends State<MessagesScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF7FAFC),
       appBar: AppBar(
-        title: const Text('Messages', style: TextStyle(color: Color(0xFF172033), fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
+        title: const Text(
+          'Messages',
+          style: TextStyle(
+            color: Color(0xFF172033),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
         iconTheme: const IconThemeData(color: Color(0xFF172033)),
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
             onPressed: () {
-              Navigator.push(context, MaterialPageRoute(builder: (_) => const FindUsersScreen()));
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const FindUsersScreen()),
+              );
             },
-          )
+          ),
         ],
       ),
       body: Consumer<ChatProvider>(
         builder: (context, chatProv, child) {
           if (chatProv.isLoading && chatProv.conversations.isEmpty) {
-            return const Center(child: CircularProgressIndicator(color: Color(0xFF2563EB)));
+            return const Center(
+              child: CircularProgressIndicator(color: Color(0xFF2563EB)),
+            );
           }
 
           if (chatProv.conversations.isEmpty) {
@@ -57,34 +68,59 @@ class _MessagesScreenState extends State<MessagesScreen> {
             onRefresh: () => chatProv.loadConversations(),
             child: ListView.separated(
               itemCount: chatProv.conversations.length,
-              separatorBuilder: (context, index) => const Divider(height: 1, color: Colors.black12),
+              separatorBuilder: (context, index) =>
+                  const Divider(height: 1, color: Colors.black12),
               itemBuilder: (context, index) {
                 final conv = chatProv.conversations[index];
-                final otherUser = conv.getOtherUser(chatProv.currentUserId ?? '');
-                final unreadCount = conv.getUnreadCount(chatProv.currentUserId ?? '');
-                final lastMessage = conv.messages.isNotEmpty ? conv.messages.first.content : 'Started a conversation';
+                final otherUser = conv.getOtherUser(
+                  chatProv.currentUserId ?? '',
+                );
+                final unreadCount = conv.getUnreadCount(
+                  chatProv.currentUserId ?? '',
+                );
+                final lastMessage = conv.messages.isNotEmpty
+                    ? conv.messages.first.content
+                    : 'Started a conversation';
 
                 return ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   leading: CircleAvatar(
                     radius: 24,
                     backgroundColor: const Color(0xFFCCFBF1),
-                    backgroundImage: otherUser?.profileImage != null ? NetworkImage(otherUser!.profileImage!) : null,
-                    child: otherUser?.profileImage == null 
-                      ? Text(otherUser?.name[0].toUpperCase() ?? 'U', style: const TextStyle(color: Color(0xFF14B8A6), fontWeight: FontWeight.bold))
-                      : null,
+                    backgroundImage: otherUser?.profileImage != null
+                        ? NetworkImage(otherUser!.profileImage!)
+                        : null,
+                    child: otherUser?.profileImage == null
+                        ? Text(
+                            otherUser?.name[0].toUpperCase() ?? 'U',
+                            style: const TextStyle(
+                              color: Color(0xFF14B8A6),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          )
+                        : null,
                   ),
                   title: Text(
                     otherUser?.name ?? 'Unknown User',
-                    style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF172033)),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF172033),
+                    ),
                   ),
                   subtitle: Text(
                     lastMessage,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: unreadCount > 0 ? const Color(0xFF172033) : const Color(0xFF64748B),
-                      fontWeight: unreadCount > 0 ? FontWeight.bold : FontWeight.normal
+                      color: unreadCount > 0
+                          ? const Color(0xFF172033)
+                          : const Color(0xFF64748B),
+                      fontWeight: unreadCount > 0
+                          ? FontWeight.bold
+                          : FontWeight.normal,
                     ),
                   ),
                   trailing: unreadCount > 0
@@ -93,17 +129,23 @@ class _MessagesScreenState extends State<MessagesScreen> {
                           backgroundColor: const Color(0xFF2563EB),
                           child: Text(
                             unreadCount.toString(),
-                            style: const TextStyle(color: Colors.white, fontSize: 12),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                            ),
                           ),
                         )
                       : null,
                   onTap: () {
-                    Navigator.push(context, MaterialPageRoute(
-                      builder: (_) => PrivateChatScreen(
-                        conversationId: conv.id,
-                        otherUser: otherUser,
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => PrivateChatScreen(
+                          conversationId: conv.id,
+                          otherUser: otherUser,
+                        ),
                       ),
-                    ));
+                    );
                   },
                 );
               },
@@ -115,7 +157,10 @@ class _MessagesScreenState extends State<MessagesScreen> {
         backgroundColor: const Color(0xFF2563EB),
         child: const Icon(Icons.message, color: Colors.white),
         onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (_) => const FindUsersScreen()));
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const FindUsersScreen()),
+          );
         },
       ),
     );
@@ -130,7 +175,11 @@ class _MessagesScreenState extends State<MessagesScreen> {
           const SizedBox(height: 16),
           const Text(
             'No conversations yet',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Color(0xFF172033)),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF172033),
+            ),
           ),
           const SizedBox(height: 8),
           const Text(

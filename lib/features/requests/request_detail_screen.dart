@@ -13,10 +13,7 @@ import 'edit_request_dialog.dart';
 class RequestDetailScreen extends StatefulWidget {
   final RequestModel request;
 
-  const RequestDetailScreen({
-    super.key,
-    required this.request,
-  });
+  const RequestDetailScreen({super.key, required this.request});
 
   @override
   State<RequestDetailScreen> createState() => _RequestDetailScreenState();
@@ -80,24 +77,26 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                     runSpacing: 8,
                     children: ['PENDING', 'APPROVED', 'REJECTED', 'COMPLETED']
                         .map((st) {
-                      final isSelected = selectedStatus == st;
-                      final color = _getStatusColor(st);
-                      return ChoiceChip(
-                        label: Text(st),
-                        selected: isSelected,
-                        selectedColor: color.withAlpha(50),
-                        labelStyle: TextStyle(
-                          color: isSelected ? color : Colors.black87,
-                          fontWeight:
-                              isSelected ? FontWeight.bold : FontWeight.normal,
-                        ),
-                        onSelected: (val) {
-                          if (val) {
-                            setModalState(() => selectedStatus = st);
-                          }
-                        },
-                      );
-                    }).toList(),
+                          final isSelected = selectedStatus == st;
+                          final color = _getStatusColor(st);
+                          return ChoiceChip(
+                            label: Text(st),
+                            selected: isSelected,
+                            selectedColor: color.withAlpha(50),
+                            labelStyle: TextStyle(
+                              color: isSelected ? color : Colors.black87,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
+                            onSelected: (val) {
+                              if (val) {
+                                setModalState(() => selectedStatus = st);
+                              }
+                            },
+                          );
+                        })
+                        .toList(),
                   ),
                   const SizedBox(height: 24),
                   SizedBox(
@@ -116,14 +115,21 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                         navigator.pop();
 
                         final success = await requestProvider
-                            .updateRequestStatus(_currentRequest.id, selectedStatus);
+                            .updateRequestStatus(
+                              _currentRequest.id,
+                              selectedStatus,
+                            );
 
                         if (mounted) {
                           if (success) {
                             setState(() {
                               _currentRequest = requestProvider.requests
-                                  .firstWhere((r) => r.id == _currentRequest.id,
-                                      orElse: () => _currentRequest.copyWith(status: selectedStatus));
+                                  .firstWhere(
+                                    (r) => r.id == _currentRequest.id,
+                                    orElse: () => _currentRequest.copyWith(
+                                      status: selectedStatus,
+                                    ),
+                                  );
                             });
                             messenger.showSnackBar(
                               const SnackBar(
@@ -134,9 +140,11 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                           } else {
                             messenger.showSnackBar(
                               SnackBar(
-                                content: Text(requestProvider.errorMessage.isNotEmpty
-                                    ? requestProvider.errorMessage
-                                    : 'Failed to update status.'),
+                                content: Text(
+                                  requestProvider.errorMessage.isNotEmpty
+                                      ? requestProvider.errorMessage
+                                      : 'Failed to update status.',
+                                ),
                                 backgroundColor: AppColors.error,
                               ),
                             );
@@ -204,8 +212,9 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
               final navigator = Navigator.of(context);
               Navigator.pop(ctx);
 
-              final success =
-                  await requestProvider.deleteRequest(_currentRequest.id);
+              final success = await requestProvider.deleteRequest(
+                _currentRequest.id,
+              );
 
               if (mounted) {
                 if (success) {
@@ -219,9 +228,11 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                 } else {
                   messenger.showSnackBar(
                     SnackBar(
-                      content: Text(requestProvider.errorMessage.isNotEmpty
-                          ? requestProvider.errorMessage
-                          : 'Failed to delete request.'),
+                      content: Text(
+                        requestProvider.errorMessage.isNotEmpty
+                            ? requestProvider.errorMessage
+                            : 'Failed to delete request.',
+                      ),
                       backgroundColor: AppColors.error,
                     ),
                   );
@@ -240,7 +251,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
     final auth = context.watch<AuthProvider>();
     final user = auth.user;
     final bool isMyRequest = user?.id == _currentRequest.requesterId;
-    
+
     final equip = _currentRequest.equipment;
     final statusColor = _getStatusColor(_currentRequest.status);
 
@@ -302,8 +313,10 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                   ),
                 ),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: statusColor.withAlpha(30),
                     borderRadius: BorderRadius.circular(20),
@@ -363,7 +376,10 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                   ListTile(
                     leading: CircleAvatar(
                       backgroundColor: Colors.red.shade50,
-                      child: const Icon(Icons.local_hospital, color: Colors.red),
+                      child: const Icon(
+                        Icons.local_hospital,
+                        color: Colors.red,
+                      ),
                     ),
                     title: const Text('Hospital / NGO Location'),
                     subtitle: Text(_currentRequest.hospital),
@@ -372,13 +388,17 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                   ListTile(
                     leading: CircleAvatar(
                       backgroundColor: Colors.indigo.shade50,
-                      child: const Icon(Icons.calendar_today,
-                          color: Colors.indigo),
+                      child: const Icon(
+                        Icons.calendar_today,
+                        color: Colors.indigo,
+                      ),
                     ),
                     title: const Text('Request Date'),
-                    subtitle: Text(_currentRequest.createdAt.isNotEmpty
-                        ? _currentRequest.createdAt.split('T').first
-                        : 'Recently'),
+                    subtitle: Text(
+                      _currentRequest.createdAt.isNotEmpty
+                          ? _currentRequest.createdAt.split('T').first
+                          : 'Recently',
+                    ),
                   ),
                 ],
               ),
@@ -455,17 +475,21 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                       onPressed: () async {
                         final chatProv = context.read<ChatProvider>();
                         try {
-                          final conv = await chatProv.getOrCreateConversation(_currentRequest.requesterId);
+                          final conv = await chatProv.getOrCreateConversation(
+                            _currentRequest.requesterId,
+                          );
                           if (context.mounted) {
-                            Navigator.push(context, MaterialPageRoute(
-                              builder: (_) => PrivateChatScreen(
-                                conversationId: conv.id,
-                              )
-                            ));
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) =>
+                                    PrivateChatScreen(conversationId: conv.id),
+                              ),
+                            );
                           }
                         } catch (e) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Could not start chat: $e'))
+                            SnackBar(content: Text('Could not start chat: $e')),
                           );
                         }
                       },

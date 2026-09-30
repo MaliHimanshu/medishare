@@ -48,7 +48,8 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
   int currentIndex = 0;
   late AnimationController _animController;
   late Animation<double> _fadeAnimation;
@@ -61,15 +62,22 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       vsync: this,
       duration: const Duration(milliseconds: 700),
     );
-    
+
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animController, curve: const Interval(0.0, 0.7, curve: Curves.easeOut)),
+      CurvedAnimation(
+        parent: _animController,
+        curve: const Interval(0.0, 0.7, curve: Curves.easeOut),
+      ),
     );
-    
-    _slideAnimation = Tween<Offset>(begin: const Offset(0.0, 0.05), end: Offset.zero).animate(
-      CurvedAnimation(parent: _animController, curve: const Interval(0.0, 0.9, curve: Curves.easeOutCubic)),
-    );
-    
+
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0.0, 0.05), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _animController,
+            curve: const Interval(0.0, 0.9, curve: Curves.easeOutCubic),
+          ),
+        );
+
     // Initialise API fetches
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<DashboardProvider>().fetchAll();
@@ -106,16 +114,28 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         // Navigation: Home, My Equipment, Add, Chat, Profile
         switch (index) {
           case 1:
-            Navigator.push(context, AppPageTransitions.slideRight(const MyEquipmentScreen()));
+            Navigator.push(
+              context,
+              AppPageTransitions.slideRight(const MyEquipmentScreen()),
+            );
             break;
           case 2:
-            Navigator.push(context, AppPageTransitions.slideUp(const AddEquipmentScreen()));
+            Navigator.push(
+              context,
+              AppPageTransitions.slideUp(const AddEquipmentScreen()),
+            );
             break;
           case 3:
-            Navigator.push(context, AppPageTransitions.slideUp(const MessagesScreen()));
+            Navigator.push(
+              context,
+              AppPageTransitions.slideUp(const MessagesScreen()),
+            );
             break;
           case 4:
-            Navigator.push(context, AppPageTransitions.slideRight(const ProfileScreen()));
+            Navigator.push(
+              context,
+              AppPageTransitions.slideRight(const ProfileScreen()),
+            );
             break;
         }
         break;
@@ -124,16 +144,28 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         // Navigation: Home, Explore, Requests, Chat, Profile
         switch (index) {
           case 1:
-            Navigator.push(context, AppPageTransitions.slideRight(const EquipmentListScreen()));
+            Navigator.push(
+              context,
+              AppPageTransitions.slideRight(const EquipmentListScreen()),
+            );
             break;
           case 2:
-            Navigator.push(context, AppPageTransitions.slideRight(const RequestScreen()));
+            Navigator.push(
+              context,
+              AppPageTransitions.slideRight(const RequestScreen()),
+            );
             break;
           case 3:
-            Navigator.push(context, AppPageTransitions.slideUp(const MessagesScreen()));
+            Navigator.push(
+              context,
+              AppPageTransitions.slideUp(const MessagesScreen()),
+            );
             break;
           case 4:
-            Navigator.push(context, AppPageTransitions.slideRight(const ProfileScreen()));
+            Navigator.push(
+              context,
+              AppPageTransitions.slideRight(const ProfileScreen()),
+            );
             break;
         }
         break;
@@ -142,16 +174,28 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         // Navigation: Home, Equipment, Requests, Chat, Profile
         switch (index) {
           case 1:
-            Navigator.push(context, AppPageTransitions.slideRight(const MyEquipmentScreen()));
+            Navigator.push(
+              context,
+              AppPageTransitions.slideRight(const MyEquipmentScreen()),
+            );
             break;
           case 2:
-            Navigator.push(context, AppPageTransitions.slideRight(const RequestScreen()));
+            Navigator.push(
+              context,
+              AppPageTransitions.slideRight(const RequestScreen()),
+            );
             break;
           case 3:
-            Navigator.push(context, AppPageTransitions.slideUp(const MessagesScreen()));
+            Navigator.push(
+              context,
+              AppPageTransitions.slideUp(const MessagesScreen()),
+            );
             break;
           case 4:
-            Navigator.push(context, AppPageTransitions.slideRight(const ProfileScreen()));
+            Navigator.push(
+              context,
+              AppPageTransitions.slideRight(const ProfileScreen()),
+            );
             break;
         }
         break;
@@ -160,16 +204,28 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         // Navigation: Home, Explore, Rentals, Chat, Profile
         switch (index) {
           case 1:
-            Navigator.push(context, AppPageTransitions.slideRight(const EquipmentListScreen()));
+            Navigator.push(
+              context,
+              AppPageTransitions.slideRight(const EquipmentListScreen()),
+            );
             break;
           case 2:
-            Navigator.push(context, AppPageTransitions.slideRight(const MyRentalsScreen()));
+            Navigator.push(
+              context,
+              AppPageTransitions.slideRight(const MyRentalsScreen()),
+            );
             break;
           case 3:
-            Navigator.push(context, AppPageTransitions.slideUp(const MessagesScreen()));
+            Navigator.push(
+              context,
+              AppPageTransitions.slideUp(const MessagesScreen()),
+            );
             break;
           case 4:
-            Navigator.push(context, AppPageTransitions.slideRight(const ProfileScreen()));
+            Navigator.push(
+              context,
+              AppPageTransitions.slideRight(const ProfileScreen()),
+            );
             break;
         }
         break;
@@ -179,16 +235,28 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         // Navigation: Home, Equipment, Requests, Chat, Profile
         switch (index) {
           case 1:
-            Navigator.push(context, AppPageTransitions.slideRight(const EquipmentListScreen()));
+            Navigator.push(
+              context,
+              AppPageTransitions.slideRight(const EquipmentListScreen()),
+            );
             break;
           case 2:
-            Navigator.push(context, AppPageTransitions.slideRight(const RequestScreen()));
+            Navigator.push(
+              context,
+              AppPageTransitions.slideRight(const RequestScreen()),
+            );
             break;
           case 3:
-            Navigator.push(context, AppPageTransitions.slideUp(const MessagesScreen()));
+            Navigator.push(
+              context,
+              AppPageTransitions.slideUp(const MessagesScreen()),
+            );
             break;
           case 4:
-            Navigator.push(context, AppPageTransitions.slideRight(const ProfileScreen()));
+            Navigator.push(
+              context,
+              AppPageTransitions.slideRight(const ProfileScreen()),
+            );
             break;
         }
         break;
@@ -365,7 +433,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     }
   }
 
-  Widget _buildDrawer(BuildContext context, UserModel? user, AuthProvider auth) {
+  Widget _buildDrawer(
+    BuildContext context,
+    UserModel? user,
+    AuthProvider auth,
+  ) {
     final role = user?.role.toUpperCase() ?? 'DONOR';
 
     return Drawer(
@@ -384,18 +456,29 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     user?.name ?? "MediShare User",
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white24,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
                     user?.roleLabel ?? "User",
-                    style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],
@@ -418,115 +501,235 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           ),
           ListTile(
             leading: const Icon(Icons.home_outlined, color: AppColors.primary),
-            title: Text("Home", style: TextStyle(color: context.textPrimaryColor)),
+            title: Text(
+              "Home",
+              style: TextStyle(color: context.textPrimaryColor),
+            ),
             onTap: () => Navigator.pop(context),
           ),
           ListTile(
             leading: const Icon(Icons.person_outline, color: AppColors.primary),
-            title: Text("Profile", style: TextStyle(color: context.textPrimaryColor)),
+            title: Text(
+              "Profile",
+              style: TextStyle(color: context.textPrimaryColor),
+            ),
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(context, AppPageTransitions.slideRight(const ProfileScreen()));
+              Navigator.push(
+                context,
+                AppPageTransitions.slideRight(const ProfileScreen()),
+              );
             },
           ),
           if (role == 'DONOR' || role == 'HOSPITAL' || role == 'ADMIN')
             ListTile(
-              leading: const Icon(Icons.inventory_2_outlined, color: AppColors.primary),
-              title: Text(role == 'HOSPITAL' ? "Hospital Equipment" : "My Equipment", style: TextStyle(color: context.textPrimaryColor)),
+              leading: const Icon(
+                Icons.inventory_2_outlined,
+                color: AppColors.primary,
+              ),
+              title: Text(
+                role == 'HOSPITAL' ? "Hospital Equipment" : "My Equipment",
+                style: TextStyle(color: context.textPrimaryColor),
+              ),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(context, AppPageTransitions.slideRight(const MyEquipmentScreen()));
+                Navigator.push(
+                  context,
+                  AppPageTransitions.slideRight(const MyEquipmentScreen()),
+                );
               },
             ),
           if (role == 'HOSPITAL' || role == 'NGO' || role == 'ADMIN')
             ListTile(
-              leading: const Icon(Icons.crisis_alert_rounded, color: Color(0xFFDC2626)),
+              leading: const Icon(
+                Icons.crisis_alert_rounded,
+                color: Color(0xFFDC2626),
+              ),
               title: Text(
-                role == 'HOSPITAL' ? "Emergency Alerts 🚨" : "Emergency Shortages 🚨",
-                style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFDC2626)),
+                role == 'HOSPITAL'
+                    ? "Emergency Alerts 🚨"
+                    : "Emergency Shortages 🚨",
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFDC2626),
+                ),
               ),
               onTap: () {
                 Navigator.pop(context);
                 if (role == 'HOSPITAL' || role == 'ADMIN') {
-                  Navigator.push(context, AppPageTransitions.slideRight(const HospitalEmergencyAlertsScreen()));
+                  Navigator.push(
+                    context,
+                    AppPageTransitions.slideRight(
+                      const HospitalEmergencyAlertsScreen(),
+                    ),
+                  );
                 } else {
-                  Navigator.push(context, AppPageTransitions.slideRight(const NgoEmergencyAlertsScreen()));
+                  Navigator.push(
+                    context,
+                    AppPageTransitions.slideRight(
+                      const NgoEmergencyAlertsScreen(),
+                    ),
+                  );
                 }
               },
             ),
           if (role == 'NGO' || role == 'RECIPIENT' || role == 'ADMIN')
             ListTile(
-              leading: const Icon(Icons.medical_services_outlined, color: AppColors.primary),
-              title: Text("Explore Equipment", style: TextStyle(color: context.textPrimaryColor)),
+              leading: const Icon(
+                Icons.medical_services_outlined,
+                color: AppColors.primary,
+              ),
+              title: Text(
+                "Explore Equipment",
+                style: TextStyle(color: context.textPrimaryColor),
+              ),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(context, AppPageTransitions.slideRight(const EquipmentListScreen()));
+                Navigator.push(
+                  context,
+                  AppPageTransitions.slideRight(const EquipmentListScreen()),
+                );
               },
             ),
           if (role == 'DONOR' || role == 'HOSPITAL' || role == 'ADMIN')
             ListTile(
-              leading: const Icon(Icons.add_box_outlined, color: AppColors.primary),
-              title: Text("Add Equipment", style: TextStyle(color: context.textPrimaryColor)),
+              leading: const Icon(
+                Icons.add_box_outlined,
+                color: AppColors.primary,
+              ),
+              title: Text(
+                "Add Equipment",
+                style: TextStyle(color: context.textPrimaryColor),
+              ),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(context, AppPageTransitions.slideUp(const AddEquipmentScreen()));
+                Navigator.push(
+                  context,
+                  AppPageTransitions.slideUp(const AddEquipmentScreen()),
+                );
               },
             ),
-          if (role == 'DONOR' || role == 'NGO' || role == 'HOSPITAL' || role == 'ADMIN')
+          if (role == 'DONOR' ||
+              role == 'NGO' ||
+              role == 'HOSPITAL' ||
+              role == 'ADMIN')
             ListTile(
-              leading: const Icon(Icons.favorite_border_outlined, color: AppColors.primary),
-              title: Text(role == 'NGO' ? "Donations Network" : "My Donations", style: TextStyle(color: context.textPrimaryColor)),
+              leading: const Icon(
+                Icons.favorite_border_outlined,
+                color: AppColors.primary,
+              ),
+              title: Text(
+                role == 'NGO' ? "Donations Network" : "My Donations",
+                style: TextStyle(color: context.textPrimaryColor),
+              ),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(context, AppPageTransitions.slideRight(const MyDonationsScreen()));
+                Navigator.push(
+                  context,
+                  AppPageTransitions.slideRight(const MyDonationsScreen()),
+                );
               },
             ),
-          if (role == 'NGO' || role == 'HOSPITAL' || role == 'RECIPIENT' || role == 'ADMIN')
+          if (role == 'NGO' ||
+              role == 'HOSPITAL' ||
+              role == 'RECIPIENT' ||
+              role == 'ADMIN')
             ListTile(
-              leading: const Icon(Icons.assignment_outlined, color: AppColors.primary),
-              title: Text(role == 'NGO' ? "Equipment Requests" : "My Requests", style: TextStyle(color: context.textPrimaryColor)),
+              leading: const Icon(
+                Icons.assignment_outlined,
+                color: AppColors.primary,
+              ),
+              title: Text(
+                role == 'NGO' ? "Equipment Requests" : "My Requests",
+                style: TextStyle(color: context.textPrimaryColor),
+              ),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(context, AppPageTransitions.slideRight(const RequestScreen()));
+                Navigator.push(
+                  context,
+                  AppPageTransitions.slideRight(const RequestScreen()),
+                );
               },
             ),
-          if (role == 'DONOR' || role == 'RECIPIENT' || role == 'HOSPITAL' || role == 'ADMIN')
+          if (role == 'DONOR' ||
+              role == 'RECIPIENT' ||
+              role == 'HOSPITAL' ||
+              role == 'ADMIN')
             ListTile(
-              leading: const Icon(Icons.handshake_outlined, color: AppColors.primary),
-              title: Text(role == 'DONOR' ? "Rental Requests" : "My Rentals", style: TextStyle(color: context.textPrimaryColor)),
+              leading: const Icon(
+                Icons.handshake_outlined,
+                color: AppColors.primary,
+              ),
+              title: Text(
+                role == 'DONOR' ? "Rental Requests" : "My Rentals",
+                style: TextStyle(color: context.textPrimaryColor),
+              ),
               onTap: () {
                 Navigator.pop(context);
-                Navigator.push(context, AppPageTransitions.slideRight(const MyRentalsScreen()));
+                Navigator.push(
+                  context,
+                  AppPageTransitions.slideRight(const MyRentalsScreen()),
+                );
               },
             ),
           ListTile(
-            leading: const Icon(Icons.location_on_outlined, color: AppColors.primary),
-            title: Text("Nearby Equipment", style: TextStyle(color: context.textPrimaryColor)),
+            leading: const Icon(
+              Icons.location_on_outlined,
+              color: AppColors.primary,
+            ),
+            title: Text(
+              "Nearby Equipment",
+              style: TextStyle(color: context.textPrimaryColor),
+            ),
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(context, AppPageTransitions.slideRight(const NearbyEquipmentScreen()));
+              Navigator.push(
+                context,
+                AppPageTransitions.slideRight(const NearbyEquipmentScreen()),
+              );
             },
           ),
           ListTile(
-            leading: const Icon(Icons.local_hospital_outlined, color: AppColors.primary),
-            title: Text("Nearby Hospitals", style: TextStyle(color: context.textPrimaryColor)),
+            leading: const Icon(
+              Icons.local_hospital_outlined,
+              color: AppColors.primary,
+            ),
+            title: Text(
+              "Nearby Hospitals",
+              style: TextStyle(color: context.textPrimaryColor),
+            ),
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(context, AppPageTransitions.slideRight(const HospitalScreen()));
+              Navigator.push(
+                context,
+                AppPageTransitions.slideRight(const HospitalScreen()),
+              );
             },
           ),
           ListTile(
-            leading: const Icon(Icons.settings_outlined, color: AppColors.primary),
-            title: Text("Settings", style: TextStyle(color: context.textPrimaryColor)),
+            leading: const Icon(
+              Icons.settings_outlined,
+              color: AppColors.primary,
+            ),
+            title: Text(
+              "Settings",
+              style: TextStyle(color: context.textPrimaryColor),
+            ),
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(context, AppPageTransitions.slideRight(const SettingsScreen()));
+              Navigator.push(
+                context,
+                AppPageTransitions.slideRight(const SettingsScreen()),
+              );
             },
           ),
           Divider(color: context.borderColor),
           ListTile(
             leading: const Icon(Icons.logout_outlined, color: AppColors.error),
-            title: const Text("Logout", style: TextStyle(color: AppColors.error)),
+            title: const Text(
+              "Logout",
+              style: TextStyle(color: AppColors.error),
+            ),
             onTap: () async {
               final navigator = Navigator.of(context);
               Navigator.pop(context);
@@ -558,7 +761,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
 
     return Scaffold(
       backgroundColor: context.scaffoldBg,
-      
+
       // ── App Bar ─────────────────────────────────────────
       appBar: AppBar(
         backgroundColor: context.surfaceBg,
@@ -570,21 +773,33 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
           // Global Search Shortcut
           IconButton(
             icon: const Icon(Icons.search, color: AppColors.primary),
-            onPressed: () => Navigator.push(context, AppPageTransitions.slideRight(const GlobalSearchScreen())),
+            onPressed: () => Navigator.push(
+              context,
+              AppPageTransitions.slideRight(const GlobalSearchScreen()),
+            ),
           ),
           // Messages Shortcut
           IconButton(
             icon: const Icon(Icons.forum_outlined, color: AppColors.primary),
             tooltip: "Messages",
-            onPressed: () => Navigator.push(context, AppPageTransitions.slideUp(const MessagesScreen())),
+            onPressed: () => Navigator.push(
+              context,
+              AppPageTransitions.slideUp(const MessagesScreen()),
+            ),
           ),
           // Animated Notifications Icon Badge
           Stack(
             alignment: Alignment.center,
             children: [
               IconButton(
-                icon: const Icon(Icons.notifications_none_outlined, color: AppColors.primary),
-                onPressed: () => Navigator.push(context, AppPageTransitions.slideUp(const NotificationScreen())),
+                icon: const Icon(
+                  Icons.notifications_none_outlined,
+                  color: AppColors.primary,
+                ),
+                onPressed: () => Navigator.push(
+                  context,
+                  AppPageTransitions.slideUp(const NotificationScreen()),
+                ),
               ),
               Positioned(
                 right: 6,
@@ -614,7 +829,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                     ),
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ],
@@ -637,7 +852,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // ── Unverified Phone Banner ────────────────────────
-                  if (user != null && !user.phoneVerified && user.phone != null && user.phone!.isNotEmpty) ...[
+                  if (user != null &&
+                      !user.phoneVerified &&
+                      user.phone != null &&
+                      user.phone!.isNotEmpty) ...[
                     _buildUnverifiedPhoneCard(context, user.phone!),
                     const SizedBox(height: 16),
                   ],
@@ -659,7 +877,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
         unselectedItemColor: context.textSecondaryColor,
         backgroundColor: context.surfaceBg,
         elevation: 8,
-        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+        selectedLabelStyle: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 11,
+        ),
         unselectedLabelStyle: const TextStyle(fontSize: 11),
         onTap: (index) => _onBottomTapForRole(index, role),
         items: _getNavItemsForRole(role),
@@ -684,7 +905,11 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               color: const Color(0xFFF97316).withAlpha(30),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.warning_amber_rounded, color: Color(0xFFF97316), size: 22),
+            child: const Icon(
+              Icons.warning_amber_rounded,
+              color: Color(0xFFF97316),
+              size: 22,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -721,7 +946,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                 if (success) {
                   Navigator.push(
                     context,
-                    AppPageTransitions.slideRight(OtpVerificationScreen(phone: phone)),
+                    AppPageTransitions.slideRight(
+                      OtpVerificationScreen(phone: phone),
+                    ),
                   );
                 } else {
                   messenger.showSnackBar(
@@ -729,7 +956,9 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
                       content: Text(auth.errorMessage ?? 'Failed to send OTP'),
                       backgroundColor: AppColors.error,
                       behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   );
                 }
@@ -737,8 +966,13 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFF97316),
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
                 elevation: 0,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 minimumSize: Size.zero,

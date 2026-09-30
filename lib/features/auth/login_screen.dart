@@ -20,9 +20,9 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen>
     with SingleTickerProviderStateMixin {
-  final _formKey   = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>();
   final _identifierCtrl = TextEditingController();
-  final _passCtrl  = TextEditingController();
+  final _passCtrl = TextEditingController();
 
   String? _identifierError;
   String? _passError;
@@ -47,15 +47,13 @@ class _LoginScreenState extends State<LoginScreen>
       ),
     );
 
-    _formSlide = Tween<Offset>(
-      begin: const Offset(0, 0.06),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _animCtrl,
-        curve: const Interval(0.3, 1.0, curve: Curves.easeOutCubic),
-      ),
-    );
+    _formSlide = Tween<Offset>(begin: const Offset(0, 0.06), end: Offset.zero)
+        .animate(
+          CurvedAnimation(
+            parent: _animCtrl,
+            curve: const Interval(0.3, 1.0, curve: Curves.easeOutCubic),
+          ),
+        );
 
     _formFade = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
@@ -76,7 +74,8 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   String? _validateIdentifier(String? v) {
-    if (v == null || v.trim().isEmpty) return 'Email or phone number is required';
+    if (v == null || v.trim().isEmpty)
+      return 'Email or phone number is required';
     final trimmed = v.trim();
     if (trimmed.contains('@')) {
       if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(trimmed)) {
@@ -100,7 +99,7 @@ class _LoginScreenState extends State<LoginScreen>
   Future<void> _submit() async {
     setState(() {
       _identifierError = _validateIdentifier(_identifierCtrl.text);
-      _passError       = _validatePassword(_passCtrl.text);
+      _passError = _validatePassword(_passCtrl.text);
     });
 
     if (_identifierError != null || _passError != null) return;
@@ -116,10 +115,14 @@ class _LoginScreenState extends State<LoginScreen>
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Welcome back, ${auth.user?.name.split(' ').first ?? 'there'}! 👋'),
+          content: Text(
+            'Welcome back, ${auth.user?.name.split(' ').first ?? 'there'}! 👋',
+          ),
           backgroundColor: AppColors.success,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
 
@@ -133,7 +136,9 @@ class _LoginScreenState extends State<LoginScreen>
           content: Text(auth.errorMessage ?? 'Login failed'),
           backgroundColor: AppColors.error,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
     }
@@ -141,7 +146,7 @@ class _LoginScreenState extends State<LoginScreen>
 
   @override
   Widget build(BuildContext context) {
-    final auth      = context.watch<AuthProvider>();
+    final auth = context.watch<AuthProvider>();
     final isLoading = auth.isLoading;
 
     return Scaffold(
@@ -233,7 +238,8 @@ class _LoginScreenState extends State<LoginScreen>
                             onPressed: () => Navigator.push(
                               context,
                               AppPageTransitions.slideRight(
-                                  const ForgotPasswordScreen()),
+                                const ForgotPasswordScreen(),
+                              ),
                             ),
                             child: const Text(
                               'Forgot Password?',
@@ -263,7 +269,8 @@ class _LoginScreenState extends State<LoginScreen>
                               Navigator.pushReplacement(
                                 context,
                                 AppPageTransitions.slideRight(
-                                    const RegisterScreen()),
+                                  const RegisterScreen(),
+                                ),
                               );
                             },
                             child: RichText(

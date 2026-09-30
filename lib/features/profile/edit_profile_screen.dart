@@ -13,10 +13,7 @@ import '../../shared/widgets/ms_image.dart';
 class EditProfileScreen extends StatefulWidget {
   final UserModel user;
 
-  const EditProfileScreen({
-    super.key,
-    required this.user,
-  });
+  const EditProfileScreen({super.key, required this.user});
 
   @override
   State<EditProfileScreen> createState() => _EditProfileScreenState();
@@ -58,7 +55,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('New avatar selected! Will upload when profile is saved.'),
+              content: Text(
+                'New avatar selected! Will upload when profile is saved.',
+              ),
               behavior: SnackBarBehavior.floating,
               duration: Duration(seconds: 2),
             ),
@@ -96,7 +95,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               const SizedBox(height: 12),
               ListTile(
-                leading: const Icon(Icons.camera_alt_outlined, color: AppColors.primary),
+                leading: const Icon(
+                  Icons.camera_alt_outlined,
+                  color: AppColors.primary,
+                ),
                 title: const Text('Take Photo'),
                 onTap: () {
                   Navigator.pop(ctx);
@@ -104,7 +106,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.photo_library_outlined, color: AppColors.primary),
+                leading: const Icon(
+                  Icons.photo_library_outlined,
+                  color: AppColors.primary,
+                ),
                 title: const Text('Choose from Gallery'),
                 onTap: () {
                   Navigator.pop(ctx);
@@ -137,7 +142,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         if (mounted) {
           messenger.showSnackBar(
             SnackBar(
-              content: Text('Image upload failed: ${e.toString().replaceAll('Exception: ', '')}'),
+              content: Text(
+                'Image upload failed: ${e.toString().replaceAll('Exception: ', '')}',
+              ),
               backgroundColor: AppColors.error,
               behavior: SnackBarBehavior.floating,
             ),
@@ -170,9 +177,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       } else {
         messenger.showSnackBar(
           SnackBar(
-            content: Text(profileProvider.errorMessage.isNotEmpty
-                ? profileProvider.errorMessage
-                : 'Failed to update profile.'),
+            content: Text(
+              profileProvider.errorMessage.isNotEmpty
+                  ? profileProvider.errorMessage
+                  : 'Failed to update profile.',
+            ),
             backgroundColor: AppColors.error,
             behavior: SnackBarBehavior.floating,
           ),
@@ -258,14 +267,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   decoration: InputDecoration(
                     labelText: 'Full Name *',
                     labelStyle: TextStyle(color: context.textSecondaryColor),
-                    prefixIcon: const Icon(Icons.person_outline, color: AppColors.primary),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                    prefixIcon: const Icon(
+                      Icons.person_outline,
+                      color: AppColors.primary,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                     filled: true,
                     fillColor: context.inputBg,
                   ),
                   validator: (val) {
-                    if (val == null || val.trim().isEmpty) return 'Name is required';
-                    if (val.trim().length < 3) return 'Name must be at least 3 characters';
+                    if (val == null || val.trim().isEmpty)
+                      return 'Name is required';
+                    if (val.trim().length < 3)
+                      return 'Name must be at least 3 characters';
                     return null;
                   },
                 ),
@@ -282,8 +298,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     labelText: 'Email Address (Read-only)',
                     labelStyle: TextStyle(color: context.textSecondaryColor),
                     prefixIcon: const Icon(Icons.email_outlined),
-                    suffixIcon: const Icon(Icons.lock_outline, size: 18, color: Colors.grey),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                    suffixIcon: const Icon(
+                      Icons.lock_outline,
+                      size: 18,
+                      color: Colors.grey,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                     filled: true,
                     fillColor: Colors.grey.withValues(alpha: 0.15),
                   ),
@@ -299,13 +321,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   decoration: InputDecoration(
                     labelText: 'Phone Number',
                     labelStyle: TextStyle(color: context.textSecondaryColor),
-                    prefixIcon: const Icon(Icons.phone_outlined, color: AppColors.primary),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                    prefixIcon: const Icon(
+                      Icons.phone_outlined,
+                      color: AppColors.primary,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                     filled: true,
                     fillColor: context.inputBg,
                   ),
                   validator: (val) {
-                    if (val != null && val.isNotEmpty && !RegExp(r'^[0-9]{10}$').hasMatch(val.trim())) {
+                    if (val != null &&
+                        val.isNotEmpty &&
+                        !RegExp(r'^[0-9]{10}$').hasMatch(val.trim())) {
                       return 'Enter a valid 10-digit phone number';
                     }
                     return null;
@@ -322,8 +351,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   decoration: InputDecoration(
                     labelText: 'Address / Location',
                     labelStyle: TextStyle(color: context.textSecondaryColor),
-                    prefixIcon: const Icon(Icons.location_on_outlined, color: AppColors.primary),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                    prefixIcon: const Icon(
+                      Icons.location_on_outlined,
+                      color: AppColors.primary,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                     filled: true,
                     fillColor: context.inputBg,
                   ),
@@ -341,20 +375,28 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         ? const SizedBox(
                             width: 20,
                             height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
                           )
                         : const Icon(Icons.save_outlined),
                     label: Text(
                       _isUploadingImage
                           ? 'Uploading Photo...'
                           : profileProvider.isLoading
-                              ? 'Saving Changes...'
-                              : 'Save Profile',
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          ? 'Saving Changes...'
+                          : 'Save Profile',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     style: FilledButton.styleFrom(
                       backgroundColor: AppColors.primary,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                     ),
                   ),
                 ),

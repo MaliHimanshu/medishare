@@ -56,10 +56,13 @@ class ImageUploadService {
 
   /// Upload image file to backend Cloudinary endpoint (/api/upload)
   /// using multipart/form-data and returning secure Cloudinary image URL.
-  Future<String> uploadImage(File file, {void Function(int sent, int total)? onProgress}) async {
+  Future<String> uploadImage(
+    File file, {
+    void Function(int sent, int total)? onProgress,
+  }) async {
     try {
       final fileName = file.path.split('/').last.split('\\').last;
-      
+
       final formData = FormData.fromMap({
         'file': await MultipartFile.fromFile(
           file.path,
@@ -79,13 +82,17 @@ class ImageUploadService {
           if (data['url'] != null && data['url'].toString().isNotEmpty) {
             return data['url'].toString();
           }
-          if (data['data'] != null && data['data'] is Map && data['data']['url'] != null) {
+          if (data['data'] != null &&
+              data['data'] is Map &&
+              data['data']['url'] != null) {
             return data['data']['url'].toString();
           }
         }
       }
 
-      throw Exception(response.data?['message'] ?? 'Failed to process image upload.');
+      throw Exception(
+        response.data?['message'] ?? 'Failed to process image upload.',
+      );
     } on DioException catch (e) {
       final msg = DioClient.handleError(e);
       DioClient.debugLog("Image upload DioException: $msg");

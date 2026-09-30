@@ -10,10 +10,7 @@ import '../../providers/rental_provider.dart';
 class RazorpayCheckoutSheet extends StatefulWidget {
   final RentalModel rental;
 
-  const RazorpayCheckoutSheet({
-    super.key,
-    required this.rental,
-  });
+  const RazorpayCheckoutSheet({super.key, required this.rental});
 
   @override
   State<RazorpayCheckoutSheet> createState() => _RazorpayCheckoutSheetState();
@@ -35,7 +32,9 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
 
     try {
       // Step 1: Create Razorpay Order on Backend
-      final orderData = await rentalProvider.createPaymentOrder(widget.rental.id);
+      final orderData = await rentalProvider.createPaymentOrder(
+        widget.rental.id,
+      );
 
       if (orderData == null) {
         setState(() {
@@ -89,7 +88,8 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
       await rentalProvider.recordPaymentFailure(widget.rental.id);
       setState(() {
         _isProcessing = false;
-        _errorMessage = 'Payment error: ${e.toString().replaceAll("Exception: ", "")}';
+        _errorMessage =
+            'Payment error: ${e.toString().replaceAll("Exception: ", "")}';
       });
     }
   }
@@ -122,7 +122,9 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: const Color(0xFF0C2340),
                         borderRadius: BorderRadius.circular(8),
@@ -146,7 +148,9 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
                     const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.green.shade50,
                         borderRadius: BorderRadius.circular(6),
@@ -189,10 +193,10 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
                       Expanded(
                         child: Text(
                           equip?.name ?? "Medical Equipment Rental",
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 15,
-                            color: Colors.black87,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -200,7 +204,7 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
                       ),
                       Text(
                         "${widget.rental.numberOfDays} day(s)",
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 13,
                           color: AppColors.primary,
@@ -212,11 +216,16 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text("Rental Amount:",
-                          style: TextStyle(fontSize: 12, color: Colors.grey)),
+                      Text(
+                        "Rental Amount:",
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
                       Text(
                         "₹${widget.rental.rentalAmount.toStringAsFixed(0)}",
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
@@ -224,11 +233,16 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text("Security Deposit:",
-                          style: TextStyle(fontSize: 12, color: Colors.grey)),
+                      Text(
+                        "Security Deposit:",
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
                       Text(
                         "₹${widget.rental.securityDeposit.toStringAsFixed(0)}",
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ],
                   ),
@@ -236,13 +250,16 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
+                      Text(
                         "Total Payable:",
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
                       ),
                       Text(
                         "₹${widget.rental.totalAmount.toStringAsFixed(0)}",
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 18,
                           color: Color(0xFF0C2340),
@@ -256,12 +273,12 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
 
             const SizedBox(height: 20),
 
-            const Text(
+            Text(
               "Select Payment Method",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 14,
-                color: Colors.black87,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 12),
@@ -299,12 +316,16 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.error_outline, color: Colors.red, size: 20),
+                    const Icon(
+                      Icons.error_outline,
+                      color: Colors.red,
+                      size: 20,
+                    ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         _errorMessage!,
-                        style: const TextStyle(color: Colors.red, fontSize: 12),
+                        style: TextStyle(color: Colors.red, fontSize: 12),
                       ),
                     ),
                   ],
@@ -350,27 +371,27 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
                         ],
                       )
                     : _isSuccess
-                        ? const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.check_circle, color: Colors.white),
-                              SizedBox(width: 8),
-                              Text(
-                                "Payment Verified & Approved!",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
-                                ),
-                              ),
-                            ],
-                          )
-                        : Text(
-                            "Pay ₹${widget.rental.totalAmount.toStringAsFixed(0)} via Razorpay",
-                            style: const TextStyle(
+                    ? const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.check_circle, color: Colors.white),
+                          SizedBox(width: 8),
+                          Text(
+                            "Payment Verified & Approved!",
+                            style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 15,
                             ),
                           ),
+                        ],
+                      )
+                    : Text(
+                        "Pay ₹${widget.rental.totalAmount.toStringAsFixed(0)} via Razorpay",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
               ),
             ),
           ],
@@ -405,7 +426,9 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: isSelected ? Colors.blueAccent.withAlpha(25) : Colors.grey.shade100,
+                color: isSelected
+                    ? Colors.blueAccent.withAlpha(25)
+                    : Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
@@ -422,9 +445,11 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
                   Text(
                     title,
                     style: TextStyle(
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.w600,
                       fontSize: 13,
-                      color: Colors.black87,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
                   const SizedBox(height: 2),

@@ -20,11 +20,13 @@ class AuthResponseModel {
 
   factory AuthResponseModel.fromJson(Map<String, dynamic> json) {
     return AuthResponseModel(
-      success:  json['success'] as bool? ?? false,
-      message:  json['message']?.toString() ?? '',
-      user:     UserModel.fromJson((json['user'] ?? json['data']) as Map<String, dynamic>),
-      token:    json['token']?.toString() ?? '',
-      otpSent:  json['otpSent'] as bool?,
+      success: json['success'] as bool? ?? false,
+      message: json['message']?.toString() ?? '',
+      user: UserModel.fromJson(
+        (json['user'] ?? json['data']) as Map<String, dynamic>,
+      ),
+      token: json['token']?.toString() ?? '',
+      otpSent: json['otpSent'] as bool?,
       otpError: json['otpError']?.toString(),
     );
   }

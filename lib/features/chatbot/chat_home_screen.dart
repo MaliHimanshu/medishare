@@ -151,7 +151,10 @@ class _ChatHomeScreenState extends State<ChatHomeScreen> {
               const SizedBox(height: 6),
               Text(
                 "Choose an official channel to connect with:",
-                style: TextStyle(fontSize: 13, color: context.textSecondaryColor),
+                style: TextStyle(
+                  fontSize: 13,
+                  color: context.textSecondaryColor,
+                ),
               ),
               const SizedBox(height: 16),
               ListTile(
@@ -161,7 +164,10 @@ class _ChatHomeScreenState extends State<ChatHomeScreen> {
                 tileColor: AppColors.primary.withAlpha(12),
                 leading: CircleAvatar(
                   backgroundColor: AppColors.primary,
-                  child: const Icon(Icons.support_agent_rounded, color: Colors.white),
+                  child: const Icon(
+                    Icons.support_agent_rounded,
+                    color: Colors.white,
+                  ),
                 ),
                 title: Text(
                   "MediShare In-App Support",
@@ -170,7 +176,9 @@ class _ChatHomeScreenState extends State<ChatHomeScreen> {
                     color: context.textPrimaryColor,
                   ),
                 ),
-                subtitle: const Text("Equipment, hospitals, rentals & payments"),
+                subtitle: const Text(
+                  "Equipment, hospitals, rentals & payments",
+                ),
                 trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
                 onTap: () {
                   Navigator.pop(ctx);
@@ -233,7 +241,10 @@ class _ChatHomeScreenState extends State<ChatHomeScreen> {
         foregroundColor: Colors.white,
         elevation: 3,
         icon: const Icon(Icons.edit_note_rounded),
-        label: const Text("New Chat", style: TextStyle(fontWeight: FontWeight.bold)),
+        label: const Text(
+          "New Chat",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         onPressed: _showNewChatDialog,
       ),
       body: Column(
@@ -248,8 +259,15 @@ class _ChatHomeScreenState extends State<ChatHomeScreen> {
               onChanged: (val) => chatProvider.setConversationSearchQuery(val),
               decoration: InputDecoration(
                 hintText: "Search conversations...",
-                hintStyle: TextStyle(color: context.textHintColor, fontSize: 14),
-                prefixIcon: const Icon(Icons.search, color: AppColors.primary, size: 20),
+                hintStyle: TextStyle(
+                  color: context.textHintColor,
+                  fontSize: 14,
+                ),
+                prefixIcon: const Icon(
+                  Icons.search,
+                  color: AppColors.primary,
+                  size: 20,
+                ),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
                         icon: const Icon(Icons.clear, size: 18),
@@ -259,7 +277,10 @@ class _ChatHomeScreenState extends State<ChatHomeScreen> {
                         },
                       )
                     : null,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(22),
                   borderSide: BorderSide(color: context.borderColor),
@@ -270,7 +291,10 @@ class _ChatHomeScreenState extends State<ChatHomeScreen> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(22),
-                  borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                  borderSide: const BorderSide(
+                    color: AppColors.primary,
+                    width: 1.5,
+                  ),
                 ),
                 filled: true,
                 fillColor: context.inputBg,
@@ -356,9 +380,7 @@ class _ChatHomeScreenState extends State<ChatHomeScreen> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primary
-              : context.cardBg,
+          color: isSelected ? AppColors.primary : context.cardBg,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: isSelected ? AppColors.primary : context.borderColor,
@@ -397,8 +419,8 @@ class _ChatHomeScreenState extends State<ChatHomeScreen> {
                     conv.isSupport
                         ? Icons.support_agent_rounded
                         : (conv.id == 'hospital_help'
-                            ? Icons.local_hospital_outlined
-                            : Icons.volunteer_activism_outlined),
+                              ? Icons.local_hospital_outlined
+                              : Icons.volunteer_activism_outlined),
                     color: conv.isSupport ? Colors.white : AppColors.accentDark,
                     size: 26,
                   ),
@@ -413,10 +435,7 @@ class _ChatHomeScreenState extends State<ChatHomeScreen> {
                       decoration: BoxDecoration(
                         color: const Color(0xFF10B981), // Emerald green
                         shape: BoxShape.circle,
-                        border: Border.all(
-                          color: context.surfaceBg,
-                          width: 2,
-                        ),
+                        border: Border.all(color: context.surfaceBg, width: 2),
                       ),
                     ),
                   ),

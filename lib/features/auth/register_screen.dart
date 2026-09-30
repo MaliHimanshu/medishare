@@ -68,16 +68,16 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final _nameCtrl          = TextEditingController();
-  final _emailCtrl         = TextEditingController();
-  final _phoneCtrl         = TextEditingController();
-  final _addressCtrl       = TextEditingController();
-  final _orgNameCtrl       = TextEditingController();
-  final _regNumberCtrl     = TextEditingController();
+  final _nameCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
+  final _addressCtrl = TextEditingController();
+  final _orgNameCtrl = TextEditingController();
+  final _regNumberCtrl = TextEditingController();
   final _contactPersonCtrl = TextEditingController();
-  final _preferenceCtrl    = TextEditingController();
-  final _passCtrl          = TextEditingController();
-  final _confirmCtrl       = TextEditingController();
+  final _preferenceCtrl = TextEditingController();
+  final _passCtrl = TextEditingController();
+  final _confirmCtrl = TextEditingController();
 
   String _selectedRole = 'DONOR';
   bool _phoneVerified = false;
@@ -95,7 +95,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     _phoneVerified = widget.isPhoneVerified;
     if (widget.initialPhone != null && widget.initialPhone!.isNotEmpty) {
       final clean = widget.initialPhone!.replaceAll(RegExp(r'\D'), '');
-      _phoneCtrl.text = clean.length >= 10 ? clean.substring(clean.length - 10) : clean;
+      _phoneCtrl.text = clean.length >= 10
+          ? clean.substring(clean.length - 10)
+          : clean;
     }
   }
 
@@ -116,7 +118,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   bool _validate() {
     setState(() {
-      _nameError = _nameCtrl.text.trim().isEmpty ? 'Full name is required' : null;
+      _nameError = _nameCtrl.text.trim().isEmpty
+          ? 'Full name is required'
+          : null;
 
       final email = _emailCtrl.text.trim();
       if (email.isEmpty) {
@@ -174,16 +178,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     final auth = context.read<AuthProvider>();
     final success = await auth.register(
-      name:                _nameCtrl.text.trim(),
-      email:               _emailCtrl.text.trim(),
-      password:            _passCtrl.text,
-      role:                _selectedRole,
-      phone:               normalizedPhone,
-      address:             _addressCtrl.text.trim().isEmpty ? null : _addressCtrl.text.trim(),
-      organizationName:   _orgNameCtrl.text.trim().isEmpty ? null : _orgNameCtrl.text.trim(),
-      registrationNumber: _regNumberCtrl.text.trim().isEmpty ? null : _regNumberCtrl.text.trim(),
-      contactPerson:      _contactPersonCtrl.text.trim().isEmpty ? null : _contactPersonCtrl.text.trim(),
-      equipmentPreference:_preferenceCtrl.text.trim().isEmpty ? null : _preferenceCtrl.text.trim(),
+      name: _nameCtrl.text.trim(),
+      email: _emailCtrl.text.trim(),
+      password: _passCtrl.text,
+      role: _selectedRole,
+      phone: normalizedPhone,
+      address: _addressCtrl.text.trim().isEmpty
+          ? null
+          : _addressCtrl.text.trim(),
+      organizationName: _orgNameCtrl.text.trim().isEmpty
+          ? null
+          : _orgNameCtrl.text.trim(),
+      registrationNumber: _regNumberCtrl.text.trim().isEmpty
+          ? null
+          : _regNumberCtrl.text.trim(),
+      contactPerson: _contactPersonCtrl.text.trim().isEmpty
+          ? null
+          : _contactPersonCtrl.text.trim(),
+      equipmentPreference: _preferenceCtrl.text.trim().isEmpty
+          ? null
+          : _preferenceCtrl.text.trim(),
     );
 
     if (!mounted) return;
@@ -195,7 +209,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
             content: const Text('Account created successfully! 🎉'),
             backgroundColor: AppColors.success,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
         Navigator.pushReplacement(
@@ -209,7 +225,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
               content: Text(auth.errorMessage!),
               backgroundColor: AppColors.error,
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           );
         } else {
@@ -218,7 +236,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
               content: const Text('Account created! Verification code sent 📲'),
               backgroundColor: AppColors.success,
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           );
         }
@@ -238,7 +258,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
           content: Text(auth.errorMessage ?? 'Registration failed'),
           backgroundColor: AppColors.error,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
     }
@@ -257,27 +279,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Color get _strengthColor {
     switch (_passwordStrength) {
-      case 1: return AppColors.error;
-      case 2: return AppColors.warning;
-      case 3: return AppColors.info;
-      case 4: return AppColors.success;
-      default: return AppColors.border;
+      case 1:
+        return AppColors.error;
+      case 2:
+        return AppColors.warning;
+      case 3:
+        return AppColors.info;
+      case 4:
+        return AppColors.success;
+      default:
+        return AppColors.border;
     }
   }
 
   String get _strengthLabel {
     switch (_passwordStrength) {
-      case 1: return 'Weak';
-      case 2: return 'Fair';
-      case 3: return 'Good';
-      case 4: return 'Strong';
-      default: return '';
+      case 1:
+        return 'Weak';
+      case 2:
+        return 'Fair';
+      case 3:
+        return 'Good';
+      case 4:
+        return 'Strong';
+      default:
+        return '';
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final auth      = context.watch<AuthProvider>();
+    final auth = context.watch<AuthProvider>();
     final isLoading = auth.isLoading;
 
     return Scaffold(
@@ -320,7 +352,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 child: RichText(
                   text: TextSpan(
                     text: 'Already have an account? ',
-                    style: TextStyle(color: context.textSecondaryColor, fontSize: 13),
+                    style: TextStyle(
+                      color: context.textSecondaryColor,
+                      fontSize: 13,
+                    ),
                     children: const [
                       TextSpan(
                         text: 'Sign in →',
@@ -375,8 +410,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             color: isSelected
                                 ? AppColors.primary.withAlpha(20)
                                 : (context.isDarkMode
-                                    ? context.cardBg
-                                    : AppColors.surface),
+                                      ? context.cardBg
+                                      : AppColors.surface),
                             border: Border.all(
                               color: isSelected
                                   ? AppColors.primary
@@ -408,8 +443,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   color: isSelected
                                       ? AppColors.primary.withAlpha(35)
                                       : (context.isDarkMode
-                                          ? Colors.white10
-                                          : AppColors.surface2),
+                                            ? Colors.white10
+                                            : AppColors.surface2),
                                   shape: BoxShape.circle,
                                 ),
                                 child: Icon(
@@ -510,10 +545,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 label: _selectedRole == 'DONOR'
                     ? 'Pickup Address / Preferred Location'
                     : _selectedRole == 'NGO'
-                        ? 'NGO Office Address'
-                        : _selectedRole == 'HOSPITAL'
-                            ? 'Hospital / Clinic Address'
-                            : 'Delivery Address / Location (Optional)',
+                    ? 'NGO Office Address'
+                    : _selectedRole == 'HOSPITAL'
+                    ? 'Hospital / Clinic Address'
+                    : 'Delivery Address / Location (Optional)',
                 hint: 'e.g. Ahmedabad, Gujarat',
                 controller: _addressCtrl,
                 prefixIcon: Icons.location_on_outlined,
@@ -623,7 +658,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 errorText: _confirmError,
                 textInputAction: TextInputAction.done,
                 onChanged: (_) {
-                  if (_confirmError != null) setState(() => _confirmError = null);
+                  if (_confirmError != null)
+                    setState(() => _confirmError = null);
                 },
                 onSubmitted: (_) => _submit(),
               ),

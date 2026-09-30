@@ -106,11 +106,14 @@ class DonationProvider extends ChangeNotifier {
       final response = await _dio.get('${ApiEndpoints.donation}/$id');
       if (response.data != null && response.data['success'] == true) {
         return DonationModel.fromJson(
-            response.data['data'] as Map<String, dynamic>);
+          response.data['data'] as Map<String, dynamic>,
+        );
       }
     } catch (_) {}
-    return _donations.firstWhere((item) => item.id == id,
-        orElse: () => throw Exception('Donation not found'));
+    return _donations.firstWhere(
+      (item) => item.id == id,
+      orElse: () => throw Exception('Donation not found'),
+    );
   }
 
   // ── Create Donation (POST /api/donation) ──────────────────────────
@@ -133,7 +136,8 @@ class DonationProvider extends ChangeNotifier {
       final response = await _dio.post(ApiEndpoints.donation, data: payload);
       if (response.data != null && response.data['success'] == true) {
         final newDonation = DonationModel.fromJson(
-            response.data['data'] as Map<String, dynamic>);
+          response.data['data'] as Map<String, dynamic>,
+        );
         _donations.insert(0, newDonation);
         return true;
       } else {
@@ -175,10 +179,7 @@ class DonationProvider extends ChangeNotifier {
         return false;
       }
 
-      final payload = {
-        'quantity': quantity,
-        'notes': notes,
-      };
+      final payload = {'quantity': quantity, 'notes': notes};
 
       try {
         final response = await _dio.put(
@@ -187,7 +188,8 @@ class DonationProvider extends ChangeNotifier {
         );
         if (response.data != null && response.data['success'] == true) {
           _donations[idx] = DonationModel.fromJson(
-              response.data['data'] as Map<String, dynamic>);
+            response.data['data'] as Map<String, dynamic>,
+          );
           return true;
         }
       } catch (_) {
@@ -228,7 +230,8 @@ class DonationProvider extends ChangeNotifier {
 
       if (response.data != null && response.data['success'] == true) {
         final updated = DonationModel.fromJson(
-            response.data['data'] as Map<String, dynamic>);
+          response.data['data'] as Map<String, dynamic>,
+        );
         final idx = _donations.indexWhere((item) => item.id == id);
         if (idx != -1) {
           _donations[idx] = updated;

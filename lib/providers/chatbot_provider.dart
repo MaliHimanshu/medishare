@@ -68,12 +68,15 @@ class ChatbotProvider extends ChangeNotifier {
 
     try {
       // Append language instruction if not English
-      final promptText = (lang != 'English') ? "[Respond in $lang] $trimmed" : trimmed;
+      final promptText = (lang != 'English')
+          ? "[Respond in $lang] $trimmed"
+          : trimmed;
       final payload = {'message': promptText};
       final response = await _dio.post(ApiEndpoints.chatbot, data: payload);
 
       if (response.data != null && response.data['success'] == true) {
-        final aiReplyText = response.data['response']?.toString() ??
+        final aiReplyText =
+            response.data['response']?.toString() ??
             "Thank you for your message! How else can I assist you with MediShare?";
 
         final aiMsg = ChatMessageModel(
@@ -88,7 +91,8 @@ class ChatbotProvider extends ChangeNotifier {
         notifyListeners();
         return true;
       } else {
-        _errorMessage = response.data?['message'] ?? 'Failed to receive AI response.';
+        _errorMessage =
+            response.data?['message'] ?? 'Failed to receive AI response.';
         _addErrorMessage(_errorMessage);
         return false;
       }

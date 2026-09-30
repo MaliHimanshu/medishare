@@ -11,10 +11,7 @@ import 'razorpay_checkout_sheet.dart';
 class RentalDetailScreen extends StatefulWidget {
   final RentalModel rental;
 
-  const RentalDetailScreen({
-    super.key,
-    required this.rental,
-  });
+  const RentalDetailScreen({super.key, required this.rental});
 
   @override
   State<RentalDetailScreen> createState() => _RentalDetailScreenState();
@@ -76,32 +73,34 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: [
-                      'PENDING',
-                      'APPROVED',
-                      'ACTIVE',
-                      'RETURNED',
-                      'CANCELLED',
-                      'REJECTED',
-                    ].map((st) {
-                      final isSelected = selectedStatus == st;
-                      final color = _getStatusColor(st);
-                      return ChoiceChip(
-                        label: Text(st),
-                        selected: isSelected,
-                        selectedColor: color.withAlpha(50),
-                        labelStyle: TextStyle(
-                          color: isSelected ? color : Colors.black87,
-                          fontWeight:
-                              isSelected ? FontWeight.bold : FontWeight.normal,
-                        ),
-                        onSelected: (val) {
-                          if (val) {
-                            setModalState(() => selectedStatus = st);
-                          }
-                        },
-                      );
-                    }).toList(),
+                    children:
+                        [
+                          'PENDING',
+                          'APPROVED',
+                          'ACTIVE',
+                          'RETURNED',
+                          'CANCELLED',
+                          'REJECTED',
+                        ].map((st) {
+                          final isSelected = selectedStatus == st;
+                          final color = _getStatusColor(st);
+                          return ChoiceChip(
+                            label: Text(st),
+                            selected: isSelected,
+                            selectedColor: color.withAlpha(50),
+                            labelStyle: TextStyle(
+                              color: isSelected ? color : Colors.black87,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
+                            onSelected: (val) {
+                              if (val) {
+                                setModalState(() => selectedStatus = st);
+                              }
+                            },
+                          );
+                        }).toList(),
                   ),
                   const SizedBox(height: 24),
                   SizedBox(
@@ -119,13 +118,17 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
                         final messenger = ScaffoldMessenger.of(context);
                         navigator.pop();
 
-                        final success = await rentalProvider
-                            .updateRentalStatus(_currentRental.id, selectedStatus);
+                        final success = await rentalProvider.updateRentalStatus(
+                          _currentRental.id,
+                          selectedStatus,
+                        );
 
                         if (mounted) {
                           if (success) {
                             setState(() {
-                              _currentRental = _currentRental.copyWith(status: selectedStatus);
+                              _currentRental = _currentRental.copyWith(
+                                status: selectedStatus,
+                              );
                             });
                             messenger.showSnackBar(
                               const SnackBar(
@@ -136,9 +139,11 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
                           } else {
                             messenger.showSnackBar(
                               SnackBar(
-                                content: Text(rentalProvider.errorMessage.isNotEmpty
-                                    ? rentalProvider.errorMessage
-                                    : 'Failed to update status.'),
+                                content: Text(
+                                  rentalProvider.errorMessage.isNotEmpty
+                                      ? rentalProvider.errorMessage
+                                      : 'Failed to update status.',
+                                ),
                                 backgroundColor: AppColors.error,
                               ),
                             );
@@ -189,8 +194,9 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
               final navigator = Navigator.of(context);
               Navigator.pop(ctx);
 
-              final success =
-                  await rentalProvider.deleteRental(_currentRental.id);
+              final success = await rentalProvider.deleteRental(
+                _currentRental.id,
+              );
 
               if (mounted) {
                 if (success) {
@@ -204,9 +210,11 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
                 } else {
                   messenger.showSnackBar(
                     SnackBar(
-                      content: Text(rentalProvider.errorMessage.isNotEmpty
-                          ? rentalProvider.errorMessage
-                          : 'Failed to delete rental.'),
+                      content: Text(
+                        rentalProvider.errorMessage.isNotEmpty
+                            ? rentalProvider.errorMessage
+                            : 'Failed to delete rental.',
+                      ),
                       backgroundColor: AppColors.error,
                     ),
                   );
@@ -280,8 +288,10 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
                   ),
                 ),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: statusColor.withAlpha(30),
                     borderRadius: BorderRadius.circular(16),
@@ -316,14 +326,26 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
                   children: [
                     const Text(
                       "Rental Financial Summary",
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
                     ),
                     const SizedBox(height: 14),
-                    _buildRow("Duration", "${_currentRental.numberOfDays} day(s)"),
+                    _buildRow(
+                      "Duration",
+                      "${_currentRental.numberOfDays} day(s)",
+                    ),
                     const SizedBox(height: 8),
-                    _buildRow("Rental Amount", "₹${_currentRental.rentalAmount.toStringAsFixed(0)}"),
+                    _buildRow(
+                      "Rental Amount",
+                      "₹${_currentRental.rentalAmount.toStringAsFixed(0)}",
+                    ),
                     const SizedBox(height: 8),
-                    _buildRow("Security Deposit (Refundable)", "₹${_currentRental.securityDeposit.toStringAsFixed(0)}"),
+                    _buildRow(
+                      "Security Deposit (Refundable)",
+                      "₹${_currentRental.securityDeposit.toStringAsFixed(0)}",
+                    ),
                     const Divider(height: 20),
                     _buildRow(
                       "Total Amount",
@@ -332,21 +354,32 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
                       color: Colors.orange.shade800,
                     ),
                     const SizedBox(height: 8),
-                    _buildRow("Payment Status", _currentRental.paymentStatus.toUpperCase(),
-                        color: _currentRental.paymentStatus.toUpperCase() == 'PAID'
-                            ? Colors.green
-                            : _currentRental.paymentStatus.toUpperCase() == 'FAILED'
-                                ? Colors.red
-                                : Colors.orange),
+                    _buildRow(
+                      "Payment Status",
+                      _currentRental.paymentStatus.toUpperCase(),
+                      color:
+                          _currentRental.paymentStatus.toUpperCase() == 'PAID'
+                          ? Colors.green
+                          : _currentRental.paymentStatus.toUpperCase() ==
+                                'FAILED'
+                          ? Colors.red
+                          : Colors.orange,
+                    ),
                     if (_currentRental.razorpayOrderId != null &&
                         _currentRental.razorpayOrderId!.isNotEmpty) ...[
                       const SizedBox(height: 8),
-                      _buildRow("Razorpay Order ID", _currentRental.razorpayOrderId!),
+                      _buildRow(
+                        "Razorpay Order ID",
+                        _currentRental.razorpayOrderId!,
+                      ),
                     ],
                     if (_currentRental.razorpayPaymentId != null &&
                         _currentRental.razorpayPaymentId!.isNotEmpty) ...[
                       const SizedBox(height: 8),
-                      _buildRow("Razorpay Payment ID", _currentRental.razorpayPaymentId!),
+                      _buildRow(
+                        "Razorpay Payment ID",
+                        _currentRental.razorpayPaymentId!,
+                      ),
                     ],
                   ],
                 ),
@@ -381,7 +414,8 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
                       context: context,
                       isScrollControlled: true,
                       backgroundColor: Colors.transparent,
-                      builder: (ctx) => RazorpayCheckoutSheet(rental: _currentRental),
+                      builder: (ctx) =>
+                          RazorpayCheckoutSheet(rental: _currentRental),
                     );
 
                     if (res == true && mounted) {
@@ -455,7 +489,11 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
                   children: [
                     const Row(
                       children: [
-                        Icon(Icons.location_on_rounded, color: Colors.redAccent, size: 20),
+                        Icon(
+                          Icons.location_on_rounded,
+                          color: Colors.redAccent,
+                          size: 20,
+                        ),
                         SizedBox(width: 8),
                         Text(
                           'Pickup Location',
@@ -482,7 +520,11 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Icon(Icons.home_work_outlined, size: 18, color: Colors.redAccent),
+                              const Icon(
+                                Icons.home_work_outlined,
+                                size: 18,
+                                color: Colors.redAccent,
+                              ),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Column(
@@ -512,22 +554,35 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
                           const SizedBox(height: 10),
                           Row(
                             children: [
-                              const Icon(Icons.access_time_rounded, size: 14, color: AppColors.textSecondary),
+                              const Icon(
+                                Icons.access_time_rounded,
+                                size: 14,
+                                color: AppColors.textSecondary,
+                              ),
                               const SizedBox(width: 4),
                               const Text(
                                 'Available: 9:00 AM – 6:00 PM',
-                                style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textSecondary,
+                                ),
                               ),
                               const Spacer(),
                               GestureDetector(
                                 onTap: () {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Opening Maps…')),
+                                    const SnackBar(
+                                      content: Text('Opening Maps…'),
+                                    ),
                                   );
                                 },
                                 child: const Row(
                                   children: [
-                                    Icon(Icons.map_rounded, size: 14, color: Colors.redAccent),
+                                    Icon(
+                                      Icons.map_rounded,
+                                      size: 14,
+                                      color: Colors.redAccent,
+                                    ),
                                     SizedBox(width: 4),
                                     Text(
                                       'View on Map',
@@ -565,16 +620,14 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
                   icon: const Icon(Icons.map_outlined),
                   label: const Text(
                     'Track Live Location',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                   ),
                   onPressed: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => LiveTrackingScreen(rental: _currentRental),
+                        builder: (context) =>
+                            LiveTrackingScreen(rental: _currentRental),
                       ),
                     );
                   },
@@ -623,7 +676,12 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
     );
   }
 
-  Widget _buildRow(String label, String value, {bool isBold = false, Color? color}) {
+  Widget _buildRow(
+    String label,
+    String value, {
+    bool isBold = false,
+    Color? color,
+  }) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -632,7 +690,7 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
           style: TextStyle(
             fontSize: isBold ? 14 : 13,
             fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-            color: Colors.black87,
+            color: Theme.of(context).colorScheme.onSurface,
           ),
         ),
         Text(

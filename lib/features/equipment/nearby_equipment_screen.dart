@@ -26,13 +26,13 @@ import '../../core/theme/app_page_transitions.dart';
 enum _LocationState {
   idle,
   loading,
-  granted,         // Fresh GPS fix acquired
-  lastKnown,       // Using cached position (GPS timed out or service issue)
+  granted, // Fresh GPS fix acquired
+  lastKnown, // Using cached position (GPS timed out or service issue)
   serviceDisabled, // Location services (GPS toggle) is OFF
-  permissionDenied,        // User denied once
+  permissionDenied, // User denied once
   permissionDeniedForever, // User denied permanently
-  timeout,         // getCurrentPosition() timed out, no last-known available
-  unavailable,     // No position at all (no fix, no cache)
+  timeout, // getCurrentPosition() timed out, no last-known available
+  unavailable, // No position at all (no fix, no cache)
 }
 
 // ── Screen ────────────────────────────────────────────────────────────────────
@@ -45,7 +45,7 @@ class NearbyEquipmentScreen extends StatefulWidget {
 }
 
 class _NearbyEquipmentScreenState extends State<NearbyEquipmentScreen> {
-double _radius = 20;
+  double _radius = 20;
 
   double? _latitude;
   double? _longitude;
@@ -102,7 +102,9 @@ double _radius = 20;
       if (!mounted) return;
       if (permission == LocationPermission.denied) {
         setState(() => _locationState = _LocationState.permissionDenied);
-        await _tryLastKnownOrStop(fallbackState: _LocationState.permissionDenied);
+        await _tryLastKnownOrStop(
+          fallbackState: _LocationState.permissionDenied,
+        );
         return;
       }
     }
@@ -110,7 +112,9 @@ double _radius = 20;
     if (permission == LocationPermission.deniedForever) {
       if (!mounted) return;
       setState(() => _locationState = _LocationState.permissionDeniedForever);
-      await _tryLastKnownOrStop(fallbackState: _LocationState.permissionDeniedForever);
+      await _tryLastKnownOrStop(
+        fallbackState: _LocationState.permissionDeniedForever,
+      );
       return;
     }
 
@@ -138,12 +142,13 @@ double _radius = 20;
         );
       }
 
-      final Position position = await Geolocator.getCurrentPosition(
-        locationSettings: locationSettings,
-      ).timeout(
-        const Duration(seconds: 35),
-        onTimeout: () => throw TimeoutException('GPS timed out after 35s'),
-      );
+      final Position position =
+          await Geolocator.getCurrentPosition(
+            locationSettings: locationSettings,
+          ).timeout(
+            const Duration(seconds: 35),
+            onTimeout: () => throw TimeoutException('GPS timed out after 35s'),
+          );
 
       if (!mounted) return;
       setState(() {
@@ -169,7 +174,9 @@ double _radius = 20;
   /// Tries getLastKnownPosition(). If a cached fix exists, uses it and
   /// fetches nearby equipment (with a clear "last known" label in the UI).
   /// If nothing is available, sets state to fallbackState and does NOT call API.
-  Future<void> _tryLastKnownOrStop({required _LocationState fallbackState}) async {
+  Future<void> _tryLastKnownOrStop({
+    required _LocationState fallbackState,
+  }) async {
     try {
       final Position? last = await Geolocator.getLastKnownPosition();
       if (!mounted) return;
@@ -198,10 +205,10 @@ double _radius = 20;
   void _fetchNearby() {
     if (_latitude == null || _longitude == null) return;
     context.read<EquipmentProvider>().fetchNearbyEquipment(
-          latitude: _latitude!,
-          longitude: _longitude!,
-          radius: _radius,
-        );
+      latitude: _latitude!,
+      longitude: _longitude!,
+      radius: _radius,
+    );
   }
 
   void _changeRadius(double newRadius) {
@@ -211,7 +218,7 @@ double _radius = 20;
 
   // ── Build ──────────────────────────────────────────────────────────────────
 
-@override
+  @override
   Widget build(BuildContext context) {
     final equipProv = context.watch<EquipmentProvider>();
     final nearbyList = equipProv.nearbyEquipment;
@@ -270,7 +277,7 @@ double _radius = 20;
         border: Border.all(color: context.borderColor, width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -304,17 +311,28 @@ double _radius = 20;
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.primary,
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Text(
                           'Your location',
-                          style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
-                      const Icon(Icons.location_on, color: AppColors.primary, size: 30),
+                      const Icon(
+                        Icons.location_on,
+                        color: AppColors.primary,
+                        size: 30,
+                      ),
                     ],
                   ),
                 ),
@@ -348,7 +366,11 @@ double _radius = 20;
                               ),
                           ],
                         ),
-                        child: const Icon(Icons.medical_services, color: Colors.white, size: 18),
+                        child: const Icon(
+                          Icons.medical_services,
+                          color: Colors.white,
+                          size: 18,
+                        ),
                       ),
                     ),
                   );
@@ -367,7 +389,10 @@ double _radius = 20;
     });
     // Pan map
     if (equipment.latitude != null && equipment.longitude != null) {
-      _mapController.move(LatLng(equipment.latitude!, equipment.longitude!), 14.0);
+      _mapController.move(
+        LatLng(equipment.latitude!, equipment.longitude!),
+        14.0,
+      );
     }
     // Scroll list
     if (_scrollController.hasClients) {
@@ -387,7 +412,10 @@ double _radius = 20;
     });
     // Pan map
     if (equipment.latitude != null && equipment.longitude != null) {
-      _mapController.move(LatLng(equipment.latitude!, equipment.longitude!), 14.0);
+      _mapController.move(
+        LatLng(equipment.latitude!, equipment.longitude!),
+        14.0,
+      );
     }
   }
 
@@ -420,8 +448,10 @@ double _radius = 20;
               ),
               if (equipProv.nearbyMeta != null)
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.primary.withAlpha(20),
                     borderRadius: BorderRadius.circular(12),
@@ -481,22 +511,37 @@ double _radius = 20;
         return const Icon(Icons.gps_fixed, size: 16, color: AppColors.success);
       case _LocationState.lastKnown:
       case _LocationState.timeout:
-        return Icon(Icons.gps_not_fixed, size: 16, color: Colors.orange.shade600);
+        return Icon(
+          Icons.gps_not_fixed,
+          size: 16,
+          color: Colors.orange.shade600,
+        );
       case _LocationState.loading:
         return const SizedBox(
           width: 16,
           height: 16,
-          child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: AppColors.primary,
+          ),
         );
       case _LocationState.serviceDisabled:
-        return Icon(Icons.location_disabled, size: 16, color: Colors.red.shade400);
+        return Icon(
+          Icons.location_disabled,
+          size: 16,
+          color: Colors.red.shade400,
+        );
       case _LocationState.permissionDenied:
       case _LocationState.permissionDeniedForever:
         return Icon(Icons.lock_outline, size: 16, color: Colors.red.shade400);
       case _LocationState.unavailable:
         return Icon(Icons.gps_off, size: 16, color: Colors.red.shade400);
       case _LocationState.idle:
-        return Icon(Icons.gps_not_fixed, size: 16, color: context.textSecondaryColor);
+        return Icon(
+          Icons.gps_not_fixed,
+          size: 16,
+          color: context.textSecondaryColor,
+        );
     }
   }
 
@@ -549,8 +594,7 @@ double _radius = 20;
             '⚠ Location services are OFF — showing last known location results.';
         break;
       case _LocationState.permissionDenied:
-        message =
-            '⚠ Permission denied — showing last known location results.';
+        message = '⚠ Permission denied — showing last known location results.';
         break;
       case _LocationState.permissionDeniedForever:
         message =
@@ -607,7 +651,6 @@ double _radius = 20;
     );
   }
 
-
   List<EquipmentModel> _getDummyList() {
     return [
       EquipmentModel(
@@ -627,7 +670,8 @@ double _radius = 20;
         location: 'City Hospital, 4th Block',
         latitude: 37.4225,
         longitude: -122.0830,
-        image: 'https://images.unsplash.com/photo-1584982751601-97dcc096659c?q=80&w=200&auto=format&fit=crop',
+        image:
+            'https://images.unsplash.com/photo-1584982751601-97dcc096659c?q=80&w=200&auto=format&fit=crop',
         images: [],
         manufacturer: 'OxyLife',
         description: 'High capacity oxygen cylinder in good condition.',
@@ -649,7 +693,8 @@ double _radius = 20;
         location: 'MG Road, Indiranagar',
         latitude: 37.4240,
         longitude: -122.0810,
-        image: 'https://images.unsplash.com/photo-1596704017254-9b121068fb31?q=80&w=200&auto=format&fit=crop',
+        image:
+            'https://images.unsplash.com/photo-1596704017254-9b121068fb31?q=80&w=200&auto=format&fit=crop',
         images: [],
         manufacturer: 'Karma',
         description: 'Foldable standard wheelchair. Very lightly used.',
@@ -671,7 +716,8 @@ double _radius = 20;
         location: 'Apollo Medical Center',
         latitude: 37.4205,
         longitude: -122.0850,
-        image: 'https://images.unsplash.com/photo-1631549916768-4119b2e5f926?q=80&w=200&auto=format&fit=crop',
+        image:
+            'https://images.unsplash.com/photo-1631549916768-4119b2e5f926?q=80&w=200&auto=format&fit=crop',
         images: [],
         manufacturer: 'Omron',
         description: 'Digital BP monitor in excellent condition.',
@@ -693,7 +739,8 @@ double _radius = 20;
         location: 'Community Health Center',
         latitude: 37.4260,
         longitude: -122.0870,
-        image: 'https://images.unsplash.com/photo-1590749629168-15f532ec7e5f?q=80&w=200&auto=format&fit=crop',
+        image:
+            'https://images.unsplash.com/photo-1590749629168-15f532ec7e5f?q=80&w=200&auto=format&fit=crop',
         images: [],
         manufacturer: 'Standard',
         description: 'Sturdy patient walker.',
@@ -715,7 +762,8 @@ double _radius = 20;
         location: 'MediCare Clinic',
         latitude: 37.4190,
         longitude: -122.0800,
-        image: 'https://images.unsplash.com/photo-1615461066841-6116e61058f4?q=80&w=200&auto=format&fit=crop',
+        image:
+            'https://images.unsplash.com/photo-1615461066841-6116e61058f4?q=80&w=200&auto=format&fit=crop',
         images: [],
         manufacturer: 'Philips',
         description: 'Nebulizer machine.',
@@ -723,10 +771,9 @@ double _radius = 20;
     ];
   }
 
-
   // ── Body ───────────────────────────────────────────────────────────────────
 
-Widget _buildBody(EquipmentProvider equipProv, List<EquipmentModel> list) {
+  Widget _buildBody(EquipmentProvider equipProv, List<EquipmentModel> list) {
     // 1. Acquiring location (no coords yet)
     if (_locationState == _LocationState.loading && _latitude == null) {
       return _buildFullScreenMessage(
@@ -794,8 +841,11 @@ Widget _buildBody(EquipmentProvider equipProv, List<EquipmentModel> list) {
       case _LocationState.serviceDisabled:
         return _buildFullScreenMessage(
           key: const ValueKey('service-disabled'),
-          icon: Icon(Icons.location_disabled,
-              size: 64, color: Colors.red.shade400),
+          icon: Icon(
+            Icons.location_disabled,
+            size: 64,
+            color: Colors.red.shade400,
+          ),
           title: 'Location Services Disabled',
           subtitle:
               'GPS is turned off on your device. Please enable Location in your device settings and try again.',
@@ -819,7 +869,11 @@ Widget _buildBody(EquipmentProvider equipProv, List<EquipmentModel> list) {
       case _LocationState.permissionDenied:
         return _buildFullScreenMessage(
           key: const ValueKey('permission-denied'),
-          icon: Icon(Icons.lock_outline, size: 64, color: Colors.orange.shade600),
+          icon: Icon(
+            Icons.lock_outline,
+            size: 64,
+            color: Colors.orange.shade600,
+          ),
           title: 'Location Permission Denied',
           subtitle:
               'MediShare needs your location to find equipment nearby. Please grant permission.',
@@ -835,8 +889,7 @@ Widget _buildBody(EquipmentProvider equipProv, List<EquipmentModel> list) {
       case _LocationState.permissionDeniedForever:
         return _buildFullScreenMessage(
           key: const ValueKey('permission-forever'),
-          icon:
-              Icon(Icons.lock, size: 64, color: Colors.red.shade400),
+          icon: Icon(Icons.lock, size: 64, color: Colors.red.shade400),
           title: 'Permission Permanently Denied',
           subtitle:
               'Location access was permanently denied. Open App Settings and enable Location permission for MediShare.',
@@ -854,8 +907,7 @@ Widget _buildBody(EquipmentProvider equipProv, List<EquipmentModel> list) {
       case _LocationState.timeout:
         return _buildFullScreenMessage(
           key: const ValueKey('timeout'),
-          icon:
-              Icon(Icons.gps_off, size: 64, color: Colors.orange.shade600),
+          icon: Icon(Icons.gps_off, size: 64, color: Colors.orange.shade600),
           title: 'GPS Timed Out',
           subtitle:
               'Could not get a GPS fix within 30 seconds and no cached location was found. Make sure you are outdoors or near a window, then retry.',
@@ -942,10 +994,7 @@ Widget _buildBody(EquipmentProvider equipProv, List<EquipmentModel> list) {
                 style: TextStyle(color: context.textSecondaryColor),
                 textAlign: TextAlign.center,
               ),
-              if (actions != null) ...[
-                const SizedBox(height: 24),
-                ...actions,
-              ],
+              if (actions != null) ...[const SizedBox(height: 24), ...actions],
             ],
           ),
         ),
@@ -955,7 +1004,7 @@ Widget _buildBody(EquipmentProvider equipProv, List<EquipmentModel> list) {
 
   // ── Nearby Equipment Card ──────────────────────────────────────────────────
 
-Widget _buildNearbyCard(EquipmentModel equipment) {
+  Widget _buildNearbyCard(EquipmentModel equipment) {
     Color statusColor = Colors.teal;
     if (equipment.status == 'REQUESTED') {
       statusColor = Colors.orange;
@@ -974,8 +1023,9 @@ Widget _buildNearbyCard(EquipmentModel equipment) {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(18),
         side: BorderSide(
-            color: isSelected ? AppColors.primary : context.borderColor,
-            width: isSelected ? 2.0 : 1.5),
+          color: isSelected ? AppColors.primary : context.borderColor,
+          width: isSelected ? 2.0 : 1.5,
+        ),
       ),
       child: InkWell(
         onTap: () => _onCardTapped(equipment),
@@ -1035,7 +1085,9 @@ Widget _buildNearbyCard(EquipmentModel equipment) {
                             ),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 3),
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
                               decoration: BoxDecoration(
                                 color: statusColor.withAlpha(25),
                                 borderRadius: BorderRadius.circular(8),
@@ -1043,9 +1095,10 @@ Widget _buildNearbyCard(EquipmentModel equipment) {
                               child: Text(
                                 equipment.status,
                                 style: TextStyle(
-                                    color: statusColor,
-                                    fontSize: 8,
-                                    fontWeight: FontWeight.bold),
+                                  color: statusColor,
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ],
@@ -1068,8 +1121,11 @@ Widget _buildNearbyCard(EquipmentModel equipment) {
                         // Location
                         Row(
                           children: [
-                            const Icon(Icons.location_on_outlined,
-                                size: 11, color: Colors.grey),
+                            const Icon(
+                              Icons.location_on_outlined,
+                              size: 11,
+                              color: Colors.grey,
+                            ),
                             const SizedBox(width: 2),
                             Expanded(
                               child: Text(
@@ -1077,8 +1133,9 @@ Widget _buildNearbyCard(EquipmentModel equipment) {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
-                                    fontSize: 11,
-                                    color: context.textSecondaryColor),
+                                  fontSize: 11,
+                                  color: context.textSecondaryColor,
+                                ),
                               ),
                             ),
                           ],
@@ -1093,9 +1150,10 @@ Widget _buildNearbyCard(EquipmentModel equipment) {
                               child: Text(
                                 'Qty: ${equipment.quantity} · ${equipment.condition}',
                                 style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: context.textSecondaryColor),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: context.textSecondaryColor,
+                                ),
                                 overflow: TextOverflow.ellipsis,
                                 maxLines: 1,
                               ),
@@ -1106,7 +1164,9 @@ Widget _buildNearbyCard(EquipmentModel equipment) {
                                   Container(
                                     margin: const EdgeInsets.only(right: 6),
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 7, vertical: 3),
+                                      horizontal: 7,
+                                      vertical: 3,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: AppColors.primary.withAlpha(20),
                                       borderRadius: BorderRadius.circular(8),
@@ -1197,7 +1257,10 @@ Widget _buildNearbyCard(EquipmentModel equipment) {
           Text(
             mode.toUpperCase(),
             style: TextStyle(
-                fontSize: 9, fontWeight: FontWeight.bold, color: fg),
+              fontSize: 9,
+              fontWeight: FontWeight.bold,
+              color: fg,
+            ),
           ),
         ],
       ),

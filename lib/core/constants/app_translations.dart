@@ -39,11 +39,13 @@ class AppTranslations {
 
       // Chatbot Translations
       'ai_assistant_title': 'MediShare AI Assistant',
-      'welcome_ai': "Hello 👋\nI'm MediShare AI Assistant.\nAsk me anything about equipment, donations, requests, hospitals or the application.",
+      'welcome_ai':
+          "Hello 👋\nI'm MediShare AI Assistant.\nAsk me anything about equipment, donations, requests, hospitals or the application.",
       'ask_ai': 'Ask MediShare AI...',
       'ai_thinking': 'MediShare AI is thinking...',
       'clear_chat': 'Clear Conversation?',
-      'clear_chat_desc': 'Are you sure you want to clear your AI chat history? This cannot be undone.',
+      'clear_chat_desc':
+          'Are you sure you want to clear your AI chat history? This cannot be undone.',
       'chat_cleared': 'Chat history cleared.',
       'copy_msg': 'Copy Message',
       'msg_copied': 'Message copied to clipboard!',
@@ -97,7 +99,8 @@ class AppTranslations {
 
       // Chatbot Translations (Hindi)
       'ai_assistant_title': 'मेडीशेयर एआई सहायक',
-      'welcome_ai': "नमस्ते 👋\nमैं मेडीशेयर एआई सहायक हूं।\nमुझसे उपकरण, दान, अनुरोध, अस्पतालों या आवेदन के बारे में कुछ भी पूछें।",
+      'welcome_ai':
+          "नमस्ते 👋\nमैं मेडीशेयर एआई सहायक हूं।\nमुझसे उपकरण, दान, अनुरोध, अस्पतालों या आवेदन के बारे में कुछ भी पूछें।",
       'ask_ai': 'मेडीशेयर एआई से पूछें...',
       'ai_thinking': 'मेडीशेयर एआई सोच रहा है...',
       'clear_chat': 'बातचीत साफ़ करें?',
@@ -155,11 +158,13 @@ class AppTranslations {
 
       // Chatbot Translations (Gujarati)
       'ai_assistant_title': 'મેડીશેર એઆઈ સહાયક',
-      'welcome_ai': "હેલો 👋\nહું મેડીશેર એઆઈ સહાયક છું.\nમને સાધનો, દાન, વિનંતીઓ, હોસ્પિટલો અથવા એપ્લિકેશન વિશે કાંઈ પણ પૂછો.",
+      'welcome_ai':
+          "હેલો 👋\nહું મેડીશેર એઆઈ સહાયક છું.\nમને સાધનો, દાન, વિનંતીઓ, હોસ્પિટલો અથવા એપ્લિકેશન વિશે કાંઈ પણ પૂછો.",
       'ask_ai': 'મેડીશેર એઆઈને પૂછો...',
       'ai_thinking': 'મેડીશેર એઆઈ વિચારી રહ્યું છે...',
       'clear_chat': 'વાતચીત સાફ કરો?',
-      'clear_chat_desc': 'શું તમે ચોક્કસપણે તમારી એઆઈ ચેટ હિસ્ટ્રી સાફ કરવા માંગો છો?',
+      'clear_chat_desc':
+          'શું તમે ચોક્કસપણે તમારી એઆઈ ચેટ હિસ્ટ્રી સાફ કરવા માંગો છો?',
       'chat_cleared': 'ચેટ હિસ્ટ્રી સાફ કરવામાં આવી.',
       'copy_msg': 'સંદેશ કોપી કરો',
       'msg_copied': 'સંદેશ ક્લિપબોર્ડ પર કોપી થયો!',
@@ -213,11 +218,13 @@ class AppTranslations {
 
       // Chatbot Translations (Spanish)
       'ai_assistant_title': 'Asistente de IA MediShare',
-      'welcome_ai': "Hola 👋\nSoy el Asistente de IA de MediShare.\nPregúntame cualquier cosa sobre equipos, donaciones, solicitudes, hospitales o la aplicación.",
+      'welcome_ai':
+          "Hola 👋\nSoy el Asistente de IA de MediShare.\nPregúntame cualquier cosa sobre equipos, donaciones, solicitudes, hospitales o la aplicación.",
       'ask_ai': 'Preguntar a la IA de MediShare...',
       'ai_thinking': 'MediShare IA está pensando...',
       'clear_chat': '¿Limpiar conversación?',
-      'clear_chat_desc': '¿Estás seguro de que deseas borrar tu historial de chat de IA?',
+      'clear_chat_desc':
+          '¿Estás seguro de que deseas borrar tu historial de chat de IA?',
       'chat_cleared': 'Historial de chat borrado.',
       'copy_msg': 'Copiar mensaje',
       'msg_copied': '¡Mensaje copiado al portapapeles!',
@@ -237,7 +244,8 @@ class AppTranslations {
   };
 
   static String getText(String language, String key) {
-    if (_localizedValues.containsKey(language) && _localizedValues[language]!.containsKey(key)) {
+    if (_localizedValues.containsKey(language) &&
+        _localizedValues[language]!.containsKey(key)) {
       return _localizedValues[language]![key]!;
     }
     return _localizedValues['English']?[key] ?? key;

@@ -55,19 +55,34 @@ class _DonorDashboardState extends State<DonorDashboard> {
 
     final sum = dash.summary;
     // Calculate real numbers from provider data or summary
-    final myEquipmentCount = equipProv.equipment.where((e) => e.ownerId == widget.user.id).length;
+    final myEquipmentCount = equipProv.equipment
+        .where((e) => e.ownerId == widget.user.id)
+        .length;
     final rentalRequestsCount = sum?['rentalRequests'] != null
         ? sum!['rentalRequests'].toString()
-        : rentalProv.rentals.where((r) => r.status.toUpperCase() == 'PENDING').length.toString();
+        : rentalProv.rentals
+              .where((r) => r.status.toUpperCase() == 'PENDING')
+              .length
+              .toString();
     final activeRentalsCount = sum?['activeRentals'] != null
         ? sum!['activeRentals'].toString()
-        : rentalProv.rentals.where((r) => r.status.toUpperCase() == 'ACTIVE').length.toString();
-    final donationsCount = sum?['donations']?.toString() ??
+        : rentalProv.rentals
+              .where((r) => r.status.toUpperCase() == 'ACTIVE')
+              .length
+              .toString();
+    final donationsCount =
+        sum?['donations']?.toString() ??
         sum?['completedDonations']?.toString() ??
         '0';
 
-    final myEquipmentList = equipProv.equipment.where((e) => e.ownerId == widget.user.id).take(5).toList();
-    final pendingRentals = rentalProv.rentals.where((r) => r.status.toUpperCase() == 'PENDING').take(5).toList();
+    final myEquipmentList = equipProv.equipment
+        .where((e) => e.ownerId == widget.user.id)
+        .take(5)
+        .toList();
+    final pendingRentals = rentalProv.rentals
+        .where((r) => r.status.toUpperCase() == 'PENDING')
+        .take(5)
+        .toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -84,7 +99,7 @@ class _DonorDashboardState extends State<DonorDashboard> {
                 color: AppColors.primary.withAlpha(40),
                 blurRadius: 14,
                 offset: const Offset(0, 5),
-              )
+              ),
             ],
           ),
           child: Column(
@@ -103,7 +118,10 @@ class _DonorDashboardState extends State<DonorDashboard> {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withAlpha(40),
                       borderRadius: BorderRadius.circular(20),
@@ -117,7 +135,7 @@ class _DonorDashboardState extends State<DonorDashboard> {
                         letterSpacing: 1,
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
               const SizedBox(height: 2),
@@ -141,11 +159,17 @@ class _DonorDashboardState extends State<DonorDashboard> {
               const SizedBox(height: 16),
               // Donor Highlights
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white.withAlpha(30),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.white.withAlpha(40), width: 1),
+                  border: Border.all(
+                    color: Colors.white.withAlpha(40),
+                    width: 1,
+                  ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -184,7 +208,10 @@ class _DonorDashboardState extends State<DonorDashboard> {
                 value: myEquipmentCount.toString(),
                 icon: Icons.inventory_2_rounded,
                 color: Colors.teal,
-                onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const MyEquipmentScreen())),
+                onTap: () => Navigator.push(
+                  context,
+                  AppPageTransitions.slideRight(const MyEquipmentScreen()),
+                ),
               ),
             ),
             const SizedBox(width: 14),
@@ -194,7 +221,10 @@ class _DonorDashboardState extends State<DonorDashboard> {
                 value: rentalRequestsCount,
                 icon: Icons.pending_actions_rounded,
                 color: Colors.orange,
-                onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const MyRentalsScreen())),
+                onTap: () => Navigator.push(
+                  context,
+                  AppPageTransitions.slideRight(const MyRentalsScreen()),
+                ),
               ),
             ),
           ],
@@ -208,7 +238,10 @@ class _DonorDashboardState extends State<DonorDashboard> {
                 value: activeRentalsCount,
                 icon: Icons.handshake_rounded,
                 color: Colors.blue,
-                onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const MyRentalsScreen())),
+                onTap: () => Navigator.push(
+                  context,
+                  AppPageTransitions.slideRight(const MyRentalsScreen()),
+                ),
               ),
             ),
             const SizedBox(width: 14),
@@ -218,7 +251,10 @@ class _DonorDashboardState extends State<DonorDashboard> {
                 value: donationsCount,
                 icon: Icons.volunteer_activism_rounded,
                 color: Colors.pink,
-                onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const MyDonationsScreen())),
+                onTap: () => Navigator.push(
+                  context,
+                  AppPageTransitions.slideRight(const MyDonationsScreen()),
+                ),
               ),
             ),
           ],
@@ -242,25 +278,37 @@ class _DonorDashboardState extends State<DonorDashboard> {
               title: "Add Equip",
               icon: Icons.add_circle_outline,
               color: Colors.teal,
-              onTap: () => Navigator.push(context, AppPageTransitions.slideUp(const AddEquipmentScreen())),
+              onTap: () => Navigator.push(
+                context,
+                AppPageTransitions.slideUp(const AddEquipmentScreen()),
+              ),
             ),
             _DonorActionButton(
               title: "Donate",
               icon: Icons.volunteer_activism_outlined,
               color: Colors.pink,
-              onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const MyDonationsScreen())),
+              onTap: () => Navigator.push(
+                context,
+                AppPageTransitions.slideRight(const MyDonationsScreen()),
+              ),
             ),
             _DonorActionButton(
               title: "Rentals",
               icon: Icons.handshake_outlined,
               color: Colors.orange,
-              onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const MyRentalsScreen())),
+              onTap: () => Navigator.push(
+                context,
+                AppPageTransitions.slideRight(const MyRentalsScreen()),
+              ),
             ),
             _DonorActionButton(
               title: "Assistant",
               icon: Icons.smart_toy_outlined,
               color: Colors.blue,
-              onTap: () => Navigator.push(context, AppPageTransitions.slideUp(const ChatHomeScreen())),
+              onTap: () => Navigator.push(
+                context,
+                AppPageTransitions.slideUp(const ChatHomeScreen()),
+              ),
             ),
           ],
         ),
@@ -272,11 +320,21 @@ class _DonorDashboardState extends State<DonorDashboard> {
           children: [
             Text(
               "My Listed Equipment (${myEquipmentList.length})",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: context.textPrimaryColor),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: context.textPrimaryColor,
+              ),
             ),
             TextButton(
-              onPressed: () => Navigator.push(context, AppPageTransitions.slideRight(const MyEquipmentScreen())),
-              child: const Text("Manage All", style: TextStyle(fontWeight: FontWeight.bold)),
+              onPressed: () => Navigator.push(
+                context,
+                AppPageTransitions.slideRight(const MyEquipmentScreen()),
+              ),
+              child: const Text(
+                "Manage All",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
@@ -288,7 +346,10 @@ class _DonorDashboardState extends State<DonorDashboard> {
             title: "No equipment listed yet",
             subtitle: "Add your first medical equipment to donate or rent out.",
             buttonText: "Add Equipment",
-            onAction: () => Navigator.push(context, AppPageTransitions.slideUp(const AddEquipmentScreen())),
+            onAction: () => Navigator.push(
+              context,
+              AppPageTransitions.slideUp(const AddEquipmentScreen()),
+            ),
           )
         else
           SizedBox(
@@ -311,11 +372,21 @@ class _DonorDashboardState extends State<DonorDashboard> {
           children: [
             Text(
               "Rental Requests",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: context.textPrimaryColor),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: context.textPrimaryColor,
+              ),
             ),
             TextButton(
-              onPressed: () => Navigator.push(context, AppPageTransitions.slideRight(const MyRentalsScreen())),
-              child: const Text("View All", style: TextStyle(fontWeight: FontWeight.bold)),
+              onPressed: () => Navigator.push(
+                context,
+                AppPageTransitions.slideRight(const MyRentalsScreen()),
+              ),
+              child: const Text(
+                "View All",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
@@ -325,7 +396,8 @@ class _DonorDashboardState extends State<DonorDashboard> {
         else if (pendingRentals.isEmpty)
           _EmptyBox(
             title: "No pending rental requests",
-            subtitle: "Rental requests submitted for your equipment will appear here.",
+            subtitle:
+                "Rental requests submitted for your equipment will appear here.",
           )
         else
           Column(
@@ -342,7 +414,10 @@ class _DonorDashboardState extends State<DonorDashboard> {
                   children: [
                     CircleAvatar(
                       backgroundColor: Colors.orange.withAlpha(30),
-                      child: const Icon(Icons.handshake_outlined, color: Colors.orange),
+                      child: const Icon(
+                        Icons.handshake_outlined,
+                        color: Colors.orange,
+                      ),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
@@ -351,18 +426,28 @@ class _DonorDashboardState extends State<DonorDashboard> {
                         children: [
                           Text(
                             rental.equipment?.name ?? "Equipment Rental",
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: context.textPrimaryColor),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              color: context.textPrimaryColor,
+                            ),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             "Renter: ${rental.renterName} • ${rental.numberOfDays} days",
-                            style: TextStyle(fontSize: 12, color: context.textSecondaryColor),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: context.textSecondaryColor,
+                            ),
                           ),
                         ],
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.orange.withAlpha(30),
                         borderRadius: BorderRadius.circular(10),
@@ -393,7 +478,11 @@ class _DonorHeroStat extends StatelessWidget {
   final String value;
   final IconData icon;
 
-  const _DonorHeroStat({required this.label, required this.value, required this.icon});
+  const _DonorHeroStat({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -417,10 +506,7 @@ class _DonorHeroStat extends StatelessWidget {
         const SizedBox(height: 2),
         Text(
           label,
-          style: TextStyle(
-            color: Colors.white.withAlpha(190),
-            fontSize: 10,
-          ),
+          style: TextStyle(color: Colors.white.withAlpha(190), fontSize: 10),
         ),
       ],
     );
@@ -456,10 +542,12 @@ class _DonorStatCard extends StatelessWidget {
           border: Border.all(color: context.borderColor, width: 1.5),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withAlpha(context.isDarkMode ? 30 : 5),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withAlpha(context.isDarkMode ? 30 : 5),
               blurRadius: 8,
               offset: const Offset(0, 3),
-            )
+            ),
           ],
         ),
         child: Row(
@@ -567,7 +655,9 @@ class _DonorEquipmentTile extends StatelessWidget {
     return InkWell(
       onTap: () => Navigator.push(
         context,
-        AppPageTransitions.slideRight(EquipmentDetailScreen(equipment: equipment)),
+        AppPageTransitions.slideRight(
+          EquipmentDetailScreen(equipment: equipment),
+        ),
       ),
       borderRadius: BorderRadius.circular(16),
       child: Container(
@@ -587,7 +677,11 @@ class _DonorEquipmentTile extends StatelessWidget {
                 CircleAvatar(
                   backgroundColor: AppColors.primary.withAlpha(25),
                   radius: 16,
-                  child: const Icon(Icons.medical_services_outlined, color: AppColors.primary, size: 16),
+                  child: const Icon(
+                    Icons.medical_services_outlined,
+                    color: AppColors.primary,
+                    size: 16,
+                  ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -612,17 +706,28 @@ class _DonorEquipmentTile extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.teal.withAlpha(25),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     equipment.status,
-                    style: const TextStyle(color: Colors.teal, fontWeight: FontWeight.bold, fontSize: 10),
+                    style: const TextStyle(
+                      color: Colors.teal,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 10,
+                    ),
                   ),
                 ),
-                const Icon(Icons.arrow_forward_ios, size: 12, color: Colors.grey),
+                const Icon(
+                  Icons.arrow_forward_ios,
+                  size: 12,
+                  color: Colors.grey,
+                ),
               ],
             ),
           ],
@@ -659,7 +764,11 @@ class _EmptyBox extends StatelessWidget {
         children: [
           Text(
             title,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: context.textPrimaryColor),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+              color: context.textPrimaryColor,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
@@ -673,13 +782,24 @@ class _EmptyBox extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
               ),
               onPressed: onAction,
-              child: Text(buttonText!, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-            )
-          ]
+              child: Text(
+                buttonText!,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

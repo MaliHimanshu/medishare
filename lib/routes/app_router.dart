@@ -10,11 +10,11 @@ import '../features/home/home_screen.dart';
 /// Named route constants
 class AppRoutes {
   AppRoutes._();
-  static const String splash     = '/';
+  static const String splash = '/';
   static const String onboarding = '/onboarding';
-  static const String login      = '/login';
-  static const String register   = '/register';
-  static const String home       = '/home';
+  static const String login = '/login';
+  static const String register = '/register';
+  static const String home = '/home';
 }
 
 /// App-wide GoRouter configuration
@@ -25,8 +25,8 @@ class AppRouter {
       refreshListenable: authProvider,
       redirect: (BuildContext context, GoRouterState state) {
         final isAuthenticated = authProvider.isAuthenticated;
-        final isLoading       = authProvider.isLoading;
-        final loc             = state.uri.path;
+        final isLoading = authProvider.isLoading;
+        final loc = state.uri.path;
 
         // Don't redirect while loading
         if (isLoading) return null;

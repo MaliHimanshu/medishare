@@ -16,13 +16,11 @@ class MsSkeleton extends StatefulWidget {
     this.shape = BoxShape.rectangle,
   });
 
-  const MsSkeleton.circle({
-    super.key,
-    required double size,
-  })  : width = size,
-        height = size,
-        borderRadius = null,
-        shape = BoxShape.circle;
+  const MsSkeleton.circle({super.key, required double size})
+    : width = size,
+      height = size,
+      borderRadius = null,
+      shape = BoxShape.circle;
 
   @override
   State<MsSkeleton> createState() => _MsSkeletonState();
@@ -41,9 +39,10 @@ class _MsSkeletonState extends State<MsSkeleton>
       vsync: this,
     )..repeat();
 
-    _shimmer = Tween<double>(begin: -1.5, end: 2.5).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _shimmer = Tween<double>(
+      begin: -1.5,
+      end: 2.5,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -55,8 +54,12 @@ class _MsSkeletonState extends State<MsSkeleton>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final baseColor = isDark ? const Color(0xFF2A2A2A) : const Color(0xFFE8E8E8);
-    final shimmerColor = isDark ? const Color(0xFF3D3D3D) : const Color(0xFFF5F5F5);
+    final baseColor = isDark
+        ? const Color(0xFF2A2A2A)
+        : const Color(0xFFE8E8E8);
+    final shimmerColor = isDark
+        ? const Color(0xFF3D3D3D)
+        : const Color(0xFFF5F5F5);
 
     return AnimatedBuilder(
       animation: _shimmer,
@@ -98,11 +101,7 @@ class MsCardSkeleton extends StatelessWidget {
   final double height;
   final double? width;
 
-  const MsCardSkeleton({
-    super.key,
-    this.height = 120,
-    this.width,
-  });
+  const MsCardSkeleton({super.key, this.height = 120, this.width});
 
   @override
   Widget build(BuildContext context) {

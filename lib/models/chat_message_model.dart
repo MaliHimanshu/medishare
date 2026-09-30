@@ -1,12 +1,6 @@
 import 'equipment_model.dart';
 
-enum MessageStatus {
-  sending,
-  sent,
-  delivered,
-  read,
-  failed,
-}
+enum MessageStatus { sending, sent, delivered, read, failed }
 
 enum ChatMessageType {
   text,
@@ -74,8 +68,9 @@ class ChatMessageModel {
 
     List<String>? parsedOptions;
     if (json['options'] is List) {
-      parsedOptions =
-          (json['options'] as List).map((e) => e.toString()).toList();
+      parsedOptions = (json['options'] as List)
+          .map((e) => e.toString())
+          .toList();
     }
 
     MessageStatus parsedStatus = MessageStatus.read;
@@ -95,7 +90,8 @@ class ChatMessageModel {
     }
 
     return ChatMessageModel(
-      id: json['id']?.toString() ??
+      id:
+          json['id']?.toString() ??
           DateTime.now().millisecondsSinceEpoch.toString(),
       text: json['text']?.toString() ?? '',
       isUser: json['isUser'] as bool? ?? false,

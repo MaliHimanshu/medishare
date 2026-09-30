@@ -82,8 +82,7 @@ class RentalProvider extends ChangeNotifier {
             .map((item) => RentalModel.fromJson(item as Map<String, dynamic>))
             .toList();
       } else {
-        _errorMessage =
-            response.data?['message'] ?? 'Failed to load rentals.';
+        _errorMessage = response.data?['message'] ?? 'Failed to load rentals.';
       }
     } on DioException catch (e) {
       if (e.response != null) {
@@ -93,9 +92,11 @@ class RentalProvider extends ChangeNotifier {
         } else if (status == 404) {
           _errorMessage = 'Rentals service not found (404).';
         } else if (status == 500) {
-          _errorMessage = 'Internal Server Error (500): Please try again later.';
+          _errorMessage =
+              'Internal Server Error (500): Please try again later.';
         } else {
-          _errorMessage = e.response!.data?['message'] ?? DioClient.handleError(e);
+          _errorMessage =
+              e.response!.data?['message'] ?? DioClient.handleError(e);
         }
       } else {
         _errorMessage = DioClient.handleError(e);
@@ -128,7 +129,8 @@ class RentalProvider extends ChangeNotifier {
       final response = await _dio.post(ApiEndpoints.rental, data: payload);
       if (response.data != null && response.data['success'] == true) {
         final newRental = RentalModel.fromJson(
-            response.data['data'] as Map<String, dynamic>);
+          response.data['data'] as Map<String, dynamic>,
+        );
         _rentals.insert(0, newRental);
         return true;
       } else {
@@ -163,7 +165,8 @@ class RentalProvider extends ChangeNotifier {
 
       if (response.data != null && response.data['success'] == true) {
         final updated = RentalModel.fromJson(
-            response.data['data'] as Map<String, dynamic>);
+          response.data['data'] as Map<String, dynamic>,
+        );
         final idx = _rentals.indexWhere((item) => item.id == id);
         if (idx != -1) {
           _rentals[idx] = updated;
@@ -198,8 +201,7 @@ class RentalProvider extends ChangeNotifier {
         _rentals.removeWhere((item) => item.id == id);
         return true;
       } else {
-        _errorMessage =
-            response.data?['message'] ?? 'Failed to delete rental.';
+        _errorMessage = response.data?['message'] ?? 'Failed to delete rental.';
         return false;
       }
     } on DioException catch (e) {
@@ -297,12 +299,10 @@ class RentalProvider extends ChangeNotifier {
     }
   }
 
-  // ── 3. Record Payment Failure (POST /api/rental/:id/payment-failed) 
+  // ── 3. Record Payment Failure (POST /api/rental/:id/payment-failed)
   Future<void> recordPaymentFailure(String rentalId) async {
     try {
-      await _dio.post(
-        '${ApiEndpoints.rental}/$rentalId/payment-failed',
-      );
+      await _dio.post('${ApiEndpoints.rental}/$rentalId/payment-failed');
       final idx = _rentals.indexWhere((r) => r.id == rentalId);
       if (idx != -1) {
         _rentals[idx] = _rentals[idx].copyWith(paymentStatus: 'FAILED');

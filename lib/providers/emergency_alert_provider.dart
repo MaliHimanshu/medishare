@@ -18,7 +18,7 @@ import '../models/emergency_alert_model.dart';
 class EmergencyAlertProvider extends ChangeNotifier {
   final Dio _dio = DioClient.instance;
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
-  
+
   io.Socket? _socket;
 
   // ── State ─────────────────────────────────────────────
@@ -69,7 +69,7 @@ class EmergencyAlertProvider extends ChangeNotifier {
     if (token == null) return;
 
     final serverUrl = ApiEndpoints.baseUrl.replaceAll('/api', '');
-    
+
     _socket = io.io(
       serverUrl,
       io.OptionBuilder()
@@ -106,7 +106,8 @@ class EmergencyAlertProvider extends ChangeNotifier {
         priority: data['priority']?.toString().toUpperCase() ?? 'HIGH',
         status: 'ACTIVE',
         address: data['address']?.toString(),
-        createdAt: data['createdAt']?.toString() ?? DateTime.now().toIso8601String(),
+        createdAt:
+            data['createdAt']?.toString() ?? DateTime.now().toIso8601String(),
         hospital: EmergencyAlertHospital(
           id: '',
           name: data['hospitalName']?.toString() ?? 'Hospital',
@@ -114,7 +115,10 @@ class EmergencyAlertProvider extends ChangeNotifier {
       );
 
       // Play emergency siren once if CRITICAL/HIGH
-      await EmergencyAudioUtil.playEmergencyAlertTone(newAlert.id, newAlert.priority);
+      await EmergencyAudioUtil.playEmergencyAlertTone(
+        newAlert.id,
+        newAlert.priority,
+      );
 
       _liveIncomingAlert = newAlert;
 
@@ -155,8 +159,7 @@ class EmergencyAlertProvider extends ChangeNotifier {
         'priority': priority.toUpperCase(),
         if (description != null && description.isNotEmpty)
           'description': description.trim(),
-        if (address != null && address.isNotEmpty)
-          'address': address.trim(),
+        if (address != null && address.isNotEmpty) 'address': address.trim(),
         if (latitude != null) 'latitude': latitude,
         if (longitude != null) 'longitude': longitude,
         if (expiresAt != null) 'expiresAt': expiresAt.toUtc().toIso8601String(),
@@ -169,7 +172,9 @@ class EmergencyAlertProvider extends ChangeNotifier {
 
       final data = response.data;
       if (data is Map && data['data'] != null) {
-        final created = EmergencyAlertModel.fromJson(data['data'] as Map<String, dynamic>);
+        final created = EmergencyAlertModel.fromJson(
+          data['data'] as Map<String, dynamic>,
+        );
         _hospitalAlerts.insert(0, created);
         notifyListeners();
         return true;
@@ -252,10 +257,14 @@ class EmergencyAlertProvider extends ChangeNotifier {
       // Acknowledged by viewing details
       EmergencyAudioUtil.stopEmergencyAlertTone();
 
-      final response = await _dio.get('${ApiEndpoints.emergencyAlerts}/$alertId');
+      final response = await _dio.get(
+        '${ApiEndpoints.emergencyAlerts}/$alertId',
+      );
       final data = response.data;
       if (data is Map && data['data'] != null) {
-        final alert = EmergencyAlertModel.fromJson(data['data'] as Map<String, dynamic>);
+        final alert = EmergencyAlertModel.fromJson(
+          data['data'] as Map<String, dynamic>,
+        );
         _selectedAlert = alert;
         notifyListeners();
         return alert;
@@ -289,7 +298,9 @@ class EmergencyAlertProvider extends ChangeNotifier {
 
       final data = response.data;
       if (data is Map && data['data'] != null) {
-        final updated = EmergencyAlertModel.fromJson(data['data'] as Map<String, dynamic>);
+        final updated = EmergencyAlertModel.fromJson(
+          data['data'] as Map<String, dynamic>,
+        );
 
         final index = _hospitalAlerts.indexWhere((a) => a.id == alertId);
         if (index != -1) {
@@ -361,7 +372,8 @@ class EmergencyAlertProvider extends ChangeNotifier {
             expiresAt: old.expiresAt,
             createdAt: old.createdAt,
             hospital: old.hospital,
-            totalAvailable: (data['totalAvailable'] as num?)?.toInt() ?? old.totalAvailable,
+            totalAvailable:
+                (data['totalAvailable'] as num?)?.toInt() ?? old.totalAvailable,
             responseCount: old.responseCount + 1,
             myResponse: myResponse,
           );

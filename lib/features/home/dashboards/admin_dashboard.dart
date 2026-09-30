@@ -55,10 +55,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withAlpha(50),
+                color: Theme.of(context).colorScheme.onSurface.withAlpha(50),
                 blurRadius: 14,
                 offset: const Offset(0, 5),
-              )
+              ),
             ],
           ),
           child: Column(
@@ -76,7 +76,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.redAccent.withAlpha(40),
                       borderRadius: BorderRadius.circular(20),
@@ -90,7 +93,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                         letterSpacing: 1,
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
               const SizedBox(height: 2),
@@ -125,7 +128,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 value: totalEquipment,
                 icon: Icons.inventory_2_rounded,
                 color: Colors.teal,
-                onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const EquipmentListScreen())),
+                onTap: () => Navigator.push(
+                  context,
+                  AppPageTransitions.slideRight(const EquipmentListScreen()),
+                ),
               ),
             ),
             const SizedBox(width: 14),
@@ -149,7 +155,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 value: totalRequests,
                 icon: Icons.assignment_turned_in_rounded,
                 color: Colors.orange,
-                onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const RequestScreen())),
+                onTap: () => Navigator.push(
+                  context,
+                  AppPageTransitions.slideRight(const RequestScreen()),
+                ),
               ),
             ),
             const SizedBox(width: 14),
@@ -159,7 +168,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 value: totalHospitals,
                 icon: Icons.local_hospital_rounded,
                 color: Colors.indigo,
-                onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const HospitalScreen())),
+                onTap: () => Navigator.push(
+                  context,
+                  AppPageTransitions.slideRight(const HospitalScreen()),
+                ),
               ),
             ),
           ],
@@ -183,25 +195,37 @@ class _AdminDashboardState extends State<AdminDashboard> {
               title: "Equipment",
               icon: Icons.medical_services_outlined,
               color: Colors.teal,
-              onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const EquipmentListScreen())),
+              onTap: () => Navigator.push(
+                context,
+                AppPageTransitions.slideRight(const EquipmentListScreen()),
+              ),
             ),
             _AdminActionButton(
               title: "Requests",
               icon: Icons.assignment_outlined,
               color: Colors.orange,
-              onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const RequestScreen())),
+              onTap: () => Navigator.push(
+                context,
+                AppPageTransitions.slideRight(const RequestScreen()),
+              ),
             ),
             _AdminActionButton(
               title: "Hospitals",
               icon: Icons.local_hospital_outlined,
               color: Colors.blue,
-              onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const HospitalScreen())),
+              onTap: () => Navigator.push(
+                context,
+                AppPageTransitions.slideRight(const HospitalScreen()),
+              ),
             ),
             _AdminActionButton(
               title: "Assistant",
               icon: Icons.smart_toy_outlined,
               color: Colors.green,
-              onTap: () => Navigator.push(context, AppPageTransitions.slideUp(const ChatHomeScreen())),
+              onTap: () => Navigator.push(
+                context,
+                AppPageTransitions.slideUp(const ChatHomeScreen()),
+              ),
             ),
           ],
         ),
@@ -210,7 +234,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
         // ── Recent Activity ────────────────────────────────────
         Text(
           "Platform Activity",
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: context.textPrimaryColor),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: context.textPrimaryColor,
+          ),
         ),
         const SizedBox(height: 10),
         if (dash.isLoadingRequests)
@@ -230,7 +258,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   children: [
                     const CircleAvatar(
                       backgroundColor: Colors.blueGrey,
-                      child: Icon(Icons.hub_outlined, color: Colors.white, size: 20),
+                      child: Icon(
+                        Icons.hub_outlined,
+                        color: Colors.white,
+                        size: 20,
+                      ),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
@@ -238,26 +270,40 @@ class _AdminDashboardState extends State<AdminDashboard> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            req['equipment']?['name']?.toString() ?? "Equipment Request",
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: context.textPrimaryColor),
+                            req['equipment']?['name']?.toString() ??
+                                "Equipment Request",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              color: context.textPrimaryColor,
+                            ),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             "By: ${req['requester']?['name'] ?? 'User'}",
-                            style: TextStyle(fontSize: 12, color: context.textSecondaryColor),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: context.textSecondaryColor,
+                            ),
                           ),
                         ],
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.blueGrey.withAlpha(30),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
                         (req['status']?.toString() ?? 'PENDING').toUpperCase(),
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 11,
+                        ),
                       ),
                     ),
                   ],

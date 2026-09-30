@@ -57,7 +57,9 @@ class DashboardProvider extends ChangeNotifier {
     try {
       final response = await _dio.get(ApiEndpoints.summary);
       final rawData = response.data;
-      if (rawData is Map && rawData['success'] == true && rawData['data'] is Map) {
+      if (rawData is Map &&
+          rawData['success'] == true &&
+          rawData['data'] is Map) {
         _summary = Map<String, dynamic>.from(rawData['data'] as Map);
       }
     } catch (e) {

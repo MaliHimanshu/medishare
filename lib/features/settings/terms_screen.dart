@@ -17,7 +17,6 @@ class TermsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             Center(
               child: CircleAvatar(
                 radius: 55,
@@ -35,24 +34,18 @@ class TermsScreen extends StatelessWidget {
             const Center(
               child: Text(
                 "Terms & Conditions",
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               ),
             ),
 
             const SizedBox(height: 30),
-                        //=================================
+
+            //=================================
             // USER RESPONSIBILITIES
             //=================================
-
             const Text(
               "1. User Responsibilities",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 10),
@@ -63,10 +56,7 @@ class TermsScreen extends StatelessWidget {
               "• Use the application responsibly.\n"
               "• Do not misuse or abuse the platform.",
 
-              style: TextStyle(
-                fontSize: 16,
-                height: 1.6,
-              ),
+              style: TextStyle(fontSize: 16, height: 1.6),
             ),
 
             const SizedBox(height: 25),
@@ -74,13 +64,9 @@ class TermsScreen extends StatelessWidget {
             //=================================
             // DONATION RULES
             //=================================
-
             const Text(
               "2. Equipment Donation Rules",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 10),
@@ -91,10 +77,7 @@ class TermsScreen extends StatelessWidget {
               "• Do not upload prohibited items.\n"
               "• Follow all applicable healthcare regulations.",
 
-              style: TextStyle(
-                fontSize: 16,
-                height: 1.6,
-              ),
+              style: TextStyle(fontSize: 16, height: 1.6),
             ),
 
             const SizedBox(height: 25),
@@ -102,13 +85,9 @@ class TermsScreen extends StatelessWidget {
             //=================================
             // REQUEST POLICY
             //=================================
-
             const Text(
               "3. Equipment Request Policy",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 10),
@@ -118,10 +97,7 @@ class TermsScreen extends StatelessWidget {
               "Hospitals and donors may approve or reject requests "
               "based on inventory and eligibility.",
 
-              style: TextStyle(
-                fontSize: 16,
-                height: 1.6,
-              ),
+              style: TextStyle(fontSize: 16, height: 1.6),
             ),
 
             const SizedBox(height: 25),
@@ -129,13 +105,9 @@ class TermsScreen extends StatelessWidget {
             //=================================
             // LIMITATION OF LIABILITY
             //=================================
-
             const Text(
               "4. Limitation of Liability",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 10),
@@ -145,10 +117,7 @@ class TermsScreen extends StatelessWidget {
               "The application is not responsible for equipment quality, "
               "delivery delays, or disputes between users.",
 
-              style: TextStyle(
-                fontSize: 16,
-                height: 1.6,
-              ),
+              style: TextStyle(fontSize: 16, height: 1.6),
             ),
 
             const SizedBox(height: 25),
@@ -156,13 +125,9 @@ class TermsScreen extends StatelessWidget {
             //=================================
             // UPDATES
             //=================================
-
             const Text(
               "5. Updates to Terms",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 10),
@@ -172,10 +137,7 @@ class TermsScreen extends StatelessWidget {
               "Continued use of the application indicates acceptance "
               "of the latest version.",
 
-              style: TextStyle(
-                fontSize: 16,
-                height: 1.6,
-              ),
+              style: TextStyle(fontSize: 16, height: 1.6),
             ),
 
             const SizedBox(height: 25),
@@ -183,7 +145,6 @@ class TermsScreen extends StatelessWidget {
             //=================================
             // ACCEPTANCE
             //=================================
-
             Card(
               color: Colors.orange.shade50,
               shape: RoundedRectangleBorder(
@@ -194,10 +155,7 @@ class TermsScreen extends StatelessWidget {
                 child: Text(
                   "By using MediShare, you acknowledge that you have read, "
                   "understood, and agreed to these Terms & Conditions.",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                 ),
               ),
             ),
@@ -207,16 +165,12 @@ class TermsScreen extends StatelessWidget {
             //=================================
             // BACK BUTTON
             //=================================
-
             SizedBox(
               width: double.infinity,
               height: 55,
               child: ElevatedButton.icon(
                 icon: const Icon(Icons.arrow_back),
-                label: const Text(
-                  "Back",
-                  style: TextStyle(fontSize: 18),
-                ),
+                label: const Text("Back", style: TextStyle(fontSize: 18)),
                 onPressed: () {
                   Navigator.pop(context);
                 },
@@ -224,7 +178,6 @@ class TermsScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 20),
-
           ],
         ),
       ),

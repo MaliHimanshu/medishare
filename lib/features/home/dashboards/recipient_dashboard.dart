@@ -66,15 +66,25 @@ class _RecipientDashboardState extends State<RecipientDashboard> {
     final rentalProv = context.watch<RentalProvider>();
     final reqProv = context.watch<RequestProvider>();
 
-    final availableNearbyCount = equipProv.equipment.where((e) => e.status == 'AVAILABLE').length;
-    final activeRentalsCount = rentalProv.rentals.where((r) => r.status.toUpperCase() == 'ACTIVE').length;
+    final availableNearbyCount = equipProv.equipment
+        .where((e) => e.status == 'AVAILABLE')
+        .length;
+    final activeRentalsCount = rentalProv.rentals
+        .where((r) => r.status.toUpperCase() == 'ACTIVE')
+        .length;
     final myRequestsCount = reqProv.requests.length;
 
     // Filter available equipment by selected category
-    List<EquipmentModel> availableList = equipProv.equipment.where((e) => e.status == 'AVAILABLE').toList();
+    List<EquipmentModel> availableList = equipProv.equipment
+        .where((e) => e.status == 'AVAILABLE')
+        .toList();
     if (_selectedCategory != 'All') {
       availableList = availableList
-          .where((e) => e.category.toLowerCase().contains(_selectedCategory.toLowerCase()))
+          .where(
+            (e) => e.category.toLowerCase().contains(
+              _selectedCategory.toLowerCase(),
+            ),
+          )
           .toList();
     }
     final displayAvailable = availableList.take(6).toList();
@@ -101,7 +111,7 @@ class _RecipientDashboardState extends State<RecipientDashboard> {
                 color: const Color(0xFF0284C7).withAlpha(50),
                 blurRadius: 14,
                 offset: const Offset(0, 5),
-              )
+              ),
             ],
           ),
           child: Column(
@@ -120,7 +130,10 @@ class _RecipientDashboardState extends State<RecipientDashboard> {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withAlpha(40),
                       borderRadius: BorderRadius.circular(20),
@@ -134,7 +147,7 @@ class _RecipientDashboardState extends State<RecipientDashboard> {
                         letterSpacing: 1,
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
               const SizedBox(height: 2),
@@ -158,11 +171,17 @@ class _RecipientDashboardState extends State<RecipientDashboard> {
               const SizedBox(height: 16),
               // Highlights
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white.withAlpha(30),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.white.withAlpha(40), width: 1),
+                  border: Border.all(
+                    color: Colors.white.withAlpha(40),
+                    width: 1,
+                  ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -194,7 +213,10 @@ class _RecipientDashboardState extends State<RecipientDashboard> {
 
         // ── Prioritized Section: Search Equipment Bar ──────────
         InkWell(
-          onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const GlobalSearchScreen())),
+          onTap: () => Navigator.push(
+            context,
+            AppPageTransitions.slideRight(const GlobalSearchScreen()),
+          ),
           borderRadius: BorderRadius.circular(16),
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -204,15 +226,21 @@ class _RecipientDashboardState extends State<RecipientDashboard> {
               border: Border.all(color: context.borderColor, width: 1.5),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withAlpha(context.isDarkMode ? 30 : 5),
+                  color: Theme.of(context).colorScheme.onSurface.withAlpha(
+                    context.isDarkMode ? 30 : 5,
+                  ),
                   blurRadius: 8,
                   offset: const Offset(0, 3),
-                )
+                ),
               ],
             ),
             child: Row(
               children: [
-                const Icon(Icons.search_rounded, color: AppColors.primary, size: 22),
+                const Icon(
+                  Icons.search_rounded,
+                  color: AppColors.primary,
+                  size: 22,
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
@@ -224,16 +252,23 @@ class _RecipientDashboardState extends State<RecipientDashboard> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.primary.withAlpha(20),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text(
                     "Find",
-                    style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 12),
+                    style: TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
                   ),
-                )
+                ),
               ],
             ),
           ),
@@ -249,7 +284,10 @@ class _RecipientDashboardState extends State<RecipientDashboard> {
                 value: availableNearbyCount.toString(),
                 icon: Icons.location_on_rounded,
                 color: Colors.teal,
-                onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const NearbyEquipmentScreen())),
+                onTap: () => Navigator.push(
+                  context,
+                  AppPageTransitions.slideRight(const NearbyEquipmentScreen()),
+                ),
               ),
             ),
             const SizedBox(width: 12),
@@ -259,7 +297,10 @@ class _RecipientDashboardState extends State<RecipientDashboard> {
                 value: activeRentalsCount.toString(),
                 icon: Icons.handshake_rounded,
                 color: const Color(0xFF0284C7),
-                onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const MyRentalsScreen())),
+                onTap: () => Navigator.push(
+                  context,
+                  AppPageTransitions.slideRight(const MyRentalsScreen()),
+                ),
               ),
             ),
             const SizedBox(width: 12),
@@ -269,7 +310,10 @@ class _RecipientDashboardState extends State<RecipientDashboard> {
                 value: myRequestsCount.toString(),
                 icon: Icons.assignment_rounded,
                 color: Colors.orange,
-                onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const RequestScreen())),
+                onTap: () => Navigator.push(
+                  context,
+                  AppPageTransitions.slideRight(const RequestScreen()),
+                ),
               ),
             ),
           ],
@@ -296,15 +340,21 @@ class _RecipientDashboardState extends State<RecipientDashboard> {
               final cat = _categories[idx];
               final isSelected = _selectedCategory == cat["name"];
               return InkWell(
-                onTap: () => setState(() => _selectedCategory = cat["name"] as String),
+                onTap: () =>
+                    setState(() => _selectedCategory = cat["name"] as String),
                 borderRadius: BorderRadius.circular(20),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: isSelected ? AppColors.primary : context.cardBg,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: isSelected ? AppColors.primary : context.borderColor,
+                      color: isSelected
+                          ? AppColors.primary
+                          : context.borderColor,
                     ),
                   ),
                   child: Row(
@@ -312,7 +362,9 @@ class _RecipientDashboardState extends State<RecipientDashboard> {
                       Icon(
                         cat["icon"] as IconData,
                         size: 16,
-                        color: isSelected ? Colors.white : context.textSecondaryColor,
+                        color: isSelected
+                            ? Colors.white
+                            : context.textSecondaryColor,
                       ),
                       const SizedBox(width: 6),
                       Text(
@@ -320,7 +372,9 @@ class _RecipientDashboardState extends State<RecipientDashboard> {
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
-                          color: isSelected ? Colors.white : context.textPrimaryColor,
+                          color: isSelected
+                              ? Colors.white
+                              : context.textPrimaryColor,
                         ),
                       ),
                     ],
@@ -349,25 +403,37 @@ class _RecipientDashboardState extends State<RecipientDashboard> {
               title: "Explore",
               icon: Icons.explore_outlined,
               color: Colors.teal,
-              onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const EquipmentListScreen())),
+              onTap: () => Navigator.push(
+                context,
+                AppPageTransitions.slideRight(const EquipmentListScreen()),
+              ),
             ),
             _RecipientActionButton(
               title: "Nearby",
               icon: Icons.near_me_outlined,
               color: Colors.blue,
-              onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const NearbyEquipmentScreen())),
+              onTap: () => Navigator.push(
+                context,
+                AppPageTransitions.slideRight(const NearbyEquipmentScreen()),
+              ),
             ),
             _RecipientActionButton(
               title: "My Rentals",
               icon: Icons.handshake_outlined,
               color: const Color(0xFF0284C7),
-              onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const MyRentalsScreen())),
+              onTap: () => Navigator.push(
+                context,
+                AppPageTransitions.slideRight(const MyRentalsScreen()),
+              ),
             ),
             _RecipientActionButton(
               title: "Assistant",
               icon: Icons.smart_toy_outlined,
               color: Colors.green,
-              onTap: () => Navigator.push(context, AppPageTransitions.slideUp(const ChatHomeScreen())),
+              onTap: () => Navigator.push(
+                context,
+                AppPageTransitions.slideUp(const ChatHomeScreen()),
+              ),
             ),
           ],
         ),
@@ -379,11 +445,21 @@ class _RecipientDashboardState extends State<RecipientDashboard> {
           children: [
             Text(
               "Available Equipment (${displayAvailable.length})",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: context.textPrimaryColor),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: context.textPrimaryColor,
+              ),
             ),
             TextButton(
-              onPressed: () => Navigator.push(context, AppPageTransitions.slideRight(const EquipmentListScreen())),
-              child: const Text("See All", style: TextStyle(fontWeight: FontWeight.bold)),
+              onPressed: () => Navigator.push(
+                context,
+                AppPageTransitions.slideRight(const EquipmentListScreen()),
+              ),
+              child: const Text(
+                "See All",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
@@ -416,11 +492,21 @@ class _RecipientDashboardState extends State<RecipientDashboard> {
           children: [
             Text(
               "My Rentals & Requests",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: context.textPrimaryColor),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: context.textPrimaryColor,
+              ),
             ),
             TextButton(
-              onPressed: () => Navigator.push(context, AppPageTransitions.slideRight(const MyRentalsScreen())),
-              child: const Text("View Rentals", style: TextStyle(fontWeight: FontWeight.bold)),
+              onPressed: () => Navigator.push(
+                context,
+                AppPageTransitions.slideRight(const MyRentalsScreen()),
+              ),
+              child: const Text(
+                "View Rentals",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
@@ -428,9 +514,13 @@ class _RecipientDashboardState extends State<RecipientDashboard> {
         if (myRentalsList.isEmpty && myRequestsList.isEmpty)
           _RecipientEmptyBox(
             title: "No active rentals or requests",
-            subtitle: "Browse available equipment above to rent or request supplies.",
+            subtitle:
+                "Browse available equipment above to rent or request supplies.",
             buttonText: "Browse Equipment",
-            onAction: () => Navigator.push(context, AppPageTransitions.slideRight(const EquipmentListScreen())),
+            onAction: () => Navigator.push(
+              context,
+              AppPageTransitions.slideRight(const EquipmentListScreen()),
+            ),
           )
         else ...[
           // Show rentals
@@ -447,7 +537,10 @@ class _RecipientDashboardState extends State<RecipientDashboard> {
                 children: [
                   CircleAvatar(
                     backgroundColor: const Color(0xFF0284C7).withAlpha(25),
-                    child: const Icon(Icons.handshake_outlined, color: Color(0xFF0284C7)),
+                    child: const Icon(
+                      Icons.handshake_outlined,
+                      color: Color(0xFF0284C7),
+                    ),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -456,18 +549,28 @@ class _RecipientDashboardState extends State<RecipientDashboard> {
                       children: [
                         Text(
                           rental.equipment?.name ?? "Equipment Rental",
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: context.textPrimaryColor),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            color: context.textPrimaryColor,
+                          ),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           "Total: ₹${rental.totalAmount} • ${rental.numberOfDays} days",
-                          style: TextStyle(fontSize: 12, color: context.textSecondaryColor),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: context.textSecondaryColor,
+                          ),
                         ),
                       ],
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.green.withAlpha(25),
                       borderRadius: BorderRadius.circular(10),
@@ -499,7 +602,10 @@ class _RecipientDashboardState extends State<RecipientDashboard> {
                 children: [
                   CircleAvatar(
                     backgroundColor: Colors.orange.withAlpha(25),
-                    child: const Icon(Icons.assignment_outlined, color: Colors.orange),
+                    child: const Icon(
+                      Icons.assignment_outlined,
+                      color: Colors.orange,
+                    ),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
@@ -508,20 +614,30 @@ class _RecipientDashboardState extends State<RecipientDashboard> {
                       children: [
                         Text(
                           req.equipment?.name ?? "Requested Equipment",
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: context.textPrimaryColor),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            color: context.textPrimaryColor,
+                          ),
                         ),
                         const SizedBox(height: 2),
                         Text(
                           "Reason: ${req.reason.isNotEmpty ? req.reason : 'Request submitted'}",
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 12, color: context.textSecondaryColor),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: context.textSecondaryColor,
+                          ),
                         ),
                       ],
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.orange.withAlpha(25),
                       borderRadius: BorderRadius.circular(10),
@@ -552,7 +668,11 @@ class _RecipientHeroStat extends StatelessWidget {
   final String value;
   final IconData icon;
 
-  const _RecipientHeroStat({required this.label, required this.value, required this.icon});
+  const _RecipientHeroStat({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -576,10 +696,7 @@ class _RecipientHeroStat extends StatelessWidget {
         const SizedBox(height: 2),
         Text(
           label,
-          style: TextStyle(
-            color: Colors.white.withAlpha(190),
-            fontSize: 10,
-          ),
+          style: TextStyle(color: Colors.white.withAlpha(190), fontSize: 10),
         ),
       ],
     );
@@ -615,10 +732,12 @@ class _RecipientStatCard extends StatelessWidget {
           border: Border.all(color: context.borderColor, width: 1.5),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withAlpha(context.isDarkMode ? 30 : 5),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withAlpha(context.isDarkMode ? 30 : 5),
               blurRadius: 6,
               offset: const Offset(0, 2),
-            )
+            ),
           ],
         ),
         child: Column(
@@ -720,7 +839,9 @@ class _RecipientEquipmentCard extends StatelessWidget {
     return InkWell(
       onTap: () => Navigator.push(
         context,
-        AppPageTransitions.slideRight(EquipmentDetailScreen(equipment: equipment)),
+        AppPageTransitions.slideRight(
+          EquipmentDetailScreen(equipment: equipment),
+        ),
       ),
       borderRadius: BorderRadius.circular(16),
       child: Container(
@@ -740,7 +861,11 @@ class _RecipientEquipmentCard extends StatelessWidget {
                 CircleAvatar(
                   backgroundColor: AppColors.primary.withAlpha(25),
                   radius: 16,
-                  child: const Icon(Icons.medical_services_outlined, color: AppColors.primary, size: 16),
+                  child: const Icon(
+                    Icons.medical_services_outlined,
+                    color: AppColors.primary,
+                    size: 16,
+                  ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -764,28 +889,43 @@ class _RecipientEquipmentCard extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
-                color: equipment.mode == 'RENT' ? const Color(0xFF0284C7) : AppColors.primary,
+                color: equipment.mode == 'RENT'
+                    ? const Color(0xFF0284C7)
+                    : AppColors.primary,
               ),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
-                    color: (equipment.mode == 'RENT' ? const Color(0xFF0284C7) : AppColors.primary).withAlpha(25),
+                    color:
+                        (equipment.mode == 'RENT'
+                                ? const Color(0xFF0284C7)
+                                : AppColors.primary)
+                            .withAlpha(25),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
                     equipment.mode == 'RENT' ? "Rent Now" : "Request",
                     style: TextStyle(
-                      color: equipment.mode == 'RENT' ? const Color(0xFF0284C7) : AppColors.primary,
+                      color: equipment.mode == 'RENT'
+                          ? const Color(0xFF0284C7)
+                          : AppColors.primary,
                       fontWeight: FontWeight.bold,
                       fontSize: 10,
                     ),
                   ),
                 ),
-                const Icon(Icons.arrow_forward_ios, size: 12, color: Colors.grey),
+                const Icon(
+                  Icons.arrow_forward_ios,
+                  size: 12,
+                  color: Colors.grey,
+                ),
               ],
             ),
           ],
@@ -822,7 +962,11 @@ class _RecipientEmptyBox extends StatelessWidget {
         children: [
           Text(
             title,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: context.textPrimaryColor),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+              color: context.textPrimaryColor,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
@@ -836,13 +980,24 @@ class _RecipientEmptyBox extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
               ),
               onPressed: onAction,
-              child: Text(buttonText!, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-            )
-          ]
+              child: Text(
+                buttonText!,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

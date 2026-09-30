@@ -8,10 +8,7 @@ import '../../providers/rental_provider.dart';
 class BookRentalDialog extends StatefulWidget {
   final EquipmentModel equipment;
 
-  const BookRentalDialog({
-    super.key,
-    required this.equipment,
-  });
+  const BookRentalDialog({super.key, required this.equipment});
 
   @override
   State<BookRentalDialog> createState() => _BookRentalDialogState();
@@ -42,7 +39,8 @@ class _BookRentalDialogState extends State<BookRentalDialog> {
     if (picked != null) {
       setState(() {
         _startDate = picked;
-        if (_endDate.isBefore(_startDate) || _endDate.isAtSameMomentAs(_startDate)) {
+        if (_endDate.isBefore(_startDate) ||
+            _endDate.isAtSameMomentAs(_startDate)) {
           _endDate = _startDate.add(const Duration(days: 1));
         }
       });
@@ -52,7 +50,9 @@ class _BookRentalDialogState extends State<BookRentalDialog> {
   Future<void> _selectEndDate() async {
     final picked = await showDatePicker(
       context: context,
-      initialDate: _endDate.isAfter(_startDate) ? _endDate : _startDate.add(const Duration(days: 1)),
+      initialDate: _endDate.isAfter(_startDate)
+          ? _endDate
+          : _startDate.add(const Duration(days: 1)),
       firstDate: _startDate.add(const Duration(days: 1)),
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
@@ -90,9 +90,11 @@ class _BookRentalDialogState extends State<BookRentalDialog> {
       } else {
         messenger.showSnackBar(
           SnackBar(
-            content: Text(provider.errorMessage.isNotEmpty
-                ? provider.errorMessage
-                : "Failed to submit rental request."),
+            content: Text(
+              provider.errorMessage.isNotEmpty
+                  ? provider.errorMessage
+                  : "Failed to submit rental request.",
+            ),
             backgroundColor: AppColors.error,
             behavior: SnackBarBehavior.floating,
           ),
@@ -113,7 +115,11 @@ class _BookRentalDialogState extends State<BookRentalDialog> {
               color: Colors.orange.shade50,
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(Icons.calendar_month, color: Colors.orange.shade700, size: 22),
+            child: Icon(
+              Icons.calendar_month,
+              color: Colors.orange.shade700,
+              size: 22,
+            ),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -145,7 +151,10 @@ class _BookRentalDialogState extends State<BookRentalDialog> {
                     onTap: _selectStartDate,
                     borderRadius: BorderRadius.circular(12),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.grey.shade300),
                         borderRadius: BorderRadius.circular(12),
@@ -153,11 +162,21 @@ class _BookRentalDialogState extends State<BookRentalDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("Start Date", style: TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold)),
+                          const Text(
+                            "Start Date",
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.grey,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                           const SizedBox(height: 4),
                           Text(
                             "${_startDate.day}/${_startDate.month}/${_startDate.year}",
-                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ],
                       ),
@@ -170,7 +189,10 @@ class _BookRentalDialogState extends State<BookRentalDialog> {
                     onTap: _selectEndDate,
                     borderRadius: BorderRadius.circular(12),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
                         border: Border.all(color: Colors.grey.shade300),
                         borderRadius: BorderRadius.circular(12),
@@ -178,11 +200,21 @@ class _BookRentalDialogState extends State<BookRentalDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("End Date", style: TextStyle(fontSize: 10, color: Colors.grey, fontWeight: FontWeight.bold)),
+                          const Text(
+                            "End Date",
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: Colors.grey,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                           const SizedBox(height: 4),
                           Text(
                             "${_endDate.day}/${_endDate.month}/${_endDate.year}",
-                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ],
                       ),
@@ -207,16 +239,40 @@ class _BookRentalDialogState extends State<BookRentalDialog> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text("Duration:", style: TextStyle(fontSize: 12, color: Colors.black87)),
-                      Text("$_numberOfDays day(s)", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      Text(
+                        "Duration:",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                      Text(
+                        "$_numberOfDays day(s)",
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 6),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text("Rate (₹${_rentalPricePerDay.toStringAsFixed(0)} × $_numberOfDays):", style: const TextStyle(fontSize: 12, color: Colors.black87)),
-                      Text("₹${_rentalAmount.toStringAsFixed(0)}", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      Text(
+                        "Rate (₹${_rentalPricePerDay.toStringAsFixed(0)} × $_numberOfDays):",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                      Text(
+                        "₹${_rentalAmount.toStringAsFixed(0)}",
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ],
                   ),
                   if (_securityDeposit > 0) ...[
@@ -224,8 +280,20 @@ class _BookRentalDialogState extends State<BookRentalDialog> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text("Security Deposit (Refundable):", style: TextStyle(fontSize: 12, color: Colors.black87)),
-                        Text("₹${_securityDeposit.toStringAsFixed(0)}", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                        Text(
+                          "Security Deposit (Refundable):",
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                        Text(
+                          "₹${_securityDeposit.toStringAsFixed(0)}",
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -233,10 +301,21 @@ class _BookRentalDialogState extends State<BookRentalDialog> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text("Total Amount:", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87)),
+                      Text(
+                        "Total Amount:",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
                       Text(
                         "₹${_totalAmount.toStringAsFixed(0)}",
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.orange.shade800),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.orange.shade800,
+                        ),
                       ),
                     ],
                   ),
@@ -255,14 +334,19 @@ class _BookRentalDialogState extends State<BookRentalDialog> {
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.orange.shade700,
             foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
           onPressed: _isSubmitting ? null : _submitBooking,
           child: _isSubmitting
               ? const SizedBox(
                   width: 18,
                   height: 18,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Colors.white,
+                  ),
                 )
               : const Text("Confirm Booking"),
         ),

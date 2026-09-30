@@ -62,32 +62,38 @@ class _MsTextFieldState extends State<MsTextField> {
         ),
         const SizedBox(height: 8),
         TextFormField(
-          controller:         widget.controller,
-          obscureText:        widget.isPassword ? _obscure : false,
-          keyboardType:       widget.keyboardType,
-          textInputAction:    widget.textInputAction,
-          readOnly:           widget.readOnly,
-          autofocus:          widget.autofocus,
-          maxLines:           widget.isPassword ? 1 : widget.maxLines,
-          focusNode:          widget.focusNode,
-          onChanged:          widget.onChanged,
-          onFieldSubmitted:   widget.onSubmitted,
-          validator:          widget.validator,
+          controller: widget.controller,
+          obscureText: widget.isPassword ? _obscure : false,
+          keyboardType: widget.keyboardType,
+          textInputAction: widget.textInputAction,
+          readOnly: widget.readOnly,
+          autofocus: widget.autofocus,
+          maxLines: widget.isPassword ? 1 : widget.maxLines,
+          focusNode: widget.focusNode,
+          onChanged: widget.onChanged,
+          onFieldSubmitted: widget.onSubmitted,
+          validator: widget.validator,
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w500,
             color: context.textPrimaryColor,
           ),
           decoration: InputDecoration(
-            hintText:     widget.hint,
-            errorText:    widget.errorText,
-            prefixIcon:   widget.prefixIcon != null
-                ? Icon(widget.prefixIcon, size: 20, color: context.textSecondaryColor)
+            hintText: widget.hint,
+            errorText: widget.errorText,
+            prefixIcon: widget.prefixIcon != null
+                ? Icon(
+                    widget.prefixIcon,
+                    size: 20,
+                    color: context.textSecondaryColor,
+                  )
                 : null,
-            suffixIcon:   widget.isPassword
+            suffixIcon: widget.isPassword
                 ? IconButton(
                     icon: Icon(
-                      _obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                      _obscure
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
                       size: 20,
                       color: context.textSecondaryColor,
                     ),

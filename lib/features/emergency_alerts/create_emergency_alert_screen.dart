@@ -19,10 +19,12 @@ class CreateEmergencyAlertScreen extends StatefulWidget {
   const CreateEmergencyAlertScreen({super.key});
 
   @override
-  State<CreateEmergencyAlertScreen> createState() => _CreateEmergencyAlertScreenState();
+  State<CreateEmergencyAlertScreen> createState() =>
+      _CreateEmergencyAlertScreenState();
 }
 
-class _CreateEmergencyAlertScreenState extends State<CreateEmergencyAlertScreen> {
+class _CreateEmergencyAlertScreenState
+    extends State<CreateEmergencyAlertScreen> {
   final _formKey = GlobalKey<FormState>();
 
   final _equipmentNameCtrl = TextEditingController();
@@ -102,7 +104,13 @@ class _CreateEmergencyAlertScreenState extends State<CreateEmergencyAlertScreen>
 
       if (time != null) {
         setState(() {
-          _expiresAt = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+          _expiresAt = DateTime(
+            date.year,
+            date.month,
+            date.day,
+            time.hour,
+            time.minute,
+          );
         });
       }
     }
@@ -126,7 +134,11 @@ class _CreateEmergencyAlertScreenState extends State<CreateEmergencyAlertScreen>
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: Row(
           children: [
-            const Icon(Icons.warning_amber_rounded, color: Color(0xFFDC2626), size: 28),
+            const Icon(
+              Icons.warning_amber_rounded,
+              color: Color(0xFFDC2626),
+              size: 28,
+            ),
             const SizedBox(width: 10),
             const Expanded(
               child: Text(
@@ -157,7 +169,10 @@ class _CreateEmergencyAlertScreenState extends State<CreateEmergencyAlertScreen>
                 children: [
                   Text(
                     '🚨 ${_equipmentNameCtrl.text.trim()}',
-                    style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFDC2626)),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFFDC2626),
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text('Quantity Required: $quantity units'),
@@ -176,9 +191,17 @@ class _CreateEmergencyAlertScreenState extends State<CreateEmergencyAlertScreen>
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFDC2626),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
-            child: const Text('Send Alert 🚨', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Send Alert 🚨',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -192,8 +215,12 @@ class _CreateEmergencyAlertScreenState extends State<CreateEmergencyAlertScreen>
       equipmentCategory: _selectedCategory,
       quantityRequired: quantity,
       priority: _selectedPriority,
-      description: _descriptionCtrl.text.trim().isEmpty ? null : _descriptionCtrl.text.trim(),
-      address: _locationCtrl.text.trim().isEmpty ? null : _locationCtrl.text.trim(),
+      description: _descriptionCtrl.text.trim().isEmpty
+          ? null
+          : _descriptionCtrl.text.trim(),
+      address: _locationCtrl.text.trim().isEmpty
+          ? null
+          : _locationCtrl.text.trim(),
       expiresAt: _expiresAt,
     );
 
@@ -202,10 +229,14 @@ class _CreateEmergencyAlertScreenState extends State<CreateEmergencyAlertScreen>
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('🚨 Emergency alert sent successfully to eligible NGOs!'),
+          content: const Text(
+            '🚨 Emergency alert sent successfully to eligible NGOs!',
+          ),
           backgroundColor: AppColors.success,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
 
@@ -216,7 +247,9 @@ class _CreateEmergencyAlertScreenState extends State<CreateEmergencyAlertScreen>
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(prov.errorMessage ?? 'Failed to broadcast emergency alert'),
+          content: Text(
+            prov.errorMessage ?? 'Failed to broadcast emergency alert',
+          ),
           backgroundColor: AppColors.error,
           behavior: SnackBarBehavior.floating,
         ),
@@ -266,7 +299,11 @@ class _CreateEmergencyAlertScreenState extends State<CreateEmergencyAlertScreen>
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.crisis_alert_rounded, color: Colors.white, size: 36),
+                      const Icon(
+                        Icons.crisis_alert_rounded,
+                        color: Colors.white,
+                        size: 36,
+                      ),
                       const SizedBox(width: 14),
                       Expanded(
                         child: Column(
@@ -283,7 +320,11 @@ class _CreateEmergencyAlertScreenState extends State<CreateEmergencyAlertScreen>
                             SizedBox(height: 4),
                             Text(
                               'Broadcast your critical medical apparatus shortage to all active partner NGOs in real time.',
-                              style: TextStyle(color: Colors.white70, fontSize: 12, height: 1.3),
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                                height: 1.3,
+                              ),
                             ),
                           ],
                         ),
@@ -308,7 +349,9 @@ class _CreateEmergencyAlertScreenState extends State<CreateEmergencyAlertScreen>
                   hint: 'e.g. Oxygen Cylinders',
                   controller: _equipmentNameCtrl,
                   prefixIcon: Icons.medical_services_outlined,
-                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Equipment name is required' : null,
+                  validator: (v) => (v == null || v.trim().isEmpty)
+                      ? 'Equipment name is required'
+                      : null,
                 ),
                 const SizedBox(height: 10),
 
@@ -319,8 +362,18 @@ class _CreateEmergencyAlertScreenState extends State<CreateEmergencyAlertScreen>
                   children: _equipmentSuggestions.map((item) {
                     final selected = _equipmentNameCtrl.text == item;
                     return ActionChip(
-                      label: Text(item, style: TextStyle(fontSize: 12, color: selected ? Colors.white : context.textPrimaryColor)),
-                      backgroundColor: selected ? AppColors.primary : context.cardColor,
+                      label: Text(
+                        item,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: selected
+                              ? Colors.white
+                              : context.textPrimaryColor,
+                        ),
+                      ),
+                      backgroundColor: selected
+                          ? AppColors.primary
+                          : context.cardColor,
                       onPressed: () {
                         setState(() {
                           _equipmentNameCtrl.text = item;
@@ -389,18 +442,26 @@ class _CreateEmergencyAlertScreenState extends State<CreateEmergencyAlertScreen>
                               color: context.cardColor,
                               borderRadius: BorderRadius.circular(14),
                               border: Border.all(
-                                color: context.isDarkMode ? Colors.grey.shade800 : const Color(0xFFE2E8F0),
+                                color: context.isDarkMode
+                                    ? Colors.grey.shade800
+                                    : const Color(0xFFE2E8F0),
                               ),
                             ),
                             child: DropdownButtonHideUnderline(
                               child: DropdownButton<String>(
                                 value: _selectedCategory,
-                                hint: const Text('Category', style: TextStyle(fontSize: 14)),
+                                hint: const Text(
+                                  'Category',
+                                  style: TextStyle(fontSize: 14),
+                                ),
                                 isExpanded: true,
                                 items: _categories.map((c) {
                                   return DropdownMenuItem<String>(
                                     value: c,
-                                    child: Text(c, style: const TextStyle(fontSize: 14)),
+                                    child: Text(
+                                      c,
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
                                   );
                                 }).toList(),
                                 onChanged: (val) {
@@ -437,7 +498,9 @@ class _CreateEmergencyAlertScreenState extends State<CreateEmergencyAlertScreen>
                           margin: const EdgeInsets.only(right: 8),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           decoration: BoxDecoration(
-                            color: selected ? color.withAlpha(30) : context.cardColor,
+                            color: selected
+                                ? color.withAlpha(30)
+                                : context.cardColor,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: selected ? color : Colors.grey.shade300,
@@ -447,7 +510,9 @@ class _CreateEmergencyAlertScreenState extends State<CreateEmergencyAlertScreen>
                           child: Column(
                             children: [
                               Icon(
-                                p == 'CRITICAL' ? Icons.local_fire_department_rounded : Icons.priority_high_rounded,
+                                p == 'CRITICAL'
+                                    ? Icons.local_fire_department_rounded
+                                    : Icons.priority_high_rounded,
                                 color: color,
                                 size: 20,
                               ),
@@ -457,7 +522,9 @@ class _CreateEmergencyAlertScreenState extends State<CreateEmergencyAlertScreen>
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
-                                  color: selected ? color : context.textSecondaryColor,
+                                  color: selected
+                                      ? color
+                                      : context.textSecondaryColor,
                                 ),
                               ),
                             ],
@@ -484,7 +551,9 @@ class _CreateEmergencyAlertScreenState extends State<CreateEmergencyAlertScreen>
                   hint: 'e.g. Trauma Center Gate 2, Civil Hospital, Ahmedabad',
                   controller: _locationCtrl,
                   prefixIcon: Icons.location_on_outlined,
-                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Hospital location is required' : null,
+                  validator: (v) => (v == null || v.trim().isEmpty)
+                      ? 'Hospital location is required'
+                      : null,
                 ),
                 const SizedBox(height: 20),
 
@@ -500,7 +569,8 @@ class _CreateEmergencyAlertScreenState extends State<CreateEmergencyAlertScreen>
                 const SizedBox(height: 8),
                 MsTextField(
                   label: 'Describe emergency and urgency',
-                  hint: 'e.g. Major accident on highway; 15 patients requiring supplemental oxygen urgently.',
+                  hint:
+                      'e.g. Major accident on highway; 15 patients requiring supplemental oxygen urgently.',
                   controller: _descriptionCtrl,
                   maxLines: 3,
                   prefixIcon: Icons.description_outlined,
@@ -520,17 +590,26 @@ class _CreateEmergencyAlertScreenState extends State<CreateEmergencyAlertScreen>
                 GestureDetector(
                   onTap: _pickExpiryDateTime,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 14,
+                    ),
                     decoration: BoxDecoration(
                       color: context.cardColor,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                        color: context.isDarkMode ? Colors.grey.shade800 : const Color(0xFFE2E8F0),
+                        color: context.isDarkMode
+                            ? Colors.grey.shade800
+                            : const Color(0xFFE2E8F0),
                       ),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.schedule_rounded, color: AppColors.primary, size: 20),
+                        const Icon(
+                          Icons.schedule_rounded,
+                          color: AppColors.primary,
+                          size: 20,
+                        ),
                         const SizedBox(width: 10),
                         Text(
                           _expiresAt == null
@@ -538,15 +617,23 @@ class _CreateEmergencyAlertScreenState extends State<CreateEmergencyAlertScreen>
                               : 'Expires: ${_expiresAt!.day}/${_expiresAt!.month}/${_expiresAt!.year} at ${_expiresAt!.hour}:${_expiresAt!.minute.toString().padLeft(2, '0')}',
                           style: TextStyle(
                             fontSize: 13,
-                            color: _expiresAt == null ? context.textSecondaryColor : context.textPrimaryColor,
-                            fontWeight: _expiresAt == null ? FontWeight.normal : FontWeight.w600,
+                            color: _expiresAt == null
+                                ? context.textSecondaryColor
+                                : context.textPrimaryColor,
+                            fontWeight: _expiresAt == null
+                                ? FontWeight.normal
+                                : FontWeight.w600,
                           ),
                         ),
                         const Spacer(),
                         if (_expiresAt != null)
                           GestureDetector(
                             onTap: () => setState(() => _expiresAt = null),
-                            child: const Icon(Icons.close, size: 18, color: Colors.grey),
+                            child: const Icon(
+                              Icons.close,
+                              size: 18,
+                              color: Colors.grey,
+                            ),
                           ),
                       ],
                     ),
@@ -556,8 +643,12 @@ class _CreateEmergencyAlertScreenState extends State<CreateEmergencyAlertScreen>
 
                 // Send Button
                 MsButton(
-                  label: prov.isActionLoading ? 'Broadcasting Alert...' : 'SEND EMERGENCY ALERT 🚨',
-                  onPressed: prov.isActionLoading ? null : _handleConfirmAndSubmit,
+                  label: prov.isActionLoading
+                      ? 'Broadcasting Alert...'
+                      : 'SEND EMERGENCY ALERT 🚨',
+                  onPressed: prov.isActionLoading
+                      ? null
+                      : _handleConfirmAndSubmit,
                   isLoading: prov.isActionLoading,
                   backgroundColor: const Color(0xFFDC2626),
                   icon: Icons.send_rounded,

@@ -9,7 +9,9 @@ class ChatService {
   final Dio _dio = DioClient.instance;
 
   Future<List<ChatConversation>> getConversations() async {
-    final response = await _dio.get('${ApiEndpoints.baseUrl}/chat/conversations');
+    final response = await _dio.get(
+      '${ApiEndpoints.baseUrl}/chat/conversations',
+    );
     if (response.data['success'] == true) {
       return (response.data['data'] as List)
           .map((json) => ChatConversation.fromJson(json))
@@ -29,13 +31,13 @@ class ChatService {
     throw Exception(response.data['message']);
   }
 
-  Future<List<ChatMessage>> getMessages(String conversationId, {String? cursor}) async {
+  Future<List<ChatMessage>> getMessages(
+    String conversationId, {
+    String? cursor,
+  }) async {
     final response = await _dio.get(
       '${ApiEndpoints.baseUrl}/chat/conversations/$conversationId/messages',
-      queryParameters: {
-        if (cursor != null) 'cursor': cursor,
-        'limit': 50,
-      },
+      queryParameters: {if (cursor != null) 'cursor': cursor, 'limit': 50},
     );
     if (response.data['success'] == true) {
       return (response.data['data'] as List)
@@ -48,10 +50,7 @@ class ChatService {
   Future<ChatMessage> sendMessage(String conversationId, String content) async {
     final response = await _dio.post(
       '${ApiEndpoints.baseUrl}/chat/conversations/$conversationId/messages',
-      data: {
-        'content': content,
-        'messageType': 'TEXT',
-      },
+      data: {'content': content, 'messageType': 'TEXT'},
     );
     if (response.data['success'] == true) {
       return ChatMessage.fromJson(response.data['data']);
@@ -60,17 +59,19 @@ class ChatService {
   }
 
   Future<void> markAsRead(String conversationId) async {
-    await _dio.patch('${ApiEndpoints.baseUrl}/chat/conversations/$conversationId/read');
+    await _dio.patch(
+      '${ApiEndpoints.baseUrl}/chat/conversations/$conversationId/read',
+    );
   }
 
   Future<List<ChatUser>> searchUsers(String query) async {
     if (query.trim().isEmpty) return [];
-    
+
     final response = await _dio.get(
       '${ApiEndpoints.baseUrl}/chat/users/search',
       queryParameters: {'q': query},
     );
-    
+
     if (response.data['success'] == true) {
       return (response.data['data'] as List)
           .map((json) => ChatUser.fromJson(json))

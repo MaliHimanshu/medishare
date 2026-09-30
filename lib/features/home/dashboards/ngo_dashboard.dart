@@ -59,14 +59,26 @@ class _NgoDashboardState extends State<NgoDashboard> {
     final donProv = context.watch<DonationProvider>();
 
     final sum = dash.summary;
-    final availableCount = equipProv.equipment.where((e) => e.status == 'AVAILABLE').length;
-    final pendingRequestsCount = reqProv.requests.where((r) => r.status.toUpperCase() == 'PENDING').length;
+    final availableCount = equipProv.equipment
+        .where((e) => e.status == 'AVAILABLE')
+        .length;
+    final pendingRequestsCount = reqProv.requests
+        .where((r) => r.status.toUpperCase() == 'PENDING')
+        .length;
     final donationsCount = donProv.donations.isNotEmpty
         ? donProv.donations.length.toString()
-        : (sum?['donations']?.toString() ?? sum?['completedDonations']?.toString() ?? '0');
-    final beneficiariesCount = sum?['beneficiaries']?.toString() ?? sum?['totalUsers']?.toString() ?? '1';
+        : (sum?['donations']?.toString() ??
+              sum?['completedDonations']?.toString() ??
+              '0');
+    final beneficiariesCount =
+        sum?['beneficiaries']?.toString() ??
+        sum?['totalUsers']?.toString() ??
+        '1';
 
-    final availableList = equipProv.equipment.where((e) => e.status == 'AVAILABLE').take(6).toList();
+    final availableList = equipProv.equipment
+        .where((e) => e.status == 'AVAILABLE')
+        .take(6)
+        .toList();
     final activeRequestsList = reqProv.requests.take(5).toList();
 
     return Column(
@@ -88,7 +100,7 @@ class _NgoDashboardState extends State<NgoDashboard> {
                 color: Colors.teal.withAlpha(50),
                 blurRadius: 14,
                 offset: const Offset(0, 5),
-              )
+              ),
             ],
           ),
           child: Column(
@@ -107,7 +119,10 @@ class _NgoDashboardState extends State<NgoDashboard> {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withAlpha(40),
                       borderRadius: BorderRadius.circular(20),
@@ -121,7 +136,7 @@ class _NgoDashboardState extends State<NgoDashboard> {
                         letterSpacing: 1,
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
               const SizedBox(height: 2),
@@ -145,11 +160,17 @@ class _NgoDashboardState extends State<NgoDashboard> {
               const SizedBox(height: 16),
               // Highlights
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white.withAlpha(30),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.white.withAlpha(40), width: 1),
+                  border: Border.all(
+                    color: Colors.white.withAlpha(40),
+                    width: 1,
+                  ),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -183,7 +204,9 @@ class _NgoDashboardState extends State<NgoDashboard> {
         Consumer<EmergencyAlertProvider>(
           builder: (context, emProv, _) {
             final activeCount = emProv.activeNgoAlertsCount;
-            final hasCritical = emProv.activeNgoAlerts.any((a) => a.isCritical && a.isActive);
+            final hasCritical = emProv.activeNgoAlerts.any(
+              (a) => a.isCritical && a.isActive,
+            );
 
             return Container(
               margin: const EdgeInsets.only(bottom: 24),
@@ -199,7 +222,9 @@ class _NgoDashboardState extends State<NgoDashboard> {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: (hasCritical ? Colors.red : Colors.teal).withAlpha(40),
+                    color: (hasCritical ? Colors.red : Colors.teal).withAlpha(
+                      40,
+                    ),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -216,7 +241,11 @@ class _NgoDashboardState extends State<NgoDashboard> {
                           color: Colors.white.withAlpha(40),
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(Icons.crisis_alert_rounded, color: Colors.white, size: 24),
+                        child: const Icon(
+                          Icons.crisis_alert_rounded,
+                          color: Colors.white,
+                          size: 24,
+                        ),
                       ),
                       const SizedBox(width: 12),
                       Expanded(
@@ -237,7 +266,10 @@ class _NgoDashboardState extends State<NgoDashboard> {
                               activeCount > 0
                                   ? "$activeCount hospital request(s) awaiting partner response"
                                   : "Hospital emergency equipment requests in your area",
-                              style: const TextStyle(color: Colors.white70, fontSize: 12),
+                              style: const TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                              ),
                             ),
                           ],
                         ),
@@ -251,19 +283,32 @@ class _NgoDashboardState extends State<NgoDashboard> {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          AppPageTransitions.slideRight(const NgoEmergencyAlertsScreen()),
+                          AppPageTransitions.slideRight(
+                            const NgoEmergencyAlertsScreen(),
+                          ),
                         );
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: hasCritical ? const Color(0xFFDC2626) : const Color(0xFF0F766E),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        backgroundColor: Theme.of(
+                          context,
+                        ).scaffoldBackgroundColor,
+                        foregroundColor: hasCritical
+                            ? const Color(0xFFDC2626)
+                            : const Color(0xFF0F766E),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         padding: const EdgeInsets.symmetric(vertical: 11),
                       ),
                       icon: const Icon(Icons.emergency_rounded, size: 18),
                       label: Text(
-                        activeCount > 0 ? "VIEW $activeCount EMERGENCY ALERTS 🚨" : "VIEW EMERGENCY ALERTS",
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                        activeCount > 0
+                            ? "VIEW $activeCount EMERGENCY ALERTS 🚨"
+                            : "VIEW EMERGENCY ALERTS",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
                       ),
                     ),
                   ),
@@ -282,7 +327,10 @@ class _NgoDashboardState extends State<NgoDashboard> {
                 value: availableCount.toString(),
                 icon: Icons.medical_services_rounded,
                 color: Colors.teal,
-                onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const EquipmentListScreen())),
+                onTap: () => Navigator.push(
+                  context,
+                  AppPageTransitions.slideRight(const EquipmentListScreen()),
+                ),
               ),
             ),
             const SizedBox(width: 14),
@@ -292,7 +340,10 @@ class _NgoDashboardState extends State<NgoDashboard> {
                 value: pendingRequestsCount.toString(),
                 icon: Icons.pending_actions_rounded,
                 color: Colors.orange,
-                onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const RequestScreen())),
+                onTap: () => Navigator.push(
+                  context,
+                  AppPageTransitions.slideRight(const RequestScreen()),
+                ),
               ),
             ),
           ],
@@ -306,7 +357,10 @@ class _NgoDashboardState extends State<NgoDashboard> {
                 value: donationsCount,
                 icon: Icons.volunteer_activism_rounded,
                 color: Colors.pink,
-                onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const MyDonationsScreen())),
+                onTap: () => Navigator.push(
+                  context,
+                  AppPageTransitions.slideRight(const MyDonationsScreen()),
+                ),
               ),
             ),
             const SizedBox(width: 14),
@@ -340,25 +394,37 @@ class _NgoDashboardState extends State<NgoDashboard> {
               title: "Alerts 🚨",
               icon: Icons.crisis_alert_rounded,
               color: Colors.red,
-              onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const NgoEmergencyAlertsScreen())),
+              onTap: () => Navigator.push(
+                context,
+                AppPageTransitions.slideRight(const NgoEmergencyAlertsScreen()),
+              ),
             ),
             _NgoActionButton(
               title: "Browse Equip",
               icon: Icons.search_rounded,
               color: Colors.teal,
-              onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const EquipmentListScreen())),
+              onTap: () => Navigator.push(
+                context,
+                AppPageTransitions.slideRight(const EquipmentListScreen()),
+              ),
             ),
             _NgoActionButton(
               title: "Request",
               icon: Icons.assignment_outlined,
               color: Colors.orange,
-              onTap: () => Navigator.push(context, AppPageTransitions.slideUp(const CreateRequestScreen())),
+              onTap: () => Navigator.push(
+                context,
+                AppPageTransitions.slideUp(const CreateRequestScreen()),
+              ),
             ),
             _NgoActionButton(
               title: "Donations",
               icon: Icons.favorite_border_outlined,
               color: Colors.pink,
-              onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const MyDonationsScreen())),
+              onTap: () => Navigator.push(
+                context,
+                AppPageTransitions.slideRight(const MyDonationsScreen()),
+              ),
             ),
           ],
         ),
@@ -370,11 +436,21 @@ class _NgoDashboardState extends State<NgoDashboard> {
           children: [
             Text(
               "Available Equipment ($availableCount)",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: context.textPrimaryColor),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: context.textPrimaryColor,
+              ),
             ),
             TextButton(
-              onPressed: () => Navigator.push(context, AppPageTransitions.slideRight(const EquipmentListScreen())),
-              child: const Text("View Catalog", style: TextStyle(fontWeight: FontWeight.bold)),
+              onPressed: () => Navigator.push(
+                context,
+                AppPageTransitions.slideRight(const EquipmentListScreen()),
+              ),
+              child: const Text(
+                "View Catalog",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
@@ -384,7 +460,8 @@ class _NgoDashboardState extends State<NgoDashboard> {
         else if (availableList.isEmpty)
           const _NgoEmptyBox(
             title: "No equipment available right now",
-            subtitle: "Equipment listed by donors and hospitals will appear here for allocation.",
+            subtitle:
+                "Equipment listed by donors and hospitals will appear here for allocation.",
           )
         else
           SizedBox(
@@ -407,11 +484,21 @@ class _NgoDashboardState extends State<NgoDashboard> {
           children: [
             Text(
               "Active Equipment Requests (${activeRequestsList.length})",
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: context.textPrimaryColor),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: context.textPrimaryColor,
+              ),
             ),
             TextButton(
-              onPressed: () => Navigator.push(context, AppPageTransitions.slideRight(const RequestScreen())),
-              child: const Text("Manage Requests", style: TextStyle(fontWeight: FontWeight.bold)),
+              onPressed: () => Navigator.push(
+                context,
+                AppPageTransitions.slideRight(const RequestScreen()),
+              ),
+              child: const Text(
+                "Manage Requests",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
@@ -423,7 +510,10 @@ class _NgoDashboardState extends State<NgoDashboard> {
             title: "No active equipment requests",
             subtitle: "Submit equipment requests on behalf of beneficiaries.",
             buttonText: "Create Request",
-            onAction: () => Navigator.push(context, AppPageTransitions.slideUp(const CreateRequestScreen())),
+            onAction: () => Navigator.push(
+              context,
+              AppPageTransitions.slideUp(const CreateRequestScreen()),
+            ),
           )
         else
           Column(
@@ -440,7 +530,10 @@ class _NgoDashboardState extends State<NgoDashboard> {
                   children: [
                     CircleAvatar(
                       backgroundColor: Colors.orange.withAlpha(30),
-                      child: const Icon(Icons.assignment_outlined, color: Colors.orange),
+                      child: const Icon(
+                        Icons.assignment_outlined,
+                        color: Colors.orange,
+                      ),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
@@ -449,20 +542,32 @@ class _NgoDashboardState extends State<NgoDashboard> {
                         children: [
                           Text(
                             req.equipment?.name ?? "Equipment Request",
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: context.textPrimaryColor),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                              color: context.textPrimaryColor,
+                            ),
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            req.reason.isNotEmpty ? req.reason : "No reason provided",
+                            req.reason.isNotEmpty
+                                ? req.reason
+                                : "No reason provided",
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyle(fontSize: 12, color: context.textSecondaryColor),
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: context.textSecondaryColor,
+                            ),
                           ),
                         ],
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.orange.withAlpha(30),
                         borderRadius: BorderRadius.circular(10),
@@ -493,7 +598,11 @@ class _NgoHeroStat extends StatelessWidget {
   final String value;
   final IconData icon;
 
-  const _NgoHeroStat({required this.label, required this.value, required this.icon});
+  const _NgoHeroStat({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -517,10 +626,7 @@ class _NgoHeroStat extends StatelessWidget {
         const SizedBox(height: 2),
         Text(
           label,
-          style: TextStyle(
-            color: Colors.white.withAlpha(190),
-            fontSize: 10,
-          ),
+          style: TextStyle(color: Colors.white.withAlpha(190), fontSize: 10),
         ),
       ],
     );
@@ -556,10 +662,12 @@ class _NgoStatCard extends StatelessWidget {
           border: Border.all(color: context.borderColor, width: 1.5),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withAlpha(context.isDarkMode ? 30 : 5),
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withAlpha(context.isDarkMode ? 30 : 5),
               blurRadius: 8,
               offset: const Offset(0, 3),
-            )
+            ),
           ],
         ),
         child: Row(
@@ -667,7 +775,9 @@ class _NgoEquipmentCard extends StatelessWidget {
     return InkWell(
       onTap: () => Navigator.push(
         context,
-        AppPageTransitions.slideRight(EquipmentDetailScreen(equipment: equipment)),
+        AppPageTransitions.slideRight(
+          EquipmentDetailScreen(equipment: equipment),
+        ),
       ),
       borderRadius: BorderRadius.circular(16),
       child: Container(
@@ -687,7 +797,11 @@ class _NgoEquipmentCard extends StatelessWidget {
                 CircleAvatar(
                   backgroundColor: Colors.teal.withAlpha(25),
                   radius: 16,
-                  child: const Icon(Icons.medical_services_outlined, color: Colors.teal, size: 16),
+                  child: const Icon(
+                    Icons.medical_services_outlined,
+                    color: Colors.teal,
+                    size: 16,
+                  ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -714,17 +828,28 @@ class _NgoEquipmentCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 3,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.primary.withAlpha(25),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Text(
                     "Request Info",
-                    style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 10),
+                    style: TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 10,
+                    ),
                   ),
                 ),
-                const Icon(Icons.arrow_forward_ios, size: 12, color: Colors.grey),
+                const Icon(
+                  Icons.arrow_forward_ios,
+                  size: 12,
+                  color: Colors.grey,
+                ),
               ],
             ),
           ],
@@ -761,7 +886,11 @@ class _NgoEmptyBox extends StatelessWidget {
         children: [
           Text(
             title,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: context.textPrimaryColor),
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+              color: context.textPrimaryColor,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
@@ -775,13 +904,24 @@ class _NgoEmptyBox extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
               ),
               onPressed: onAction,
-              child: Text(buttonText!, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-            )
-          ]
+              child: Text(
+                buttonText!,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

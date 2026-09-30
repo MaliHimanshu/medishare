@@ -85,14 +85,20 @@ class NotificationProvider extends ChangeNotifier {
     try {
       final response = await _dio.get(ApiEndpoints.notifications);
       if (response.data != null && response.data['success'] == true) {
-        final listData = (response.data['notifications'] ?? response.data['data']) as List<dynamic>?;
+        final listData =
+            (response.data['notifications'] ?? response.data['data'])
+                as List<dynamic>?;
         if (listData != null) {
           _notifications = listData
-              .map((item) => NotificationModel.fromJson(item as Map<String, dynamic>))
+              .map(
+                (item) =>
+                    NotificationModel.fromJson(item as Map<String, dynamic>),
+              )
               .toList();
         }
       } else {
-        _errorMessage = response.data?['message'] ?? 'Failed to load notifications.';
+        _errorMessage =
+            response.data?['message'] ?? 'Failed to load notifications.';
       }
     } on DioException catch (e) {
       _errorMessage = DioClient.handleError(e);
@@ -114,7 +120,9 @@ class NotificationProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _dio.patch('${ApiEndpoints.notifications}/$id/read');
+      final response = await _dio.patch(
+        '${ApiEndpoints.notifications}/$id/read',
+      );
       if (response.data != null && response.data['success'] == true) {
         return true;
       }

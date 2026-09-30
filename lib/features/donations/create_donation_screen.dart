@@ -16,7 +16,9 @@ class CreateDonationScreen extends StatefulWidget {
 class _CreateDonationScreenState extends State<CreateDonationScreen> {
   final _formKey = GlobalKey<FormState>();
   EquipmentModel? _selectedEquipment;
-  final TextEditingController _quantityController = TextEditingController(text: '1');
+  final TextEditingController _quantityController = TextEditingController(
+    text: '1',
+  );
   final TextEditingController _noteController = TextEditingController();
 
   @override
@@ -70,9 +72,11 @@ class _CreateDonationScreenState extends State<CreateDonationScreen> {
       } else {
         messenger.showSnackBar(
           SnackBar(
-            content: Text(donationProvider.errorMessage.isNotEmpty
-                ? donationProvider.errorMessage
-                : 'Failed to create donation.'),
+            content: Text(
+              donationProvider.errorMessage.isNotEmpty
+                  ? donationProvider.errorMessage
+                  : 'Failed to create donation.',
+            ),
             backgroundColor: AppColors.error,
           ),
         );
@@ -118,7 +122,10 @@ class _CreateDonationScreenState extends State<CreateDonationScreen> {
                   children: [
                     CircleAvatar(
                       backgroundColor: Colors.white24,
-                      child: Icon(Icons.volunteer_activism, color: Colors.white),
+                      child: Icon(
+                        Icons.volunteer_activism,
+                        color: Colors.white,
+                      ),
                     ),
                     SizedBox(width: 14),
                     Expanded(
@@ -220,7 +227,8 @@ class _CreateDonationScreenState extends State<CreateDonationScreen> {
                       }
                     });
                   },
-                  validator: (val) => val == null ? 'Please select equipment' : null,
+                  validator: (val) =>
+                      val == null ? 'Please select equipment' : null,
                 ),
 
               // Selected Equipment Details Card Preview
@@ -239,7 +247,10 @@ class _CreateDonationScreenState extends State<CreateDonationScreen> {
                       children: [
                         CircleAvatar(
                           backgroundColor: AppColors.primary.withAlpha(30),
-                          child: const Icon(Icons.inventory_2_outlined, color: AppColors.primary),
+                          child: const Icon(
+                            Icons.inventory_2_outlined,
+                            color: AppColors.primary,
+                          ),
                         ),
                         const SizedBox(width: 14),
                         Expanded(
@@ -310,7 +321,8 @@ class _CreateDonationScreenState extends State<CreateDonationScreen> {
                   if (n == null || n <= 0) {
                     return 'Quantity must be greater than 0';
                   }
-                  if (_selectedEquipment != null && n > _selectedEquipment!.quantity) {
+                  if (_selectedEquipment != null &&
+                      n > _selectedEquipment!.quantity) {
                     return 'Quantity cannot exceed available stock (${_selectedEquipment!.quantity})';
                   }
                   return null;
@@ -350,7 +362,9 @@ class _CreateDonationScreenState extends State<CreateDonationScreen> {
                 width: double.infinity,
                 height: 54,
                 child: FilledButton.icon(
-                  onPressed: donationProvider.isLoading ? null : _submitDonation,
+                  onPressed: donationProvider.isLoading
+                      ? null
+                      : _submitDonation,
                   icon: donationProvider.isLoading
                       ? const SizedBox(
                           width: 20,
@@ -362,8 +376,13 @@ class _CreateDonationScreenState extends State<CreateDonationScreen> {
                         )
                       : const Icon(Icons.volunteer_activism_outlined),
                   label: Text(
-                    donationProvider.isLoading ? 'Submitting...' : 'Submit Donation',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    donationProvider.isLoading
+                        ? 'Submitting...'
+                        : 'Submit Donation',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.primary,

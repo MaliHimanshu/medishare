@@ -12,7 +12,7 @@ void main() {
     // Advance time to allow the 2.8s splash timer to fire and complete
     await tester.pump(const Duration(seconds: 5));
     await tester.pump();
-    
+
     // App should render without crashing
     expect(find.byType(MaterialApp), findsOneWidget);
   });

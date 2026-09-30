@@ -26,7 +26,8 @@ import '../features/auth/login_screen.dart';
 class MediShareApp extends StatefulWidget {
   const MediShareApp({super.key});
 
-  static final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+  static final GlobalKey<NavigatorState> navigatorKey =
+      GlobalKey<NavigatorState>();
 
   @override
   State<MediShareApp> createState() => _MediShareAppState();
@@ -55,20 +56,42 @@ class _MediShareAppState extends State<MediShareApp> {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<AuthProvider>(create: (_) => AuthProvider()),
-        ChangeNotifierProvider<DashboardProvider>(create: (_) => DashboardProvider()),
-        ChangeNotifierProvider<EquipmentProvider>(create: (_) => EquipmentProvider()),
-        ChangeNotifierProvider<DonationProvider>(create: (_) => DonationProvider()),
-        ChangeNotifierProvider<RequestProvider>(create: (_) => RequestProvider()),
-        ChangeNotifierProvider<HospitalProvider>(create: (_) => HospitalProvider()),
-        ChangeNotifierProvider<NotificationProvider>(create: (_) => NotificationProvider()),
-        ChangeNotifierProvider<MenuChatbotProvider>(create: (_) => MenuChatbotProvider()),
-        ChangeNotifierProvider<ProfileProvider>(create: (_) => ProfileProvider()),
+        ChangeNotifierProvider<DashboardProvider>(
+          create: (_) => DashboardProvider(),
+        ),
+        ChangeNotifierProvider<EquipmentProvider>(
+          create: (_) => EquipmentProvider(),
+        ),
+        ChangeNotifierProvider<DonationProvider>(
+          create: (_) => DonationProvider(),
+        ),
+        ChangeNotifierProvider<RequestProvider>(
+          create: (_) => RequestProvider(),
+        ),
+        ChangeNotifierProvider<HospitalProvider>(
+          create: (_) => HospitalProvider(),
+        ),
+        ChangeNotifierProvider<NotificationProvider>(
+          create: (_) => NotificationProvider(),
+        ),
+        ChangeNotifierProvider<MenuChatbotProvider>(
+          create: (_) => MenuChatbotProvider(),
+        ),
+        ChangeNotifierProvider<ProfileProvider>(
+          create: (_) => ProfileProvider(),
+        ),
         ChangeNotifierProvider<ThemeProvider>(create: (_) => ThemeProvider()),
-        ChangeNotifierProvider<GlobalSearchProvider>(create: (_) => GlobalSearchProvider()),
+        ChangeNotifierProvider<GlobalSearchProvider>(
+          create: (_) => GlobalSearchProvider(),
+        ),
         ChangeNotifierProvider<RentalProvider>(create: (_) => RentalProvider()),
-        ChangeNotifierProvider<TrackingProvider>(create: (_) => TrackingProvider()),
+        ChangeNotifierProvider<TrackingProvider>(
+          create: (_) => TrackingProvider(),
+        ),
         ChangeNotifierProvider<ChatProvider>(create: (_) => ChatProvider()),
-        ChangeNotifierProvider<EmergencyAlertProvider>(create: (_) => EmergencyAlertProvider()),
+        ChangeNotifierProvider<EmergencyAlertProvider>(
+          create: (_) => EmergencyAlertProvider(),
+        ),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProv, child) {

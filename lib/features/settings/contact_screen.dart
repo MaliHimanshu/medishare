@@ -6,10 +6,7 @@ class ContactScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Contact Us"),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text("Contact Us"), centerTitle: true),
 
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -17,7 +14,6 @@ class ContactScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             Center(
               child: CircleAvatar(
                 radius: 55,
@@ -35,10 +31,7 @@ class ContactScreen extends StatelessWidget {
             const Center(
               child: Text(
                 "Contact MediShare",
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               ),
             ),
 
@@ -47,18 +40,15 @@ class ContactScreen extends StatelessWidget {
             const Center(
               child: Text(
                 "We're here to help you.",
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
+                style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
             ),
 
             const SizedBox(height: 30),
-                        //=================================
+
+            //=================================
             // CONTACT INFORMATION
             //=================================
-
             Card(
               elevation: 4,
               shape: RoundedRectangleBorder(
@@ -67,12 +57,8 @@ class ContactScreen extends StatelessWidget {
 
               child: const Column(
                 children: [
-
                   ListTile(
-                    leading: Icon(
-                      Icons.phone,
-                      color: Colors.green,
-                    ),
+                    leading: Icon(Icons.phone, color: Colors.green),
                     title: Text("Phone"),
                     subtitle: Text("+91 9876543210"),
                   ),
@@ -80,10 +66,7 @@ class ContactScreen extends StatelessWidget {
                   Divider(height: 1),
 
                   ListTile(
-                    leading: Icon(
-                      Icons.email,
-                      color: Colors.blue,
-                    ),
+                    leading: Icon(Icons.email, color: Colors.blue),
                     title: Text("Email"),
                     subtitle: Text("support@medishare.com"),
                   ),
@@ -91,10 +74,7 @@ class ContactScreen extends StatelessWidget {
                   Divider(height: 1),
 
                   ListTile(
-                    leading: Icon(
-                      Icons.language,
-                      color: Colors.deepPurple,
-                    ),
+                    leading: Icon(Icons.language, color: Colors.deepPurple),
                     title: Text("Website"),
                     subtitle: Text("www.medishare.com"),
                   ),
@@ -102,27 +82,17 @@ class ContactScreen extends StatelessWidget {
                   Divider(height: 1),
 
                   ListTile(
-                    leading: Icon(
-                      Icons.location_on,
-                      color: Colors.red,
-                    ),
+                    leading: Icon(Icons.location_on, color: Colors.red),
                     title: Text("Address"),
-                    subtitle: Text(
-                      "Ahmedabad, Gujarat, India",
-                    ),
+                    subtitle: Text("Ahmedabad, Gujarat, India"),
                   ),
 
                   Divider(height: 1),
 
                   ListTile(
-                    leading: Icon(
-                      Icons.access_time,
-                      color: Colors.orange,
-                    ),
+                    leading: Icon(Icons.access_time, color: Colors.orange),
                     title: Text("Office Hours"),
-                    subtitle: Text(
-                      "Mon - Sat : 9:00 AM - 6:00 PM",
-                    ),
+                    subtitle: Text("Mon - Sat : 9:00 AM - 6:00 PM"),
                   ),
                 ],
               ),
@@ -133,7 +103,6 @@ class ContactScreen extends StatelessWidget {
             //=================================
             // SEND MESSAGE BUTTON
             //=================================
-
             SizedBox(
               width: double.infinity,
               height: 55,
@@ -143,17 +112,13 @@ class ContactScreen extends StatelessWidget {
 
                 label: const Text(
                   "Send Message",
-                  style: TextStyle(
-                    fontSize: 18,
-                  ),
+                  style: TextStyle(fontSize: 18),
                 ),
 
                 onPressed: () {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text(
-                        "Message feature coming soon.",
-                      ),
+                      content: Text("Message feature coming soon."),
                     ),
                   );
                 },
@@ -165,7 +130,6 @@ class ContactScreen extends StatelessWidget {
             //=================================
             // BACK BUTTON
             //=================================
-
             SizedBox(
               width: double.infinity,
               height: 55,
@@ -173,12 +137,7 @@ class ContactScreen extends StatelessWidget {
               child: OutlinedButton.icon(
                 icon: const Icon(Icons.arrow_back),
 
-                label: const Text(
-                  "Back",
-                  style: TextStyle(
-                    fontSize: 18,
-                  ),
-                ),
+                label: const Text("Back", style: TextStyle(fontSize: 18)),
 
                 onPressed: () {
                   Navigator.pop(context);
@@ -187,7 +146,6 @@ class ContactScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 20),
-
           ],
         ),
       ),

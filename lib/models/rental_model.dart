@@ -52,9 +52,15 @@ class RentalModel {
 
   factory RentalModel.fromJson(Map<String, dynamic> json) {
     try {
-      final renter = json['renter'] is Map ? json['renter'] as Map<String, dynamic> : null;
-      final equipJson = json['equipment'] is Map ? json['equipment'] as Map<String, dynamic> : null;
-      final equip = equipJson != null ? EquipmentModel.fromJson(equipJson) : null;
+      final renter = json['renter'] is Map
+          ? json['renter'] as Map<String, dynamic>
+          : null;
+      final equipJson = json['equipment'] is Map
+          ? json['equipment'] as Map<String, dynamic>
+          : null;
+      final equip = equipJson != null
+          ? EquipmentModel.fromJson(equipJson)
+          : null;
 
       int parsedDays = 1;
       if (json['numberOfDays'] != null) {
@@ -63,8 +69,12 @@ class RentalModel {
 
       return RentalModel(
         id: json['id']?.toString() ?? '',
-        equipmentId: json['equipmentId']?.toString() ?? equipJson?['id']?.toString() ?? '',
-        renterId: json['renterId']?.toString() ?? renter?['id']?.toString() ?? '',
+        equipmentId:
+            json['equipmentId']?.toString() ??
+            equipJson?['id']?.toString() ??
+            '',
+        renterId:
+            json['renterId']?.toString() ?? renter?['id']?.toString() ?? '',
         startDate: json['startDate']?.toString() ?? '',
         endDate: json['endDate']?.toString() ?? '',
         numberOfDays: parsedDays,

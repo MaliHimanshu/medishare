@@ -40,7 +40,13 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
     final selectedFilter = searchProv.selectedFilter;
     final isSearching = searchProv.isSearching;
 
-    final filterOptions = ['All', 'Equipment', 'Donations', 'Requests', 'Hospitals'];
+    final filterOptions = [
+      'All',
+      'Equipment',
+      'Donations',
+      'Requests',
+      'Hospitals',
+    ];
 
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -61,7 +67,8 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
               children: [
                 MSSearchBar(
                   controller: _searchController,
-                  hintText: 'Search equipment, donations, requests, hospitals...',
+                  hintText:
+                      'Search equipment, donations, requests, hospitals...',
                   onChanged: (val) {
                     searchProv.search(val);
                   },
@@ -85,8 +92,12 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                             opt,
                             style: TextStyle(
                               fontSize: 12,
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                              color: isSelected ? AppColors.primary : context.textPrimaryColor,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : context.textPrimaryColor,
                             ),
                           ),
                           selected: isSelected,
@@ -105,7 +116,13 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
 
           // ── Body Content ──────────────────────────────────────────
           Expanded(
-            child: _buildBodyContent(context, searchProv, query, selectedFilter, isSearching),
+            child: _buildBodyContent(
+              context,
+              searchProv,
+              query,
+              selectedFilter,
+              isSearching,
+            ),
           ),
         ],
       ),
@@ -146,12 +163,16 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
             children: [
               const Icon(Icons.error_outline, size: 60, color: AppColors.error),
               const SizedBox(height: 16),
-              Text(searchProv.errorMessage, style: TextStyle(color: context.textSecondaryColor), textAlign: TextAlign.center),
+              Text(
+                searchProv.errorMessage,
+                style: TextStyle(color: context.textSecondaryColor),
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => searchProv.search(query),
                 child: const Text('Retry Search'),
-              )
+              ),
             ],
           ),
         ),
@@ -165,7 +186,8 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
         child: MSEmptyState(
           icon: Icons.search_off_outlined,
           title: 'No Results Found',
-          subtitle: 'No equipment, donations, requests, or hospitals matched "$query".',
+          subtitle:
+              'No equipment, donations, requests, or hospitals matched "$query".',
           actionLabel: 'Clear Search',
           onAction: () {
             _searchController.clear();
@@ -186,7 +208,9 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
       children: [
         // ── Equipment Results Category ─────────────────────
         if (showEquip && searchProv.equipmentResults.isNotEmpty) ...[
-          MSSectionHeader(title: 'Equipment (${searchProv.equipmentResults.length})'),
+          MSSectionHeader(
+            title: 'Equipment (${searchProv.equipmentResults.length})',
+          ),
           const SizedBox(height: 10),
           ...searchProv.equipmentResults.asMap().entries.map((entry) {
             final index = entry.key;
@@ -202,11 +226,33 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                 ),
                 child: ListTile(
                   onTap: () {
-                    Navigator.push(context, AppPageTransitions.slideRight(EquipmentDetailScreen(equipment: item)));
+                    Navigator.push(
+                      context,
+                      AppPageTransitions.slideRight(
+                        EquipmentDetailScreen(equipment: item),
+                      ),
+                    );
                   },
-                  leading: MsImage(imageUrl: item.image, width: 44, height: 44, borderRadius: BorderRadius.circular(10)),
-                  title: Text(item.name, style: TextStyle(fontWeight: FontWeight.bold, color: context.textPrimaryColor)),
-                  subtitle: Text('Category: ${item.category} • Donor: ${item.donor}', style: TextStyle(fontSize: 12, color: context.textSecondaryColor)),
+                  leading: MsImage(
+                    imageUrl: item.image,
+                    width: 44,
+                    height: 44,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  title: Text(
+                    item.name,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: context.textPrimaryColor,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Category: ${item.category} • Donor: ${item.donor}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: context.textSecondaryColor,
+                    ),
+                  ),
                   trailing: MSStatusChip(status: item.status),
                 ),
               ),
@@ -217,7 +263,9 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
 
         // ── Hospitals Results Category ─────────────────────
         if (showHosp && searchProv.hospitalResults.isNotEmpty) ...[
-          MSSectionHeader(title: 'Hospitals (${searchProv.hospitalResults.length})'),
+          MSSectionHeader(
+            title: 'Hospitals (${searchProv.hospitalResults.length})',
+          ),
           const SizedBox(height: 10),
           ...searchProv.hospitalResults.asMap().entries.map((entry) {
             final index = entry.key;
@@ -233,17 +281,47 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                 ),
                 child: ListTile(
                   onTap: () {
-                    Navigator.push(context, AppPageTransitions.slideRight(HospitalDetailScreen(hospital: item)));
+                    Navigator.push(
+                      context,
+                      AppPageTransitions.slideRight(
+                        HospitalDetailScreen(hospital: item),
+                      ),
+                    );
                   },
-                  leading: MsImage(imageUrl: item.image, width: 44, height: 44, borderRadius: BorderRadius.circular(10), placeholderIcon: Icons.local_hospital),
-                  title: Text(item.hospitalName, style: TextStyle(fontWeight: FontWeight.bold, color: context.textPrimaryColor)),
-                  subtitle: Text('${item.address}, ${item.city}', style: TextStyle(fontSize: 12, color: context.textSecondaryColor)),
+                  leading: MsImage(
+                    imageUrl: item.image,
+                    width: 44,
+                    height: 44,
+                    borderRadius: BorderRadius.circular(10),
+                    placeholderIcon: Icons.local_hospital,
+                  ),
+                  title: Text(
+                    item.hospitalName,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: context.textPrimaryColor,
+                    ),
+                  ),
+                  subtitle: Text(
+                    '${item.address}, ${item.city}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: context.textSecondaryColor,
+                    ),
+                  ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Icon(Icons.star, size: 14, color: Colors.amber),
                       const SizedBox(width: 2),
-                      Text(item.rating.toStringAsFixed(1), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Colors.amber)),
+                      Text(
+                        item.rating.toStringAsFixed(1),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
+                          color: Colors.amber,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -255,7 +333,9 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
 
         // ── Requests Results Category ──────────────────────
         if (showReq && searchProv.requestResults.isNotEmpty) ...[
-          MSSectionHeader(title: 'Requests (${searchProv.requestResults.length})'),
+          MSSectionHeader(
+            title: 'Requests (${searchProv.requestResults.length})',
+          ),
           const SizedBox(height: 10),
           ...searchProv.requestResults.asMap().entries.map((entry) {
             final index = entry.key;
@@ -272,11 +352,33 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                 ),
                 child: ListTile(
                   onTap: () {
-                    Navigator.push(context, AppPageTransitions.slideRight(RequestDetailScreen(request: item)));
+                    Navigator.push(
+                      context,
+                      AppPageTransitions.slideRight(
+                        RequestDetailScreen(request: item),
+                      ),
+                    );
                   },
-                  leading: MsImage(imageUrl: equip?.image, width: 44, height: 44, borderRadius: BorderRadius.circular(10)),
-                  title: Text(equip?.name ?? 'Requested Equipment', style: TextStyle(fontWeight: FontWeight.bold, color: context.textPrimaryColor)),
-                  subtitle: Text('Requester: ${item.requesterName} • Hospital: ${item.hospital}', style: TextStyle(fontSize: 12, color: context.textSecondaryColor)),
+                  leading: MsImage(
+                    imageUrl: equip?.image,
+                    width: 44,
+                    height: 44,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  title: Text(
+                    equip?.name ?? 'Requested Equipment',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: context.textPrimaryColor,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Requester: ${item.requesterName} • Hospital: ${item.hospital}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: context.textSecondaryColor,
+                    ),
+                  ),
                   trailing: MSStatusChip(status: item.status),
                 ),
               ),
@@ -287,7 +389,9 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
 
         // ── Donations Results Category ─────────────────────
         if (showDon && searchProv.donationResults.isNotEmpty) ...[
-          MSSectionHeader(title: 'Donations (${searchProv.donationResults.length})'),
+          MSSectionHeader(
+            title: 'Donations (${searchProv.donationResults.length})',
+          ),
           const SizedBox(height: 10),
           ...searchProv.donationResults.asMap().entries.map((entry) {
             final index = entry.key;
@@ -304,11 +408,33 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
                 ),
                 child: ListTile(
                   onTap: () {
-                    Navigator.push(context, AppPageTransitions.slideRight(DonationDetailScreen(donation: item)));
+                    Navigator.push(
+                      context,
+                      AppPageTransitions.slideRight(
+                        DonationDetailScreen(donation: item),
+                      ),
+                    );
                   },
-                  leading: MsImage(imageUrl: equip?.image, width: 44, height: 44, borderRadius: BorderRadius.circular(10)),
-                  title: Text(equip?.name ?? 'Donated Equipment', style: TextStyle(fontWeight: FontWeight.bold, color: context.textPrimaryColor)),
-                  subtitle: Text('Donor: ${item.donorName} • Hospital: ${item.hospital}', style: TextStyle(fontSize: 12, color: context.textSecondaryColor)),
+                  leading: MsImage(
+                    imageUrl: equip?.image,
+                    width: 44,
+                    height: 44,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  title: Text(
+                    equip?.name ?? 'Donated Equipment',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: context.textPrimaryColor,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Donor: ${item.donorName} • Hospital: ${item.hospital}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: context.textSecondaryColor,
+                    ),
+                  ),
                   trailing: MSStatusChip(status: item.status),
                 ),
               ),
@@ -321,9 +447,18 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
   }
 
   /// Recent Searches & Popular Suggestions View
-  Widget _buildRecentAndSuggestions(BuildContext context, GlobalSearchProvider searchProv) {
+  Widget _buildRecentAndSuggestions(
+    BuildContext context,
+    GlobalSearchProvider searchProv,
+  ) {
     final recents = searchProv.recentSearches;
-    final suggestions = ['Wheelchair', 'Oxygen Cylinder', 'Hospital Bed', 'Ventilator', 'Civil Hospital'];
+    final suggestions = [
+      'Wheelchair',
+      'Oxygen Cylinder',
+      'Hospital Bed',
+      'Ventilator',
+      'Civil Hospital',
+    ];
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -335,10 +470,20 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Recent Searches', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: context.textPrimaryColor)),
+                Text(
+                  'Recent Searches',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
+                    color: context.textPrimaryColor,
+                  ),
+                ),
                 TextButton(
                   onPressed: () => searchProv.clearRecentSearches(),
-                  child: const Text('Clear All', style: TextStyle(fontSize: 12)),
+                  child: const Text(
+                    'Clear All',
+                    style: TextStyle(fontSize: 12),
+                  ),
                 ),
               ],
             ),
@@ -348,7 +493,13 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
               runSpacing: 8,
               children: recents.map((term) {
                 return InputChip(
-                  label: Text(term, style: TextStyle(color: context.textPrimaryColor, fontSize: 12)),
+                  label: Text(
+                    term,
+                    style: TextStyle(
+                      color: context.textPrimaryColor,
+                      fontSize: 12,
+                    ),
+                  ),
                   backgroundColor: context.cardBg,
                   side: BorderSide(color: context.borderColor),
                   onPressed: () {
@@ -363,15 +514,33 @@ class _GlobalSearchScreenState extends State<GlobalSearchScreen> {
           ],
 
           // Popular Suggestions Header
-          Text('Popular Suggestions', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: context.textPrimaryColor)),
+          Text(
+            'Popular Suggestions',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: context.textPrimaryColor,
+            ),
+          ),
           const SizedBox(height: 12),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: suggestions.map((sug) {
               return ActionChip(
-                avatar: const Icon(Icons.trending_up, size: 14, color: AppColors.primary),
-                label: Text(sug, style: TextStyle(color: context.textPrimaryColor, fontSize: 12, fontWeight: FontWeight.bold)),
+                avatar: const Icon(
+                  Icons.trending_up,
+                  size: 14,
+                  color: AppColors.primary,
+                ),
+                label: Text(
+                  sug,
+                  style: TextStyle(
+                    color: context.textPrimaryColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 backgroundColor: context.cardBg,
                 side: BorderSide(color: context.borderColor),
                 onPressed: () {

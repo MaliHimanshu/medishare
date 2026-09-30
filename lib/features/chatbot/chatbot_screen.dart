@@ -87,7 +87,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           children: [
             const Icon(Icons.delete_sweep_outlined, color: AppColors.primary),
             const SizedBox(width: 10),
-            Text('Reset Chat', style: TextStyle(color: context.textPrimaryColor)),
+            Text(
+              'Reset Chat',
+              style: TextStyle(color: context.textPrimaryColor),
+            ),
           ],
         ),
         content: Text(
@@ -163,7 +166,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                       Navigator.pop(ctx);
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text("To upload equipment photos, use the 'Add Equipment' or 'Donate' flow."),
+                          content: Text(
+                            "To upload equipment photos, use the 'Add Equipment' or 'Donate' flow.",
+                          ),
                           behavior: SnackBarBehavior.floating,
                         ),
                       );
@@ -175,7 +180,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                     color: AppColors.primary,
                     onTap: () {
                       Navigator.pop(ctx);
-                      _handleSend(context.read<ThemeProvider>().selectedLanguage, "1");
+                      _handleSend(
+                        context.read<ThemeProvider>().selectedLanguage,
+                        "1",
+                      );
                     },
                   ),
                   _buildAttachmentOption(
@@ -184,7 +192,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                     color: Colors.blue,
                     onTap: () {
                       Navigator.pop(ctx);
-                      _handleSend(context.read<ThemeProvider>().selectedLanguage, "3");
+                      _handleSend(
+                        context.read<ThemeProvider>().selectedLanguage,
+                        "3",
+                      );
                     },
                   ),
                   _buildAttachmentOption(
@@ -193,7 +204,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                     color: Colors.orange,
                     onTap: () {
                       Navigator.pop(ctx);
-                      _handleSend(context.read<ThemeProvider>().selectedLanguage, "4");
+                      _handleSend(
+                        context.read<ThemeProvider>().selectedLanguage,
+                        "4",
+                      );
                     },
                   ),
                 ],
@@ -250,8 +264,14 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.copy_outlined, color: AppColors.primary),
-              title: Text("Copy Text", style: TextStyle(color: context.textPrimaryColor)),
+              leading: const Icon(
+                Icons.copy_outlined,
+                color: AppColors.primary,
+              ),
+              title: Text(
+                "Copy Text",
+                style: TextStyle(color: context.textPrimaryColor),
+              ),
               onTap: () {
                 Clipboard.setData(ClipboardData(text: message.text));
                 Navigator.pop(ctx);
@@ -266,7 +286,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             if (message.isUser)
               ListTile(
                 leading: const Icon(Icons.delete_outline, color: Colors.red),
-                title: const Text("Delete Message", style: TextStyle(color: Colors.red)),
+                title: const Text(
+                  "Delete Message",
+                  style: TextStyle(color: Colors.red),
+                ),
                 onTap: () {
                   Navigator.pop(ctx);
                   context.read<MenuChatbotProvider>().deleteMessage(message.id);
@@ -289,7 +312,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         return StatefulBuilder(
           builder: (dialogCtx, setDialogState) {
             return AlertDialog(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
               title: Row(
                 children: [
                   const Icon(Icons.send_outlined, color: AppColors.primary),
@@ -297,7 +322,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                   Expanded(
                     child: Text(
                       "Request ${equipment.name}",
-                      style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                      ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
@@ -309,7 +337,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                 children: [
                   Text(
                     "Please state the medical reason or urgency for this request:",
-                    style: TextStyle(fontSize: 13, color: context.textSecondaryColor),
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: context.textSecondaryColor,
+                    ),
                   ),
                   const SizedBox(height: 14),
                   TextField(
@@ -317,9 +348,15 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                     maxLines: 3,
                     style: TextStyle(color: context.textPrimaryColor),
                     decoration: InputDecoration(
-                      hintText: "e.g., Post-surgery home recovery for elderly patient",
-                      hintStyle: TextStyle(color: context.textHintColor, fontSize: 13),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                      hintText:
+                          "e.g., Post-surgery home recovery for elderly patient",
+                      hintStyle: TextStyle(
+                        color: context.textHintColor,
+                        fontSize: 13,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                       filled: true,
                       fillColor: context.inputBg,
                     ),
@@ -335,7 +372,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   onPressed: isSubmitting
                       ? null
@@ -344,7 +383,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                           if (reason.isEmpty) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text("Please enter a reason for the request."),
+                                content: Text(
+                                  "Please enter a reason for the request.",
+                                ),
                                 behavior: SnackBarBehavior.floating,
                               ),
                             );
@@ -367,7 +408,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                             if (success) {
                               messenger.showSnackBar(
                                 const SnackBar(
-                                  content: Text("Equipment request submitted successfully!"),
+                                  content: Text(
+                                    "Equipment request submitted successfully!",
+                                  ),
                                   backgroundColor: AppColors.success,
                                   behavior: SnackBarBehavior.floating,
                                 ),
@@ -379,7 +422,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                       ? const SizedBox(
                           width: 18,
                           height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
                         )
                       : const Text("Submit Request"),
                 ),
@@ -421,7 +467,11 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                 CircleAvatar(
                   radius: 20,
                   backgroundColor: AppColors.primary,
-                  child: const Icon(Icons.support_agent_rounded, color: Colors.white, size: 24),
+                  child: const Icon(
+                    Icons.support_agent_rounded,
+                    color: Colors.white,
+                    size: 24,
+                  ),
                 ),
                 Positioned(
                   right: -1,
@@ -458,7 +508,11 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                         ),
                       ),
                       const SizedBox(width: 4),
-                      const Icon(Icons.verified_rounded, color: AppColors.primary, size: 15),
+                      const Icon(
+                        Icons.verified_rounded,
+                        color: AppColors.primary,
+                        size: 15,
+                      ),
                     ],
                   ),
                   const Text(
@@ -481,7 +535,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             onPressed: () => _confirmClearChat(lang),
           ),
           IconButton(
-            icon: const Icon(Icons.info_outline_rounded, color: AppColors.primary),
+            icon: const Icon(
+              Icons.info_outline_rounded,
+              color: AppColors.primary,
+            ),
             tooltip: 'Support Info',
             onPressed: () => Navigator.push(
               context,
@@ -518,7 +575,11 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                 children: [
                   // Attachment Button
                   IconButton(
-                    icon: const Icon(Icons.add_circle_outline_rounded, color: AppColors.primary, size: 26),
+                    icon: const Icon(
+                      Icons.add_circle_outline_rounded,
+                      color: AppColors.primary,
+                      size: 26,
+                    ),
                     onPressed: _showAttachmentSheet,
                   ),
 
@@ -527,12 +588,23 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                     child: TextField(
                       controller: _messageController,
                       enabled: !isTyping,
-                      style: TextStyle(color: context.textPrimaryColor, fontSize: 14),
+                      style: TextStyle(
+                        color: context.textPrimaryColor,
+                        fontSize: 14,
+                      ),
                       textCapitalization: TextCapitalization.sentences,
                       decoration: InputDecoration(
-                        hintText: isTyping ? "MediShare Support is responding..." : "Type a message or enter 1-6...",
-                        hintStyle: TextStyle(color: context.textHintColor, fontSize: 13),
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        hintText: isTyping
+                            ? "MediShare Support is responding..."
+                            : "Type a message or enter 1-6...",
+                        hintStyle: TextStyle(
+                          color: context.textHintColor,
+                          fontSize: 13,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(24),
                           borderSide: BorderSide(color: context.borderColor),
@@ -543,7 +615,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(24),
-                          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                          borderSide: const BorderSide(
+                            color: AppColors.primary,
+                            width: 1.5,
+                          ),
                         ),
                         filled: true,
                         fillColor: context.inputBg,
@@ -556,15 +631,24 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                   // Send Button
                   CircleAvatar(
                     radius: 22,
-                    backgroundColor: isTyping ? Colors.grey.shade400 : AppColors.primary,
+                    backgroundColor: isTyping
+                        ? Colors.grey.shade400
+                        : AppColors.primary,
                     child: IconButton(
                       icon: isTyping
                           ? const SizedBox(
                               width: 16,
                               height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
                             )
-                          : const Icon(Icons.send_rounded, color: Colors.white, size: 18),
+                          : const Icon(
+                              Icons.send_rounded,
+                              color: Colors.white,
+                              size: 18,
+                            ),
                       onPressed: isTyping ? null : () => _handleSend(lang),
                     ),
                   ),
@@ -582,8 +666,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
-        crossAxisAlignment:
-            item.isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+        crossAxisAlignment: item.isUser
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
         children: [
           // Bubble
           _buildMessageBubble(item, lang),
@@ -597,7 +682,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           ],
 
           // Render options chips / radius choices if available
-          if (!item.isUser && item.options != null && item.options!.isNotEmpty) ...[
+          if (!item.isUser &&
+              item.options != null &&
+              item.options!.isNotEmpty) ...[
             const SizedBox(height: 8),
             _buildInteractiveOptions(item.options!, lang),
           ],
@@ -616,13 +703,17 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     final isUser = item.isUser;
 
     return Row(
-      mainAxisAlignment: isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+      mainAxisAlignment: isUser
+          ? MainAxisAlignment.end
+          : MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (!isUser) ...[
           CircleAvatar(
             radius: 16,
-            backgroundColor: item.isError ? Colors.red.shade100 : AppColors.primary.withAlpha(25),
+            backgroundColor: item.isError
+                ? Colors.red.shade100
+                : AppColors.primary.withAlpha(25),
             child: Icon(
               item.isError
                   ? Icons.warning_amber_rounded
@@ -643,8 +734,8 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                 color: isUser
                     ? null
                     : (item.isError
-                        ? Colors.red.shade900.withAlpha(40)
-                        : context.cardBg),
+                          ? Colors.red.shade900.withAlpha(40)
+                          : context.cardBg),
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(18),
                   topRight: const Radius.circular(18),
@@ -654,19 +745,24 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                 border: isUser
                     ? null
                     : Border.all(
-                        color: item.isError ? Colors.red.shade300 : context.borderColor,
+                        color: item.isError
+                            ? Colors.red.shade300
+                            : context.borderColor,
                       ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withAlpha(context.isDarkMode ? 30 : 8),
+                    color: Theme.of(context).colorScheme.onSurface.withAlpha(
+                      context.isDarkMode ? 30 : 8,
+                    ),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
                 ],
               ),
               child: Column(
-                crossAxisAlignment:
-                    isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                crossAxisAlignment: isUser
+                    ? CrossAxisAlignment.end
+                    : CrossAxisAlignment.start,
                 children: [
                   Text(
                     item.text,
@@ -675,7 +771,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                       height: 1.45,
                       color: isUser
                           ? Colors.white
-                          : (item.isError ? Colors.red : context.textPrimaryColor),
+                          : (item.isError
+                                ? Colors.red
+                                : context.textPrimaryColor),
                     ),
                   ),
                   const SizedBox(height: 5),
@@ -686,7 +784,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                         _formatTime(item.timestamp),
                         style: TextStyle(
                           fontSize: 10,
-                          color: isUser ? Colors.white70 : context.textSecondaryColor,
+                          color: isUser
+                              ? Colors.white70
+                              : context.textSecondaryColor,
                         ),
                       ),
                       if (isUser) ...[
@@ -727,22 +827,61 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           return InkWell(
             onTap: () {
               if (opt == "Open Hospital Directory") {
-                Navigator.push(context, AppPageTransitions.slideRight(const HospitalScreen()));
-              } else if (opt == "View All Requests" || opt == "View Requests" || opt == "My Requests") {
-                Navigator.push(context, AppPageTransitions.slideRight(const RequestScreen()));
-              } else if (opt == "Open Rentals & Tracking" || opt == "Open Rentals" || opt == "My Rentals" || opt == "Rental Requests" || opt == "Open Rental Requests") {
-                Navigator.push(context, AppPageTransitions.slideRight(const MyRentalsScreen()));
-              } else if (opt == "Start a Donation" || opt == "Add Equipment" || opt == "Open Add Equipment Form" || opt == "List Equipment to Donate") {
-                Navigator.push(context, AppPageTransitions.slideUp(const AddEquipmentScreen()));
-              } else if (opt == "View My Donations" || opt == "View Donations") {
-                Navigator.push(context, AppPageTransitions.slideRight(const MyDonationsScreen()));
-              } else if (opt == "View My Equipment" || opt == "Hospital Equipment") {
-                Navigator.push(context, AppPageTransitions.slideRight(const MyEquipmentScreen()));
-              } else if (opt == "Open Search Screen" || opt == "Browse Equipment to Request" || opt == "View Equipment to Rent" || opt == "Browse Equipment") {
-                Navigator.push(context, AppPageTransitions.slideRight(const GlobalSearchScreen()));
+                Navigator.push(
+                  context,
+                  AppPageTransitions.slideRight(const HospitalScreen()),
+                );
+              } else if (opt == "View All Requests" ||
+                  opt == "View Requests" ||
+                  opt == "My Requests") {
+                Navigator.push(
+                  context,
+                  AppPageTransitions.slideRight(const RequestScreen()),
+                );
+              } else if (opt == "Open Rentals & Tracking" ||
+                  opt == "Open Rentals" ||
+                  opt == "My Rentals" ||
+                  opt == "Rental Requests" ||
+                  opt == "Open Rental Requests") {
+                Navigator.push(
+                  context,
+                  AppPageTransitions.slideRight(const MyRentalsScreen()),
+                );
+              } else if (opt == "Start a Donation" ||
+                  opt == "Add Equipment" ||
+                  opt == "Open Add Equipment Form" ||
+                  opt == "List Equipment to Donate") {
+                Navigator.push(
+                  context,
+                  AppPageTransitions.slideUp(const AddEquipmentScreen()),
+                );
+              } else if (opt == "View My Donations" ||
+                  opt == "View Donations") {
+                Navigator.push(
+                  context,
+                  AppPageTransitions.slideRight(const MyDonationsScreen()),
+                );
+              } else if (opt == "View My Equipment" ||
+                  opt == "Hospital Equipment") {
+                Navigator.push(
+                  context,
+                  AppPageTransitions.slideRight(const MyEquipmentScreen()),
+                );
+              } else if (opt == "Open Search Screen" ||
+                  opt == "Browse Equipment to Request" ||
+                  opt == "View Equipment to Rent" ||
+                  opt == "Browse Equipment") {
+                Navigator.push(
+                  context,
+                  AppPageTransitions.slideRight(const GlobalSearchScreen()),
+                );
               } else if (opt == "Contact Support") {
-                Navigator.push(context, AppPageTransitions.slideRight(const HelpSupportScreen()));
-              } else if (opt == "Grant Permission / Retry" || opt == "View All Equipment") {
+                Navigator.push(
+                  context,
+                  AppPageTransitions.slideRight(const HelpSupportScreen()),
+                );
+              } else if (opt == "Grant Permission / Retry" ||
+                  opt == "View All Equipment") {
                 _handleSend(lang, "1");
               } else {
                 // Numbered option or radius option
@@ -787,7 +926,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.primary,
           side: const BorderSide(color: AppColors.primary),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         ),
         onPressed: () => _handleSend(lang, "main menu"),
@@ -835,7 +976,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         border: Border.all(color: context.borderColor),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(context.isDarkMode ? 35 : 10),
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withAlpha(context.isDarkMode ? 35 : 10),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -848,7 +991,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           Stack(
             children: [
               ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(15),
+                ),
                 child: MsImage(
                   imageUrl: eq.image,
                   height: 100,
@@ -860,7 +1005,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                 top: 8,
                 left: 8,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFF10B981),
                     borderRadius: BorderRadius.circular(6),
@@ -879,7 +1027,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                 top: 8,
                 right: 8,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: eq.mode == 'RENT'
                         ? const Color(0xFF0284C7)
@@ -931,12 +1082,20 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          const Icon(Icons.location_on_outlined, size: 12, color: AppColors.primary),
+                          const Icon(
+                            Icons.location_on_outlined,
+                            size: 12,
+                            color: AppColors.primary,
+                          ),
                           const SizedBox(width: 3),
                           Expanded(
                             child: Text(
                               distanceText,
-                              style: const TextStyle(fontSize: 10.5, color: AppColors.primary, fontWeight: FontWeight.w600),
+                              style: const TextStyle(
+                                fontSize: 10.5,
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.w600,
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -977,7 +1136,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                             style: OutlinedButton.styleFrom(
                               padding: EdgeInsets.zero,
                               side: BorderSide(color: context.borderColor),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
                             ),
                             onPressed: () {
                               Navigator.push(
@@ -989,7 +1150,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                             },
                             child: Text(
                               "Details",
-                              style: TextStyle(fontSize: 10.5, color: context.textPrimaryColor),
+                              style: TextStyle(
+                                fontSize: 10.5,
+                                color: context.textPrimaryColor,
+                              ),
                             ),
                           ),
                         ),
@@ -1007,13 +1171,16 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                                   ? const Color(0xFF0284C7)
                                   : AppColors.primary,
                               foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
                             ),
                             onPressed: () {
                               if (eq.mode == 'RENT') {
                                 showDialog(
                                   context: context,
-                                  builder: (ctx) => BookRentalDialog(equipment: eq),
+                                  builder: (ctx) =>
+                                      BookRentalDialog(equipment: eq),
                                 );
                               } else {
                                 _showRequestDialog(context, eq);
@@ -1021,7 +1188,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                             },
                             child: Text(
                               eq.mode == 'RENT' ? "Rent" : "Request",
-                              style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
@@ -1046,7 +1216,11 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           CircleAvatar(
             radius: 16,
             backgroundColor: AppColors.primary.withAlpha(25),
-            child: const Icon(Icons.support_agent_rounded, color: AppColors.primary, size: 18),
+            child: const Icon(
+              Icons.support_agent_rounded,
+              color: AppColors.primary,
+              size: 18,
+            ),
           ),
           const SizedBox(width: 8),
           Container(
@@ -1062,7 +1236,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                 const SizedBox(
                   width: 12,
                   height: 12,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.primary,
+                  ),
                 ),
                 const SizedBox(width: 8),
                 Text(

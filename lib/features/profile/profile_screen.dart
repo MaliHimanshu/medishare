@@ -49,7 +49,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Text('Confirm Logout'),
           ],
         ),
-        content: const Text('Are you sure you want to log out of your MediShare account?'),
+        content: const Text(
+          'Are you sure you want to log out of your MediShare account?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -103,7 +105,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               obscureText: true,
               decoration: InputDecoration(
                 hintText: 'Enter password',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ],
@@ -123,13 +127,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
               if (passwordCtrl.text.isEmpty) {
                 messenger.showSnackBar(
-                  const SnackBar(content: Text('Password required to delete account.')),
+                  const SnackBar(
+                    content: Text('Password required to delete account.'),
+                  ),
                 );
                 return;
               }
 
               Navigator.pop(ctx);
-              final success = await profileProvider.deleteAccount(passwordCtrl.text);
+              final success = await profileProvider.deleteAccount(
+                passwordCtrl.text,
+              );
 
               if (mounted) {
                 if (success) {
@@ -227,17 +235,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       children: [
                         ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: Colors.blue.withAlpha(context.isDarkMode ? 40 : 30),
-                            child: const Icon(Icons.person_outline, color: Colors.blue),
+                            backgroundColor: Colors.blue.withAlpha(
+                              context.isDarkMode ? 40 : 30,
+                            ),
+                            child: const Icon(
+                              Icons.person_outline,
+                              color: Colors.blue,
+                            ),
                           ),
-                          title: Text('Edit Profile', style: TextStyle(color: context.textPrimaryColor)),
-                          subtitle: Text('Update name, phone, address, and photo', style: TextStyle(color: context.textSecondaryColor)),
+                          title: Text(
+                            'Edit Profile',
+                            style: TextStyle(color: context.textPrimaryColor),
+                          ),
+                          subtitle: Text(
+                            'Update name, phone, address, and photo',
+                            style: TextStyle(color: context.textSecondaryColor),
+                          ),
                           trailing: const Icon(Icons.chevron_right, size: 20),
                           onTap: () async {
                             if (user != null) {
                               final res = await Navigator.push(
                                 context,
-                                AppPageTransitions.slideRight(EditProfileScreen(user: user)),
+                                AppPageTransitions.slideRight(
+                                  EditProfileScreen(user: user),
+                                ),
                               );
                               if (res == true && mounted) {
                                 profileProvider.fetchProfile();
@@ -248,64 +269,116 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Divider(height: 1, color: context.borderColor),
                         ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: Colors.orange.withAlpha(context.isDarkMode ? 40 : 30),
-                            child: const Icon(Icons.lock_outline, color: Colors.orange),
+                            backgroundColor: Colors.orange.withAlpha(
+                              context.isDarkMode ? 40 : 30,
+                            ),
+                            child: const Icon(
+                              Icons.lock_outline,
+                              color: Colors.orange,
+                            ),
                           ),
-                          title: Text('Change Password', style: TextStyle(color: context.textPrimaryColor)),
-                          subtitle: Text('Update your security password', style: TextStyle(color: context.textSecondaryColor)),
+                          title: Text(
+                            'Change Password',
+                            style: TextStyle(color: context.textPrimaryColor),
+                          ),
+                          subtitle: Text(
+                            'Update your security password',
+                            style: TextStyle(color: context.textSecondaryColor),
+                          ),
                           trailing: const Icon(Icons.chevron_right, size: 20),
                           onTap: () {
                             Navigator.push(
                               context,
-                              AppPageTransitions.slideRight(const ChangePasswordScreen()),
+                              AppPageTransitions.slideRight(
+                                const ChangePasswordScreen(),
+                              ),
                             );
                           },
                         ),
                         Divider(height: 1, color: context.borderColor),
                         ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: Colors.purple.withAlpha(context.isDarkMode ? 40 : 30),
-                            child: const Icon(Icons.settings_outlined, color: Colors.purple),
+                            backgroundColor: Colors.purple.withAlpha(
+                              context.isDarkMode ? 40 : 30,
+                            ),
+                            child: const Icon(
+                              Icons.settings_outlined,
+                              color: Colors.purple,
+                            ),
                           ),
-                          title: Text('App Settings', style: TextStyle(color: context.textPrimaryColor)),
-                          subtitle: Text('Theme, notifications, and language', style: TextStyle(color: context.textSecondaryColor)),
+                          title: Text(
+                            'App Settings',
+                            style: TextStyle(color: context.textPrimaryColor),
+                          ),
+                          subtitle: Text(
+                            'Theme, notifications, and language',
+                            style: TextStyle(color: context.textSecondaryColor),
+                          ),
                           trailing: const Icon(Icons.chevron_right, size: 20),
                           onTap: () {
                             Navigator.push(
                               context,
-                              AppPageTransitions.slideRight(const SettingsScreen()),
+                              AppPageTransitions.slideRight(
+                                const SettingsScreen(),
+                              ),
                             );
                           },
                         ),
                         Divider(height: 1, color: context.borderColor),
                         ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: Colors.teal.withAlpha(context.isDarkMode ? 40 : 30),
-                            child: const Icon(Icons.help_outline, color: Colors.teal),
+                            backgroundColor: Colors.teal.withAlpha(
+                              context.isDarkMode ? 40 : 30,
+                            ),
+                            child: const Icon(
+                              Icons.help_outline,
+                              color: Colors.teal,
+                            ),
                           ),
-                          title: Text('Help & Support', style: TextStyle(color: context.textPrimaryColor)),
-                          subtitle: Text('FAQs, support contact, and feedback', style: TextStyle(color: context.textSecondaryColor)),
+                          title: Text(
+                            'Help & Support',
+                            style: TextStyle(color: context.textPrimaryColor),
+                          ),
+                          subtitle: Text(
+                            'FAQs, support contact, and feedback',
+                            style: TextStyle(color: context.textSecondaryColor),
+                          ),
                           trailing: const Icon(Icons.chevron_right, size: 20),
                           onTap: () {
                             Navigator.push(
                               context,
-                              AppPageTransitions.slideRight(const HelpSupportScreen()),
+                              AppPageTransitions.slideRight(
+                                const HelpSupportScreen(),
+                              ),
                             );
                           },
                         ),
                         Divider(height: 1, color: context.borderColor),
                         ListTile(
                           leading: CircleAvatar(
-                            backgroundColor: Colors.indigo.withAlpha(context.isDarkMode ? 40 : 30),
-                            child: const Icon(Icons.info_outline, color: Colors.indigo),
+                            backgroundColor: Colors.indigo.withAlpha(
+                              context.isDarkMode ? 40 : 30,
+                            ),
+                            child: const Icon(
+                              Icons.info_outline,
+                              color: Colors.indigo,
+                            ),
                           ),
-                          title: Text('About MediShare', style: TextStyle(color: context.textPrimaryColor)),
-                          subtitle: Text('Version, licenses, privacy policy', style: TextStyle(color: context.textSecondaryColor)),
+                          title: Text(
+                            'About MediShare',
+                            style: TextStyle(color: context.textPrimaryColor),
+                          ),
+                          subtitle: Text(
+                            'Version, licenses, privacy policy',
+                            style: TextStyle(color: context.textSecondaryColor),
+                          ),
                           trailing: const Icon(Icons.chevron_right, size: 20),
                           onTap: () {
                             Navigator.push(
                               context,
-                              AppPageTransitions.slideRight(const AboutScreen()),
+                              AppPageTransitions.slideRight(
+                                const AboutScreen(),
+                              ),
                             );
                           },
                         ),
@@ -318,7 +391,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   // Logout Card
                   Card(
                     elevation: 0,
-                    color: Colors.red.shade50.withAlpha(context.isDarkMode ? 40 : 255),
+                    color: Colors.red.shade50.withAlpha(
+                      context.isDarkMode ? 40 : 255,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                       side: BorderSide(color: Colors.red.shade200),
@@ -334,9 +409,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       subtitle: Text(
                         'Sign out from this device safely',
-                        style: TextStyle(color: context.isDarkMode ? Colors.white70 : Colors.red.shade900),
+                        style: TextStyle(
+                          color: context.isDarkMode
+                              ? Colors.white70
+                              : Colors.red.shade900,
+                        ),
                       ),
-                      trailing: const Icon(Icons.chevron_right, color: Colors.red),
+                      trailing: const Icon(
+                        Icons.chevron_right,
+                        color: Colors.red,
+                      ),
                       onTap: _showLogoutDialog,
                     ),
                   ),
@@ -347,7 +429,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Center(
                     child: TextButton.icon(
                       onPressed: _showDeleteAccountDialog,
-                      icon: const Icon(Icons.delete_forever_outlined, size: 18, color: Colors.grey),
+                      icon: const Icon(
+                        Icons.delete_forever_outlined,
+                        size: 18,
+                        color: Colors.grey,
+                      ),
                       label: const Text(
                         'Delete Account',
                         style: TextStyle(color: Colors.grey, fontSize: 13),
@@ -382,7 +468,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         border: Border.all(color: context.borderColor),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withAlpha(context.isDarkMode ? 30 : 6),
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withAlpha(context.isDarkMode ? 30 : 6),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -404,29 +492,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 8,
+                      runSpacing: 4,
                       children: [
-                        Expanded(
-                          child: Text(
-                            user?.name ?? 'MediShare Member',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: context.textPrimaryColor,
-                            ),
+                        Text(
+                          user?.name ?? 'MediShare Member',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: context.textPrimaryColor,
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
-                            color: Colors.teal.shade50.withAlpha(context.isDarkMode ? 40 : 255),
+                            color: Colors.teal.shade50.withAlpha(
+                              context.isDarkMode ? 40 : 255,
+                            ),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(color: Colors.teal.shade200),
                           ),
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.verified, size: 12, color: Colors.teal),
+                              Icon(
+                                Icons.verified,
+                                size: 12,
+                                color: Colors.teal,
+                              ),
                               SizedBox(width: 3),
                               Text(
                                 'ACTIVE',
@@ -453,7 +551,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: roleColor.withAlpha(25),
                             borderRadius: BorderRadius.circular(12),
@@ -469,12 +570,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ),
                         const SizedBox(width: 10),
-                        const Icon(Icons.calendar_today, size: 12, color: Colors.grey),
+                        const Icon(
+                          Icons.calendar_today,
+                          size: 12,
+                          color: Colors.grey,
+                        ),
                         const SizedBox(width: 4),
                         Expanded(
                           child: Text(
                             'Member since Jul 2026',
-                            style: const TextStyle(fontSize: 11, color: Colors.grey),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey,
+                            ),
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
                           ),
@@ -494,10 +602,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
           // ── Phone Number & Verification Badge ─────────────────
           Row(
             children: [
-              const Icon(Icons.phone_outlined, size: 16, color: AppColors.primary),
+              const Icon(
+                Icons.phone_outlined,
+                size: 16,
+                color: AppColors.primary,
+              ),
               const SizedBox(width: 8),
               Text(
-                (user?.phone != null && user!.phone!.isNotEmpty) ? user.phone! : 'Phone not provided',
+                (user?.phone != null && user!.phone!.isNotEmpty)
+                    ? user.phone!
+                    : 'Phone not provided',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
@@ -508,11 +622,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
               if (user?.phone != null && user!.phone!.isNotEmpty) ...[
                 if (user.phoneVerified)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 2,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.green.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.green.withValues(alpha: 0.3)),
+                      border: Border.all(
+                        color: Colors.green.withValues(alpha: 0.3),
+                      ),
                     ),
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
@@ -521,7 +640,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         SizedBox(width: 4),
                         Text(
                           'Verified',
-                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.green),
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.green,
+                          ),
                         ),
                       ],
                     ),
@@ -536,34 +659,53 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       if (success) {
                         Navigator.push(
                           context,
-                          AppPageTransitions.slideRight(OtpVerificationScreen(phone: user.phone!)),
+                          AppPageTransitions.slideRight(
+                            OtpVerificationScreen(phone: user.phone!),
+                          ),
                         );
                       } else {
                         messenger.showSnackBar(
                           SnackBar(
-                            content: Text(auth.errorMessage ?? 'Failed to send OTP'),
+                            content: Text(
+                              auth.errorMessage ?? 'Failed to send OTP',
+                            ),
                             backgroundColor: AppColors.error,
                             behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
                         );
                       }
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.orange.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.orange.withValues(alpha: 0.4)),
+                        border: Border.all(
+                          color: Colors.orange.withValues(alpha: 0.4),
+                        ),
                       ),
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.warning_amber_rounded, size: 12, color: Colors.orange),
+                          Icon(
+                            Icons.warning_amber_rounded,
+                            size: 12,
+                            color: Colors.orange,
+                          ),
                           SizedBox(width: 3),
                           Text(
                             'Verify Now',
-                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.orange),
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.orange,
+                            ),
                           ),
                         ],
                       ),
@@ -575,7 +717,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     if (user != null) {
                       final res = await Navigator.push(
                         context,
-                        AppPageTransitions.slideRight(EditProfileScreen(user: user)),
+                        AppPageTransitions.slideRight(
+                          EditProfileScreen(user: user),
+                        ),
                       );
                       if (res == true && mounted) {
                         context.read<ProfileProvider>().fetchProfile();
@@ -584,18 +728,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   },
                   child: const Text(
                     '+ Add Phone',
-                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.primary),
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.primary,
+                    ),
                   ),
                 ),
               ],
               if (user?.address != null && user!.address!.isNotEmpty) ...[
                 const Spacer(),
-                const Icon(Icons.location_on_outlined, size: 16, color: Colors.red),
+                const Icon(
+                  Icons.location_on_outlined,
+                  size: 16,
+                  color: Colors.red,
+                ),
                 const SizedBox(width: 4),
                 Flexible(
                   child: Text(
                     user.address!,
-                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: context.textSecondaryColor),
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: context.textSecondaryColor,
+                    ),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
                   ),
@@ -629,17 +785,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
           mainAxisSpacing: 12,
           childAspectRatio: 1.6,
           children: [
-            _buildStatCard(context, 'Equipment Listed', provider.equipmentCount.toString(), Icons.inventory_2_outlined, Colors.blue),
-            _buildStatCard(context, 'Total Donations', provider.donationsCount.toString(), Icons.volunteer_activism_outlined, Colors.pink),
-            _buildStatCard(context, 'Total Requests', provider.requestsCount.toString(), Icons.assignment_outlined, Colors.orange),
-            _buildStatCard(context, 'Hospitals Connected', provider.hospitalsCount.toString(), Icons.local_hospital_outlined, Colors.teal),
+            _buildStatCard(
+              context,
+              'Equipment Listed',
+              provider.equipmentCount.toString(),
+              Icons.inventory_2_outlined,
+              Colors.blue,
+            ),
+            _buildStatCard(
+              context,
+              'Total Donations',
+              provider.donationsCount.toString(),
+              Icons.volunteer_activism_outlined,
+              Colors.pink,
+            ),
+            _buildStatCard(
+              context,
+              'Total Requests',
+              provider.requestsCount.toString(),
+              Icons.assignment_outlined,
+              Colors.orange,
+            ),
+            _buildStatCard(
+              context,
+              'Hospitals Connected',
+              provider.hospitalsCount.toString(),
+              Icons.local_hospital_outlined,
+              Colors.teal,
+            ),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildStatCard(BuildContext context, String label, String value, IconData icon, Color color) {
+  Widget _buildStatCard(
+    BuildContext context,
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Card(
       elevation: 0,
       color: context.cardBg,
@@ -702,7 +888,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             color: Colors.teal,
             title: 'My Equipment',
             subtitle: 'Manage your listed equipment & availability',
-            onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const MyEquipmentScreen())),
+            onTap: () => Navigator.push(
+              context,
+              AppPageTransitions.slideRight(const MyEquipmentScreen()),
+            ),
           ),
           _buildRoleTile(
             context,
@@ -710,7 +899,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             color: Colors.pink,
             title: 'Donations',
             subtitle: 'View donated items & community contributions',
-            onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const MyDonationsScreen())),
+            onTap: () => Navigator.push(
+              context,
+              AppPageTransitions.slideRight(const MyDonationsScreen()),
+            ),
           ),
           _buildRoleTile(
             context,
@@ -718,7 +910,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             color: Colors.blue,
             title: 'Rentals & Requests',
             subtitle: 'Manage equipment rentals and approve requests',
-            onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const MyRentalsScreen())),
+            onTap: () => Navigator.push(
+              context,
+              AppPageTransitions.slideRight(const MyRentalsScreen()),
+            ),
           ),
         ];
         break;
@@ -732,7 +927,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             color: Colors.orange,
             title: 'My Requests',
             subtitle: 'Track status of your medical equipment requests',
-            onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const RequestScreen())),
+            onTap: () => Navigator.push(
+              context,
+              AppPageTransitions.slideRight(const RequestScreen()),
+            ),
           ),
           _buildRoleTile(
             context,
@@ -740,17 +938,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
             color: Colors.blue,
             title: 'My Rentals',
             subtitle: 'View active rentals, return dates & security deposits',
-            onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const MyRentalsScreen())),
+            onTap: () => Navigator.push(
+              context,
+              AppPageTransitions.slideRight(const MyRentalsScreen()),
+            ),
           ),
           _buildRoleTile(
             context,
             icon: Icons.medical_services_outlined,
             color: Colors.teal,
             title: 'Equipment Catalog & Needs',
-            subtitle: user?.equipmentPreference != null && user!.equipmentPreference!.isNotEmpty
+            subtitle:
+                user?.equipmentPreference != null &&
+                    user!.equipmentPreference!.isNotEmpty
                 ? 'Preference: ${user.equipmentPreference}'
                 : 'Browse and search available equipment',
-            onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const EquipmentListScreen())),
+            onTap: () => Navigator.push(
+              context,
+              AppPageTransitions.slideRight(const EquipmentListScreen()),
+            ),
           ),
         ];
         break;
@@ -763,7 +969,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             icon: Icons.business_outlined,
             color: Colors.teal,
             title: 'NGO Details',
-            subtitle: '${user?.organizationName ?? "Partner NGO"} • Reg: ${user?.registrationNumber ?? "N/A"}',
+            subtitle:
+                '${user?.organizationName ?? "Partner NGO"} • Reg: ${user?.registrationNumber ?? "N/A"}',
             onTap: () async {
               if (user != null) {
                 final res = await Navigator.push(
@@ -782,7 +989,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             color: Colors.purple,
             title: 'Beneficiaries & Requests',
             subtitle: 'Manage community equipment requests & distributions',
-            onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const RequestScreen())),
+            onTap: () => Navigator.push(
+              context,
+              AppPageTransitions.slideRight(const RequestScreen()),
+            ),
           ),
           _buildRoleTile(
             context,
@@ -790,7 +1000,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             color: Colors.pink,
             title: 'Donations',
             subtitle: 'Receive & facilitate equipment donations',
-            onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const MyDonationsScreen())),
+            onTap: () => Navigator.push(
+              context,
+              AppPageTransitions.slideRight(const MyDonationsScreen()),
+            ),
           ),
         ];
         break;
@@ -803,7 +1016,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             icon: Icons.local_hospital_outlined,
             color: const Color(0xFF7C3AED),
             title: 'Hospital Details',
-            subtitle: '${user?.organizationName ?? "Hospital"} • License: ${user?.registrationNumber ?? "N/A"}',
+            subtitle:
+                '${user?.organizationName ?? "Hospital"} • License: ${user?.registrationNumber ?? "N/A"}',
             onTap: () async {
               if (user != null) {
                 final res = await Navigator.push(
@@ -822,7 +1036,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             color: Colors.teal,
             title: 'Hospital Equipment',
             subtitle: 'Manage institution equipment & clinical devices',
-            onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const MyEquipmentScreen())),
+            onTap: () => Navigator.push(
+              context,
+              AppPageTransitions.slideRight(const MyEquipmentScreen()),
+            ),
           ),
           _buildRoleTile(
             context,
@@ -830,7 +1047,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             color: Colors.orange,
             title: 'Equipment Requests',
             subtitle: 'View hospital procurement & urgent requests',
-            onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const RequestScreen())),
+            onTap: () => Navigator.push(
+              context,
+              AppPageTransitions.slideRight(const RequestScreen()),
+            ),
           ),
           _buildRoleTile(
             context,
@@ -838,7 +1058,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             color: Colors.blue,
             title: 'Rentals',
             subtitle: 'Manage institutional rentals and leased units',
-            onTap: () => Navigator.push(context, AppPageTransitions.slideRight(const MyRentalsScreen())),
+            onTap: () => Navigator.push(
+              context,
+              AppPageTransitions.slideRight(const MyRentalsScreen()),
+            ),
           ),
         ];
         break;
@@ -903,10 +1126,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       subtitle: Text(
         subtitle,
-        style: TextStyle(
-          color: context.textSecondaryColor,
-          fontSize: 12,
-        ),
+        style: TextStyle(color: context.textSecondaryColor, fontSize: 12),
       ),
       trailing: const Icon(Icons.chevron_right, size: 20),
       onTap: onTap,

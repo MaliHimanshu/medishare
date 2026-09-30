@@ -107,12 +107,16 @@ class ProfileProvider extends ChangeNotifier {
         'name': name,
         'phone': phone,
         'address': address,
-        if (profileImage != null && profileImage.isNotEmpty) 'profileImage': profileImage,
+        if (profileImage != null && profileImage.isNotEmpty)
+          'profileImage': profileImage,
       };
-      if (organizationName != null) payload['organizationName'] = organizationName;
-      if (registrationNumber != null) payload['registrationNumber'] = registrationNumber;
+      if (organizationName != null)
+        payload['organizationName'] = organizationName;
+      if (registrationNumber != null)
+        payload['registrationNumber'] = registrationNumber;
       if (contactPerson != null) payload['contactPerson'] = contactPerson;
-      if (equipmentPreference != null) payload['equipmentPreference'] = equipmentPreference;
+      if (equipmentPreference != null)
+        payload['equipmentPreference'] = equipmentPreference;
 
       final response = await _dio.put(ApiEndpoints.profile, data: payload);
       if (response.data != null && response.data['success'] == true) {
@@ -120,7 +124,8 @@ class ProfileProvider extends ChangeNotifier {
         _user = UserModel.fromJson(updatedData);
         return true;
       } else {
-        _errorMessage = response.data?['message'] ?? 'Failed to update profile.';
+        _errorMessage =
+            response.data?['message'] ?? 'Failed to update profile.';
         return false;
       }
     } on DioException catch (e) {
@@ -145,16 +150,17 @@ class ProfileProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final payload = {
-        'oldPassword': oldPassword,
-        'newPassword': newPassword,
-      };
+      final payload = {'oldPassword': oldPassword, 'newPassword': newPassword};
 
-      final response = await _dio.put('${ApiEndpoints.profile}/change-password', data: payload);
+      final response = await _dio.put(
+        '${ApiEndpoints.profile}/change-password',
+        data: payload,
+      );
       if (response.data != null && response.data['success'] == true) {
         return true;
       } else {
-        _errorMessage = response.data?['message'] ?? 'Failed to change password.';
+        _errorMessage =
+            response.data?['message'] ?? 'Failed to change password.';
         return false;
       }
     } on DioException catch (e) {
@@ -177,7 +183,10 @@ class ProfileProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _dio.delete(ApiEndpoints.profile, data: {'password': password});
+      final response = await _dio.delete(
+        ApiEndpoints.profile,
+        data: {'password': password},
+      );
       if (response.data != null && response.data['success'] == true) {
         return true;
       }

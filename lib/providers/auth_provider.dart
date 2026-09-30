@@ -13,20 +13,20 @@ class AuthProvider extends ChangeNotifier {
   // ── State ─────────────────────────────────────────────
   AuthStatus _status = AuthStatus.initial;
   UserModel? _user;
-  String?    _errorMessage;
-  bool       _isOtpSending = false;
-  bool       _isOtpVerifying = false;
-  bool       _isPasswordResetting = false;
+  String? _errorMessage;
+  bool _isOtpSending = false;
+  bool _isOtpVerifying = false;
+  bool _isPasswordResetting = false;
 
   // ── Getters ───────────────────────────────────────────
-  AuthStatus get status             => _status;
-  UserModel? get user               => _user;
-  String?    get errorMessage       => _errorMessage;
-  bool       get isAuthenticated    => _status == AuthStatus.authenticated;
-  bool       get isLoading          => _status == AuthStatus.loading;
-  bool       get isOtpSending       => _isOtpSending;
-  bool       get isOtpVerifying     => _isOtpVerifying;
-  bool       get isPasswordResetting=> _isPasswordResetting;
+  AuthStatus get status => _status;
+  UserModel? get user => _user;
+  String? get errorMessage => _errorMessage;
+  bool get isAuthenticated => _status == AuthStatus.authenticated;
+  bool get isLoading => _status == AuthStatus.loading;
+  bool get isOtpSending => _isOtpSending;
+  bool get isOtpVerifying => _isOtpVerifying;
+  bool get isPasswordResetting => _isPasswordResetting;
 
   // ── Init: Check existing JWT on app launch ────────────
   Future<void> checkAuthStatus() async {
@@ -87,15 +87,15 @@ class AuthProvider extends ChangeNotifier {
     _errorMessage = null;
     try {
       final result = await _authService.register(
-        name:                 name,
-        email:                email,
-        password:             password,
-        role:                 role,
-        phone:                phone,
-        address:              address,
-        organizationName:    organizationName,
-        registrationNumber:  registrationNumber,
-        contactPerson:       contactPerson,
+        name: name,
+        email: email,
+        password: password,
+        role: role,
+        phone: phone,
+        address: address,
+        organizationName: organizationName,
+        registrationNumber: registrationNumber,
+        contactPerson: contactPerson,
         equipmentPreference: equipmentPreference,
       );
       _user = result.user;
@@ -189,7 +189,11 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<String?> verifyForgotPasswordOtp(String target, String type, String otp) async {
+  Future<String?> verifyForgotPasswordOtp(
+    String target,
+    String type,
+    String otp,
+  ) async {
     if (_isOtpVerifying) return null;
     _isOtpVerifying = true;
     _errorMessage = null;
@@ -205,13 +209,23 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> resetPassword(String target, String type, String resetToken, String newPassword) async {
+  Future<bool> resetPassword(
+    String target,
+    String type,
+    String resetToken,
+    String newPassword,
+  ) async {
     if (_isPasswordResetting) return false;
     _isPasswordResetting = true;
     _errorMessage = null;
     notifyListeners();
     try {
-      return await _authService.resetPassword(target, type, resetToken, newPassword);
+      return await _authService.resetPassword(
+        target,
+        type,
+        resetToken,
+        newPassword,
+      );
     } catch (e) {
       _errorMessage = e.toString().replaceAll('Exception: ', '');
       return false;

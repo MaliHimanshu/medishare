@@ -77,10 +77,18 @@ class LiveTrackingSessionModel {
   });
 
   factory LiveTrackingSessionModel.fromJson(Map<String, dynamic> json) {
-    final equip = json['equipment'] is Map ? json['equipment'] as Map<String, dynamic> : <String, dynamic>{};
-    final renter = json['renter'] is Map ? json['renter'] as Map<String, dynamic> : <String, dynamic>{};
-    final owner = json['owner'] is Map ? json['owner'] as Map<String, dynamic> : <String, dynamic>{};
-    final latestJson = json['latest'] is Map ? json['latest'] as Map<String, dynamic> : null;
+    final equip = json['equipment'] is Map
+        ? json['equipment'] as Map<String, dynamic>
+        : <String, dynamic>{};
+    final renter = json['renter'] is Map
+        ? json['renter'] as Map<String, dynamic>
+        : <String, dynamic>{};
+    final owner = json['owner'] is Map
+        ? json['owner'] as Map<String, dynamic>
+        : <String, dynamic>{};
+    final latestJson = json['latest'] is Map
+        ? json['latest'] as Map<String, dynamic>
+        : null;
 
     return LiveTrackingSessionModel(
       rentalId: json['rentalId']?.toString() ?? '',
@@ -89,8 +97,12 @@ class LiveTrackingSessionModel {
       equipmentId: equip['id']?.toString() ?? '',
       equipmentName: equip['name']?.toString() ?? '',
       equipmentCategory: equip['category']?.toString() ?? '',
-      equipmentLatitude: equip['latitude'] != null ? _toDouble(equip['latitude']) : null,
-      equipmentLongitude: equip['longitude'] != null ? _toDouble(equip['longitude']) : null,
+      equipmentLatitude: equip['latitude'] != null
+          ? _toDouble(equip['latitude'])
+          : null,
+      equipmentLongitude: equip['longitude'] != null
+          ? _toDouble(equip['longitude'])
+          : null,
       equipmentAddress: equip['address']?.toString(),
       renterId: renter['id']?.toString() ?? '',
       renterName: renter['name']?.toString() ?? '',
@@ -98,12 +110,14 @@ class LiveTrackingSessionModel {
       ownerId: owner['id']?.toString() ?? '',
       ownerName: owner['name']?.toString() ?? '',
       ownerPhone: owner['phone']?.toString() ?? '',
-      latestPing: latestJson != null ? TrackingPingModel.fromJson({
-        'id': 'latest',
-        'latitude': latestJson['latitude'],
-        'longitude': latestJson['longitude'],
-        'recordedAt': latestJson['recordedAt'],
-      }) : null,
+      latestPing: latestJson != null
+          ? TrackingPingModel.fromJson({
+              'id': 'latest',
+              'latitude': latestJson['latitude'],
+              'longitude': latestJson['longitude'],
+              'recordedAt': latestJson['recordedAt'],
+            })
+          : null,
     );
   }
 

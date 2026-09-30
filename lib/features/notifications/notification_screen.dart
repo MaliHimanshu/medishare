@@ -99,7 +99,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Delete Notification'),
-        content: const Text('Are you sure you want to delete this notification?'),
+        content: const Text(
+          'Are you sure you want to delete this notification?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -111,7 +113,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
               final messenger = ScaffoldMessenger.of(context);
               Navigator.pop(ctx);
 
-              final success = await provider.deleteNotification(notification.id);
+              final success = await provider.deleteNotification(
+                notification.id,
+              );
 
               if (mounted) {
                 if (success) {
@@ -223,34 +227,40 @@ class _NotificationScreenState extends State<NotificationScreen> {
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
-                    children: [
-                      'All',
-                      'Equipment',
-                      'Donations',
-                      'Requests',
-                      'Hospitals',
-                      'AI',
-                    ].map((mod) {
-                      final isSelected = notificationProvider.selectedFilter == mod;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: FilterChip(
-                          label: Text(
-                            mod == 'All' ? 'All Modules' : mod,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                              color: isSelected ? AppColors.primary : context.textPrimaryColor,
+                    children:
+                        [
+                          'All',
+                          'Equipment',
+                          'Donations',
+                          'Requests',
+                          'Hospitals',
+                          'AI',
+                        ].map((mod) {
+                          final isSelected =
+                              notificationProvider.selectedFilter == mod;
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: FilterChip(
+                              label: Text(
+                                mod == 'All' ? 'All Modules' : mod,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                  color: isSelected
+                                      ? AppColors.primary
+                                      : context.textPrimaryColor,
+                                ),
+                              ),
+                              selected: isSelected,
+                              selectedColor: AppColors.primary.withAlpha(35),
+                              onSelected: (val) {
+                                notificationProvider.setFilter(mod);
+                              },
                             ),
-                          ),
-                          selected: isSelected,
-                          selectedColor: AppColors.primary.withAlpha(35),
-                          onSelected: (val) {
-                            notificationProvider.setFilter(mod);
-                          },
-                        ),
-                      );
-                    }).toList(),
+                          );
+                        }).toList(),
                   ),
                 ),
               ],
@@ -270,7 +280,9 @@ class _NotificationScreenState extends State<NotificationScreen> {
   }
 
   Widget _buildContent(
-      NotificationProvider notificationProvider, List<NotificationModel> filtered) {
+    NotificationProvider notificationProvider,
+    List<NotificationModel> filtered,
+  ) {
     if (notificationProvider.isLoading) {
       return ListView.builder(
         padding: const EdgeInsets.all(16),
@@ -297,7 +309,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
               Text(
                 notificationProvider.errorMessage,
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14, color: context.textSecondaryColor),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: context.textSecondaryColor,
+                ),
               ),
               const SizedBox(height: 20),
               ElevatedButton.icon(
@@ -343,7 +358,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
               Text(
                 'All caught up! New updates regarding equipment, donations, and requests will appear here.',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 13, color: context.textSecondaryColor),
+                style: TextStyle(
+                  fontSize: 13,
+                  color: context.textSecondaryColor,
+                ),
               ),
             ],
           ),
@@ -362,141 +380,161 @@ class _NotificationScreenState extends State<NotificationScreen> {
         return AnimatedListItem(
           index: index,
           child: Dismissible(
-          key: Key('notif_${item.id}'),
-          direction: DismissDirection.endToStart,
-          background: Container(
-            alignment: Alignment.centerRight,
-            padding: const EdgeInsets.only(right: 20),
-            margin: const EdgeInsets.only(bottom: 12),
-            decoration: BoxDecoration(
-              color: Colors.red,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: const Icon(Icons.delete_outline, color: Colors.white, size: 28),
-          ),
-          confirmDismiss: (direction) async {
-            _confirmDelete(item);
-            return false;
-          },
-          child: Card(
-            margin: const EdgeInsets.only(bottom: 12),
-            elevation: item.isRead ? 0 : 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-              side: BorderSide(
-                color: item.isRead ? context.borderColor : themeColor.withAlpha(100),
-                width: item.isRead ? 1 : 1.5,
+            key: Key('notif_${item.id}'),
+            direction: DismissDirection.endToStart,
+            background: Container(
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.only(right: 20),
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Icon(
+                Icons.delete_outline,
+                color: Colors.white,
+                size: 28,
               ),
             ),
-            color: item.isRead ? context.cardBg : themeColor.withAlpha(25),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(16),
-              onTap: () {
-                if (!item.isRead) {
-                  notificationProvider.markAsRead(item.id);
-                }
-                Navigator.push(
-                  context,
-                  AppPageTransitions.slideUp(
-                    NotificationDetailScreen(notification: item),
-                  ),
-                );
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Notification Icon Circle
-                    CircleAvatar(
-                      radius: 22,
-                      backgroundColor: themeColor.withAlpha(25),
-                      child: Icon(iconData, color: themeColor, size: 22),
+            confirmDismiss: (direction) async {
+              _confirmDelete(item);
+              return false;
+            },
+            child: Card(
+              margin: const EdgeInsets.only(bottom: 12),
+              elevation: item.isRead ? 0 : 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+                side: BorderSide(
+                  color: item.isRead
+                      ? context.borderColor
+                      : themeColor.withAlpha(100),
+                  width: item.isRead ? 1 : 1.5,
+                ),
+              ),
+              color: item.isRead ? context.cardBg : themeColor.withAlpha(25),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () {
+                  if (!item.isRead) {
+                    notificationProvider.markAsRead(item.id);
+                  }
+                  Navigator.push(
+                    context,
+                    AppPageTransitions.slideUp(
+                      NotificationDetailScreen(notification: item),
                     ),
-                    const SizedBox(width: 12),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.all(14),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Notification Icon Circle
+                      CircleAvatar(
+                        radius: 22,
+                        backgroundColor: themeColor.withAlpha(25),
+                        child: Icon(iconData, color: themeColor, size: 22),
+                      ),
+                      const SizedBox(width: 12),
 
-                    // Title & Message Content
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  item.title,
-                                  style: TextStyle(
-                                    fontWeight: item.isRead ? FontWeight.w600 : FontWeight.bold,
-                                    fontSize: 15,
-                                    color: context.textPrimaryColor,
-                                  ),
-                                ),
-                              ),
-                              if (!item.isRead)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primary,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: const Text(
-                                    'NEW',
+                      // Title & Message Content
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    item.title,
                                     style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.bold,
+                                      fontWeight: item.isRead
+                                          ? FontWeight.w600
+                                          : FontWeight.bold,
+                                      fontSize: 15,
+                                      color: context.textPrimaryColor,
                                     ),
                                   ),
                                 ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            item.message,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: context.textSecondaryColor,
-                              height: 1.3,
+                                if (!item.isRead)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Text(
+                                      'NEW',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                              ],
                             ),
-                          ),
-                          const SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                item.createdAt.isNotEmpty
-                                    ? item.createdAt.replaceAll('T', ' ').split('.').first
-                                    : 'Recent',
-                                style: const TextStyle(fontSize: 10, color: Colors.grey),
+                            const SizedBox(height: 4),
+                            Text(
+                              item.message,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: context.textSecondaryColor,
+                                height: 1.3,
                               ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: themeColor.withAlpha(20),
-                                  borderRadius: BorderRadius.circular(6),
-                                ),
-                                child: Text(
-                                  item.module.toUpperCase(),
-                                  style: TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.bold,
-                                    color: themeColor,
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  item.createdAt.isNotEmpty
+                                      ? item.createdAt
+                                            .replaceAll('T', ' ')
+                                            .split('.')
+                                            .first
+                                      : 'Recent',
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    color: Colors.grey,
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        ],
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: themeColor.withAlpha(20),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    item.module.toUpperCase(),
+                                    style: TextStyle(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.bold,
+                                      color: themeColor,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ), // end InkWell
-          ), // end Card
+              ), // end InkWell
+            ), // end Card
           ), // end Dismissible
         ); // end AnimatedListItem
       },

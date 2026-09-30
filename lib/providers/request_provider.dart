@@ -87,8 +87,7 @@ class RequestProvider extends ChangeNotifier {
             .map((item) => RequestModel.fromJson(item as Map<String, dynamic>))
             .toList();
       } else {
-        _errorMessage =
-            response.data?['message'] ?? 'Failed to load requests.';
+        _errorMessage = response.data?['message'] ?? 'Failed to load requests.';
       }
     } on DioException catch (e) {
       _errorMessage = DioClient.handleError(e);
@@ -106,11 +105,14 @@ class RequestProvider extends ChangeNotifier {
       final response = await _dio.get('${ApiEndpoints.request}/$id');
       if (response.data != null && response.data['success'] == true) {
         return RequestModel.fromJson(
-            response.data['data'] as Map<String, dynamic>);
+          response.data['data'] as Map<String, dynamic>,
+        );
       }
     } catch (_) {}
-    return _requests.firstWhere((item) => item.id == id,
-        orElse: () => throw Exception('Request not found'));
+    return _requests.firstWhere(
+      (item) => item.id == id,
+      orElse: () => throw Exception('Request not found'),
+    );
   }
 
   // ── Create Request (POST /api/request) ────────────────────────────
@@ -135,7 +137,8 @@ class RequestProvider extends ChangeNotifier {
       final response = await _dio.post(ApiEndpoints.request, data: payload);
       if (response.data != null && response.data['success'] == true) {
         final newRequest = RequestModel.fromJson(
-            response.data['data'] as Map<String, dynamic>);
+          response.data['data'] as Map<String, dynamic>,
+        );
         _requests.insert(0, newRequest);
         return true;
       } else {
@@ -191,7 +194,8 @@ class RequestProvider extends ChangeNotifier {
         );
         if (response.data != null && response.data['success'] == true) {
           _requests[idx] = RequestModel.fromJson(
-              response.data['data'] as Map<String, dynamic>);
+            response.data['data'] as Map<String, dynamic>,
+          );
           return true;
         }
       } catch (_) {
@@ -232,7 +236,8 @@ class RequestProvider extends ChangeNotifier {
 
       if (response.data != null && response.data['success'] == true) {
         final updated = RequestModel.fromJson(
-            response.data['data'] as Map<String, dynamic>);
+          response.data['data'] as Map<String, dynamic>,
+        );
         final idx = _requests.indexWhere((item) => item.id == id);
         if (idx != -1) {
           _requests[idx] = updated;

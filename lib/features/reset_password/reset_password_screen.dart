@@ -78,7 +78,10 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 (route) => false,
               );
             },
-            child: const Text('Go to Login', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text(
+              'Go to Login',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),
@@ -107,7 +110,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
     if (_newPassError != null || _confirmPassError != null) return;
 
-    if (widget.target == null || widget.type == null || widget.resetToken == null) {
+    if (widget.target == null ||
+        widget.type == null ||
+        widget.resetToken == null) {
       _showUnauthorizedAccessDialog();
       return;
     }
@@ -133,7 +138,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             content: Text(auth.errorMessage ?? 'Password reset failed'),
             backgroundColor: AppColors.error,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       }
@@ -144,7 +151,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             content: Text(e.toString().replaceAll('Exception: ', '')),
             backgroundColor: AppColors.error,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       }
@@ -161,7 +170,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       barrierDismissible: false,
       builder: (ctx) {
         return AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
           content: Padding(
             padding: const EdgeInsets.symmetric(vertical: 12),
             child: Column(
@@ -228,7 +239,11 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: AppColors.textPrimary),
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            size: 18,
+            color: AppColors.textPrimary,
+          ),
           onPressed: () => Navigator.pushAndRemoveUntil(
             context,
             AppPageTransitions.slideRight(const LoginScreen()),
@@ -295,7 +310,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   errorText: _newPassError,
                   textInputAction: TextInputAction.next,
                   onChanged: (_) {
-                    if (_newPassError != null) setState(() => _newPassError = null);
+                    if (_newPassError != null)
+                      setState(() => _newPassError = null);
                   },
                 ),
                 const SizedBox(height: 20),
@@ -310,7 +326,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   errorText: _confirmPassError,
                   textInputAction: TextInputAction.done,
                   onChanged: (_) {
-                    if (_confirmPassError != null) setState(() => _confirmPassError = null);
+                    if (_confirmPassError != null)
+                      setState(() => _confirmPassError = null);
                   },
                   onSubmitted: (_) => _submitReset(),
                 ),
@@ -319,7 +336,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
                 // ── Reset Password Button ────────────────────
                 MsButton(
-                  label: _isResetting ? 'Resetting Password...' : 'Reset Password',
+                  label: _isResetting
+                      ? 'Resetting Password...'
+                      : 'Reset Password',
                   onPressed: _isResetting ? null : _submitReset,
                   isLoading: _isResetting,
                   icon: Icons.check_circle_outline_rounded,

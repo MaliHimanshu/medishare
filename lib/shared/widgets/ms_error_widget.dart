@@ -20,20 +20,18 @@ class MSErrorWidget extends StatefulWidget {
   });
 
   /// Named constructor for no internet
-  const MSErrorWidget.noInternet({
-    super.key,
-    required this.onRetry,
-  })  : title = 'No Internet Connection',
-        message = 'Please check your network and try again.',
-        errorType = MsErrorType.noInternet;
+  const MSErrorWidget.noInternet({super.key, required this.onRetry})
+    : title = 'No Internet Connection',
+      message = 'Please check your network and try again.',
+      errorType = MsErrorType.noInternet;
 
   /// Named constructor for server error
   const MSErrorWidget.serverError({
     super.key,
     required this.onRetry,
     this.message = 'Server is temporarily unavailable.',
-  })  : title = 'Server Error',
-        errorType = MsErrorType.serverError;
+  }) : title = 'Server Error',
+       errorType = MsErrorType.serverError;
 
   @override
   State<MSErrorWidget> createState() => _MSErrorWidgetState();
@@ -52,9 +50,10 @@ class _MSErrorWidgetState extends State<MSErrorWidget>
       vsync: this,
       duration: const Duration(milliseconds: 500),
     );
-    _scale = Tween<double>(begin: 0.85, end: 1.0).animate(
-      CurvedAnimation(parent: _ctrl, curve: Curves.easeOutBack),
-    );
+    _scale = Tween<double>(
+      begin: 0.85,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeOutBack));
     _fade = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
     _ctrl.forward();
   }
@@ -142,14 +141,19 @@ class _MSErrorWidgetState extends State<MSErrorWidget>
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 28, vertical: 14),
+                      horizontal: 28,
+                      vertical: 14,
+                    ),
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14)),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
                   onPressed: widget.onRetry,
                   icon: const Icon(Icons.refresh_rounded, size: 18),
-                  label: const Text('Try Again',
-                      style: TextStyle(fontWeight: FontWeight.w600)),
+                  label: const Text(
+                    'Try Again',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
                 ),
               ],
             ),

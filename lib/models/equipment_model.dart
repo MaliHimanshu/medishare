@@ -21,8 +21,8 @@ class EquipmentModel {
   final String createdAt;
   final String updatedAt;
   // Nearby search extras
-  final double? distance;       // kilometres from search origin
-  final String? distanceUnit;  // always "km"
+  final double? distance; // kilometres from search origin
+  final String? distanceUnit; // always "km"
 
   EquipmentModel({
     required this.id,
@@ -66,7 +66,8 @@ class EquipmentModel {
       parsedImages = (json['images'] as List).map((e) => e.toString()).toList();
     }
 
-    final addr = json['address']?.toString() ??
+    final addr =
+        json['address']?.toString() ??
         json['location']?.toString() ??
         owner?['address']?.toString();
 
@@ -86,12 +87,12 @@ class EquipmentModel {
       mode: json['mode']?.toString() ?? 'DONATE',
       rentalPricePerDay: _parseDouble(json['rentalPricePerDay']),
       securityDeposit: _parseDouble(json['securityDeposit']),
-      donor: owner?['name']?.toString() ??
+      donor:
+          owner?['name']?.toString() ??
           json['donor']?.toString() ??
           'Anonymous',
       condition: json['condition']?.toString() ?? 'GOOD',
-      manufacturer:
-          json['manufacturer']?.toString() ?? 'Standard Manufacturer',
+      manufacturer: json['manufacturer']?.toString() ?? 'Standard Manufacturer',
       image: json['image']?.toString() ?? '',
       images: parsedImages,
       ownerId: json['ownerId']?.toString() ?? owner?['id']?.toString() ?? '',

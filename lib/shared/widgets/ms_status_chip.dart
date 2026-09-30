@@ -47,10 +47,7 @@ class MSStatusChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          CircleAvatar(
-            radius: fontSize * 0.3,
-            backgroundColor: color,
-          ),
+          CircleAvatar(radius: fontSize * 0.3, backgroundColor: color),
           const SizedBox(width: 5),
           Text(
             formattedText,

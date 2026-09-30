@@ -6,10 +6,7 @@ class HelpSupportScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Help & Support"),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text("Help & Support"), centerTitle: true),
 
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -18,7 +15,6 @@ class HelpSupportScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
 
           children: [
-
             Center(
               child: CircleAvatar(
                 radius: 55,
@@ -35,27 +31,21 @@ class HelpSupportScreen extends StatelessWidget {
 
             const Text(
               "Need Help?",
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 10),
 
             const Text(
               "Find answers to common questions or contact our support team.",
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.grey),
             ),
 
             const SizedBox(height: 25),
-                        //=================================
+
+            //=================================
             // SUPPORT OPTIONS
             //=================================
-
             Card(
               elevation: 4,
               shape: RoundedRectangleBorder(
@@ -64,12 +54,8 @@ class HelpSupportScreen extends StatelessWidget {
 
               child: Column(
                 children: [
-
                   ListTile(
-                    leading: const Icon(
-                      Icons.phone,
-                      color: Colors.green,
-                    ),
+                    leading: const Icon(Icons.phone, color: Colors.green),
                     title: const Text("Call Support"),
                     subtitle: const Text("+91 9876543210"),
                     trailing: const Icon(Icons.arrow_forward_ios),
@@ -79,10 +65,7 @@ class HelpSupportScreen extends StatelessWidget {
                   const Divider(height: 1),
 
                   ListTile(
-                    leading: const Icon(
-                      Icons.email,
-                      color: Colors.blue,
-                    ),
+                    leading: const Icon(Icons.email, color: Colors.blue),
                     title: const Text("Email Support"),
                     subtitle: const Text("support@medishare.com"),
                     trailing: const Icon(Icons.arrow_forward_ios),
@@ -100,9 +83,7 @@ class HelpSupportScreen extends StatelessWidget {
                     trailing: const Icon(Icons.arrow_forward_ios),
                     onTap: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("FAQ Coming Soon"),
-                        ),
+                        const SnackBar(content: Text("FAQ Coming Soon")),
                       );
                     },
                   ),
@@ -110,17 +91,12 @@ class HelpSupportScreen extends StatelessWidget {
                   const Divider(height: 1),
 
                   ListTile(
-                    leading: const Icon(
-                      Icons.chat,
-                      color: Colors.purple,
-                    ),
+                    leading: const Icon(Icons.chat, color: Colors.purple),
                     title: const Text("Live Chat"),
                     trailing: const Icon(Icons.arrow_forward_ios),
                     onTap: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Live Chat Coming Soon"),
-                        ),
+                        const SnackBar(content: Text("Live Chat Coming Soon")),
                       );
                     },
                   ),
@@ -128,10 +104,7 @@ class HelpSupportScreen extends StatelessWidget {
                   const Divider(height: 1),
 
                   ListTile(
-                    leading: const Icon(
-                      Icons.bug_report,
-                      color: Colors.red,
-                    ),
+                    leading: const Icon(Icons.bug_report, color: Colors.red),
                     title: const Text("Report an Issue"),
                     trailing: const Icon(Icons.arrow_forward_ios),
                     onTap: () {
@@ -146,10 +119,7 @@ class HelpSupportScreen extends StatelessWidget {
                   const Divider(height: 1),
 
                   ListTile(
-                    leading: const Icon(
-                      Icons.star_rate,
-                      color: Colors.amber,
-                    ),
+                    leading: const Icon(Icons.star_rate, color: Colors.amber),
                     title: const Text("Rate Our App"),
                     trailing: const Icon(Icons.arrow_forward_ios),
                     onTap: () {
@@ -169,16 +139,12 @@ class HelpSupportScreen extends StatelessWidget {
             //=================================
             // BACK BUTTON
             //=================================
-
             SizedBox(
               width: double.infinity,
               height: 55,
               child: ElevatedButton.icon(
                 icon: const Icon(Icons.arrow_back),
-                label: const Text(
-                  "Back",
-                  style: TextStyle(fontSize: 18),
-                ),
+                label: const Text("Back", style: TextStyle(fontSize: 18)),
                 onPressed: () {
                   Navigator.pop(context);
                 },
@@ -186,7 +152,6 @@ class HelpSupportScreen extends StatelessWidget {
             ),
 
             const SizedBox(height: 20),
-
           ],
         ),
       ),

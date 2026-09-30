@@ -49,7 +49,10 @@ class SettingsScreen extends StatelessWidget {
               child: Column(
                 children: [
                   ListTile(
-                    leading: const Icon(Icons.light_mode_outlined, color: Colors.orange),
+                    leading: const Icon(
+                      Icons.light_mode_outlined,
+                      color: Colors.orange,
+                    ),
                     title: Text(
                       AppTranslations.getText(lang, 'light_mode'),
                       style: TextStyle(color: context.textPrimaryColor),
@@ -71,7 +74,10 @@ class SettingsScreen extends StatelessWidget {
                   ),
                   Divider(height: 1, color: context.borderColor),
                   ListTile(
-                    leading: const Icon(Icons.dark_mode_outlined, color: Colors.indigo),
+                    leading: const Icon(
+                      Icons.dark_mode_outlined,
+                      color: Colors.indigo,
+                    ),
                     title: Text(
                       AppTranslations.getText(lang, 'dark_mode'),
                       style: TextStyle(color: context.textPrimaryColor),
@@ -93,7 +99,10 @@ class SettingsScreen extends StatelessWidget {
                   ),
                   Divider(height: 1, color: context.borderColor),
                   ListTile(
-                    leading: const Icon(Icons.brightness_auto, color: AppColors.primary),
+                    leading: const Icon(
+                      Icons.brightness_auto,
+                      color: AppColors.primary,
+                    ),
                     title: Text(
                       AppTranslations.getText(lang, 'system_mode'),
                       style: TextStyle(color: context.textPrimaryColor),
@@ -109,7 +118,9 @@ class SettingsScreen extends StatelessWidget {
                     onTap: () {
                       themeProvider.setThemeMode(ThemeMode.system);
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Switched to System Theme')),
+                        const SnackBar(
+                          content: Text('Switched to System Theme'),
+                        ),
                       );
                     },
                   ),
@@ -139,8 +150,13 @@ class SettingsScreen extends StatelessWidget {
               ),
               child: SwitchListTile(
                 secondary: CircleAvatar(
-                  backgroundColor: Colors.blue.withAlpha(context.isDarkMode ? 40 : 30),
-                  child: const Icon(Icons.notifications_active_outlined, color: Colors.blue),
+                  backgroundColor: Colors.blue.withAlpha(
+                    context.isDarkMode ? 40 : 30,
+                  ),
+                  child: const Icon(
+                    Icons.notifications_active_outlined,
+                    color: Colors.blue,
+                  ),
                 ),
                 title: Text(
                   AppTranslations.getText(lang, 'push_notifications'),
@@ -155,7 +171,11 @@ class SettingsScreen extends StatelessWidget {
                   themeProvider.toggleNotifications(val);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text(val ? 'Notifications Enabled' : 'Notifications Disabled'),
+                      content: Text(
+                        val
+                            ? 'Notifications Enabled'
+                            : 'Notifications Disabled',
+                      ),
                     ),
                   );
                 },
@@ -184,7 +204,9 @@ class SettingsScreen extends StatelessWidget {
               ),
               child: ListTile(
                 leading: CircleAvatar(
-                  backgroundColor: Colors.teal.withAlpha(context.isDarkMode ? 40 : 30),
+                  backgroundColor: Colors.teal.withAlpha(
+                    context.isDarkMode ? 40 : 30,
+                  ),
                   child: const Icon(Icons.language, color: Colors.teal),
                 ),
                 title: Text(
@@ -225,7 +247,10 @@ class SettingsScreen extends StatelessWidget {
               child: Column(
                 children: [
                   ListTile(
-                    leading: const Icon(Icons.help_outline, color: AppColors.primary),
+                    leading: const Icon(
+                      Icons.help_outline,
+                      color: AppColors.primary,
+                    ),
                     title: Text(
                       AppTranslations.getText(lang, 'help_support'),
                       style: TextStyle(color: context.textPrimaryColor),
@@ -234,13 +259,18 @@ class SettingsScreen extends StatelessWidget {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const HelpSupportScreen()),
+                        MaterialPageRoute(
+                          builder: (_) => const HelpSupportScreen(),
+                        ),
                       );
                     },
                   ),
                   Divider(height: 1, color: context.borderColor),
                   ListTile(
-                    leading: const Icon(Icons.info_outline, color: Colors.purple),
+                    leading: const Icon(
+                      Icons.info_outline,
+                      color: Colors.purple,
+                    ),
                     title: Text(
                       AppTranslations.getText(lang, 'about'),
                       style: TextStyle(color: context.textPrimaryColor),
@@ -255,20 +285,34 @@ class SettingsScreen extends StatelessWidget {
                   ),
                   Divider(height: 1, color: context.borderColor),
                   ListTile(
-                    leading: const Icon(Icons.privacy_tip_outlined, color: Colors.green),
-                    title: Text('Privacy Policy', style: TextStyle(color: context.textPrimaryColor)),
+                    leading: const Icon(
+                      Icons.privacy_tip_outlined,
+                      color: Colors.green,
+                    ),
+                    title: Text(
+                      'Privacy Policy',
+                      style: TextStyle(color: context.textPrimaryColor),
+                    ),
                     trailing: const Icon(Icons.chevron_right, size: 20),
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()),
+                        MaterialPageRoute(
+                          builder: (_) => const PrivacyPolicyScreen(),
+                        ),
                       );
                     },
                   ),
                   Divider(height: 1, color: context.borderColor),
                   ListTile(
-                    leading: const Icon(Icons.description_outlined, color: Colors.amber),
-                    title: Text('Terms & Conditions', style: TextStyle(color: context.textPrimaryColor)),
+                    leading: const Icon(
+                      Icons.description_outlined,
+                      color: Colors.amber,
+                    ),
+                    title: Text(
+                      'Terms & Conditions',
+                      style: TextStyle(color: context.textPrimaryColor),
+                    ),
                     trailing: const Icon(Icons.chevron_right, size: 20),
                     onTap: () {
                       Navigator.push(
@@ -289,7 +333,12 @@ class SettingsScreen extends StatelessWidget {
   }
 
   void _showLanguageDialog(BuildContext context, ThemeProvider themeProvider) {
-    final languages = ['English', 'Hindi (हिंदी)', 'Gujarati (ગુજરાતી)', 'Spanish (Español)'];
+    final languages = [
+      'English',
+      'Hindi (हिंदी)',
+      'Gujarati (ગુજરાતી)',
+      'Spanish (Español)',
+    ];
 
     showDialog(
       context: context,
@@ -304,8 +353,13 @@ class SettingsScreen extends StatelessWidget {
           children: languages.map((lang) {
             final isSelected = themeProvider.selectedLanguage == lang;
             return ListTile(
-              title: Text(lang, style: TextStyle(color: context.textPrimaryColor)),
-              trailing: isSelected ? const Icon(Icons.check, color: AppColors.primary) : null,
+              title: Text(
+                lang,
+                style: TextStyle(color: context.textPrimaryColor),
+              ),
+              trailing: isSelected
+                  ? const Icon(Icons.check, color: AppColors.primary)
+                  : null,
               onTap: () {
                 themeProvider.setLanguage(lang);
                 Navigator.pop(ctx);

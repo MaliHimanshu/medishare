@@ -105,7 +105,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
             children: [
               // ── Top Bar ───────────────────────────────
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -166,7 +169,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 child: MsButton(
                   label: isLast ? 'Get Started' : 'Next',
                   onPressed: _nextPage,
-                  backgroundColor: Colors.white,
+                  backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                   foregroundColor: page.gradient.first,
                 ),
               ),
@@ -198,16 +201,10 @@ class _OnboardingPage extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white.withAlpha(20),
               shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.white.withAlpha(50),
-                width: 2,
-              ),
+              border: Border.all(color: Colors.white.withAlpha(50), width: 2),
             ),
             child: Center(
-              child: Text(
-                data.emoji,
-                style: const TextStyle(fontSize: 60),
-              ),
+              child: Text(data.emoji, style: const TextStyle(fontSize: 60)),
             ),
           ),
 

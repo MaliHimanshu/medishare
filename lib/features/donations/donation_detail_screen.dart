@@ -10,10 +10,7 @@ import 'edit_donation_dialog.dart';
 class DonationDetailScreen extends StatefulWidget {
   final DonationModel donation;
 
-  const DonationDetailScreen({
-    super.key,
-    required this.donation,
-  });
+  const DonationDetailScreen({super.key, required this.donation});
 
   @override
   State<DonationDetailScreen> createState() => _DonationDetailScreenState();
@@ -77,24 +74,26 @@ class _DonationDetailScreenState extends State<DonationDetailScreen> {
                     runSpacing: 8,
                     children: ['PENDING', 'APPROVED', 'COMPLETED', 'REJECTED']
                         .map((st) {
-                      final isSelected = selectedStatus == st;
-                      final color = _getStatusColor(st);
-                      return ChoiceChip(
-                        label: Text(st),
-                        selected: isSelected,
-                        selectedColor: color.withAlpha(50),
-                        labelStyle: TextStyle(
-                          color: isSelected ? color : Colors.black87,
-                          fontWeight:
-                              isSelected ? FontWeight.bold : FontWeight.normal,
-                        ),
-                        onSelected: (val) {
-                          if (val) {
-                            setModalState(() => selectedStatus = st);
-                          }
-                        },
-                      );
-                    }).toList(),
+                          final isSelected = selectedStatus == st;
+                          final color = _getStatusColor(st);
+                          return ChoiceChip(
+                            label: Text(st),
+                            selected: isSelected,
+                            selectedColor: color.withAlpha(50),
+                            labelStyle: TextStyle(
+                              color: isSelected ? color : Colors.black87,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
+                            ),
+                            onSelected: (val) {
+                              if (val) {
+                                setModalState(() => selectedStatus = st);
+                              }
+                            },
+                          );
+                        })
+                        .toList(),
                   ),
                   const SizedBox(height: 24),
                   SizedBox(
@@ -113,14 +112,21 @@ class _DonationDetailScreenState extends State<DonationDetailScreen> {
                         navigator.pop();
 
                         final success = await donationProvider
-                            .updateDonationStatus(_currentDonation.id, selectedStatus);
+                            .updateDonationStatus(
+                              _currentDonation.id,
+                              selectedStatus,
+                            );
 
                         if (mounted) {
                           if (success) {
                             setState(() {
                               _currentDonation = donationProvider.donations
-                                  .firstWhere((d) => d.id == _currentDonation.id,
-                                      orElse: () => _currentDonation.copyWith(status: selectedStatus));
+                                  .firstWhere(
+                                    (d) => d.id == _currentDonation.id,
+                                    orElse: () => _currentDonation.copyWith(
+                                      status: selectedStatus,
+                                    ),
+                                  );
                             });
                             messenger.showSnackBar(
                               const SnackBar(
@@ -131,9 +137,11 @@ class _DonationDetailScreenState extends State<DonationDetailScreen> {
                           } else {
                             messenger.showSnackBar(
                               SnackBar(
-                                content: Text(donationProvider.errorMessage.isNotEmpty
-                                    ? donationProvider.errorMessage
-                                    : 'Failed to update status.'),
+                                content: Text(
+                                  donationProvider.errorMessage.isNotEmpty
+                                      ? donationProvider.errorMessage
+                                      : 'Failed to update status.',
+                                ),
                                 backgroundColor: AppColors.error,
                               ),
                             );
@@ -201,8 +209,9 @@ class _DonationDetailScreenState extends State<DonationDetailScreen> {
               final navigator = Navigator.of(context);
               Navigator.pop(ctx);
 
-              final success =
-                  await donationProvider.deleteDonation(_currentDonation.id);
+              final success = await donationProvider.deleteDonation(
+                _currentDonation.id,
+              );
 
               if (mounted) {
                 if (success) {
@@ -216,9 +225,11 @@ class _DonationDetailScreenState extends State<DonationDetailScreen> {
                 } else {
                   messenger.showSnackBar(
                     SnackBar(
-                      content: Text(donationProvider.errorMessage.isNotEmpty
-                          ? donationProvider.errorMessage
-                          : 'Failed to delete donation.'),
+                      content: Text(
+                        donationProvider.errorMessage.isNotEmpty
+                            ? donationProvider.errorMessage
+                            : 'Failed to delete donation.',
+                      ),
                       backgroundColor: AppColors.error,
                     ),
                   );
@@ -294,8 +305,10 @@ class _DonationDetailScreenState extends State<DonationDetailScreen> {
                   ),
                 ),
                 Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: statusColor.withAlpha(30),
                     borderRadius: BorderRadius.circular(20),
@@ -355,7 +368,10 @@ class _DonationDetailScreenState extends State<DonationDetailScreen> {
                   ListTile(
                     leading: CircleAvatar(
                       backgroundColor: Colors.red.shade50,
-                      child: const Icon(Icons.local_hospital, color: Colors.red),
+                      child: const Icon(
+                        Icons.local_hospital,
+                        color: Colors.red,
+                      ),
                     ),
                     title: const Text('Hospital / Location'),
                     subtitle: Text(_currentDonation.hospital),
@@ -364,13 +380,17 @@ class _DonationDetailScreenState extends State<DonationDetailScreen> {
                   ListTile(
                     leading: CircleAvatar(
                       backgroundColor: Colors.indigo.shade50,
-                      child: const Icon(Icons.calendar_today,
-                          color: Colors.indigo),
+                      child: const Icon(
+                        Icons.calendar_today,
+                        color: Colors.indigo,
+                      ),
                     ),
                     title: const Text('Created Date'),
-                    subtitle: Text(_currentDonation.createdAt.isNotEmpty
-                        ? _currentDonation.createdAt.split('T').first
-                        : 'Recently'),
+                    subtitle: Text(
+                      _currentDonation.createdAt.isNotEmpty
+                          ? _currentDonation.createdAt.split('T').first
+                          : 'Recently',
+                    ),
                   ),
                 ],
               ),

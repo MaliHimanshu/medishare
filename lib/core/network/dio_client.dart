@@ -89,13 +89,19 @@ class DioClient {
     }
     final data = e.response?.data;
     if (data is Map) {
-      if (data.containsKey('message') && data['message'] != null && data['message'].toString().isNotEmpty) {
+      if (data.containsKey('message') &&
+          data['message'] != null &&
+          data['message'].toString().isNotEmpty) {
         return data['message'].toString();
       }
-      if (data.containsKey('error') && data['error'] != null && data['error'].toString().isNotEmpty) {
+      if (data.containsKey('error') &&
+          data['error'] != null &&
+          data['error'].toString().isNotEmpty) {
         return data['error'].toString();
       }
-      if (data.containsKey('errors') && data['errors'] is List && (data['errors'] as List).isNotEmpty) {
+      if (data.containsKey('errors') &&
+          data['errors'] is List &&
+          (data['errors'] as List).isNotEmpty) {
         final firstErr = (data['errors'] as List).first;
         if (firstErr is Map && firstErr.containsKey('message')) {
           return firstErr['message'].toString();

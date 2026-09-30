@@ -45,8 +45,12 @@ class HospitalModel {
 
   factory HospitalModel.fromJson(Map<String, dynamic> json) {
     try {
-      final lat = json['latitude'] is num ? (json['latitude'] as num).toDouble() : double.tryParse(json['latitude']?.toString() ?? '');
-      final lng = json['longitude'] is num ? (json['longitude'] as num).toDouble() : double.tryParse(json['longitude']?.toString() ?? '');
+      final lat = json['latitude'] is num
+          ? (json['latitude'] as num).toDouble()
+          : double.tryParse(json['latitude']?.toString() ?? '');
+      final lng = json['longitude'] is num
+          ? (json['longitude'] as num).toDouble()
+          : double.tryParse(json['longitude']?.toString() ?? '');
 
       final equipCount = json['availableEquipment'] is int
           ? json['availableEquipment'] as int
@@ -74,9 +78,12 @@ class HospitalModel {
         phone: json['phone']?.toString() ?? 'Not Provided',
         email: json['email']?.toString() ?? 'contact@hospital.org',
         website: json['website']?.toString() ?? '',
-        description: json['description']?.toString() ?? 'Multi-specialty healthcare facility connected to MediShare Network.',
+        description:
+            json['description']?.toString() ??
+            'Multi-specialty healthcare facility connected to MediShare Network.',
         image: json['image']?.toString() ?? '',
-        contactPerson: json['contactPerson']?.toString() ?? 'Chief Administrator',
+        contactPerson:
+            json['contactPerson']?.toString() ?? 'Chief Administrator',
         latitude: lat,
         longitude: lng,
         availableEquipmentCount: equipCount,
@@ -172,7 +179,8 @@ class HospitalModel {
       contactPerson: contactPerson ?? this.contactPerson,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
-      availableEquipmentCount: availableEquipmentCount ?? this.availableEquipmentCount,
+      availableEquipmentCount:
+          availableEquipmentCount ?? this.availableEquipmentCount,
       totalDonationsCount: totalDonationsCount ?? this.totalDonationsCount,
       activeRequestsCount: activeRequestsCount ?? this.activeRequestsCount,
       rating: rating ?? this.rating,

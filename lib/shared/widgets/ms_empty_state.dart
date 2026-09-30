@@ -95,7 +95,11 @@ class _MSEmptyStateState extends State<MSEmptyState>
                   ),
                   shape: BoxShape.circle,
                 ),
-                child: Icon(widget.icon, color: AppColors.primary, size: iconSize),
+                child: Icon(
+                  widget.icon,
+                  color: AppColors.primary,
+                  size: iconSize,
+                ),
               ),
 
               SizedBox(height: widget.compact ? 10 : 14),
@@ -126,9 +130,12 @@ class _MSEmptyStateState extends State<MSEmptyState>
                     backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12)),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 10),
+                      horizontal: 20,
+                      vertical: 10,
+                    ),
                   ),
                   onPressed: widget.onAction,
                   icon: const Icon(Icons.add_rounded, size: 18),

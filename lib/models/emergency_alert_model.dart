@@ -28,8 +28,8 @@ class EmergencyAlertHospital {
 
   String get displayName =>
       (organizationName != null && organizationName!.isNotEmpty)
-          ? organizationName!
-          : name;
+      ? organizationName!
+      : name;
 }
 
 class EmergencyAlertNgo {
@@ -59,8 +59,8 @@ class EmergencyAlertNgo {
 
   String get displayName =>
       (organizationName != null && organizationName!.isNotEmpty)
-          ? organizationName!
-          : name;
+      ? organizationName!
+      : name;
 }
 
 class EmergencyAlertResponseModel {
@@ -108,7 +108,8 @@ class EmergencyAlertModel {
   final int quantityRequired;
   final String? description;
   final String priority; // CRITICAL, HIGH, NORMAL
-  final String status;   // ACTIVE, PARTIALLY_FULFILLED, FULFILLED, CANCELLED, EXPIRED
+  final String
+  status; // ACTIVE, PARTIALLY_FULFILLED, FULFILLED, CANCELLED, EXPIRED
   final String? address;
   final double? latitude;
   final double? longitude;
@@ -145,7 +146,9 @@ class EmergencyAlertModel {
 
   bool get isCritical => priority.toUpperCase() == 'CRITICAL';
   bool get isHigh => priority.toUpperCase() == 'HIGH';
-  bool get isActive => status.toUpperCase() == 'ACTIVE' || status.toUpperCase() == 'PARTIALLY_FULFILLED';
+  bool get isActive =>
+      status.toUpperCase() == 'ACTIVE' ||
+      status.toUpperCase() == 'PARTIALLY_FULFILLED';
   bool get isFulfilled => status.toUpperCase() == 'FULFILLED';
   bool get isCancelled => status.toUpperCase() == 'CANCELLED';
   bool get hasResponded => myResponse != null;
@@ -166,8 +169,11 @@ class EmergencyAlertModel {
     }
 
     EmergencyAlertResponseModel? myResp;
-    if (json['myResponse'] != null && json['myResponse'] is Map<String, dynamic>) {
-      myResp = EmergencyAlertResponseModel.fromJson(json['myResponse'] as Map<String, dynamic>);
+    if (json['myResponse'] != null &&
+        json['myResponse'] is Map<String, dynamic>) {
+      myResp = EmergencyAlertResponseModel.fromJson(
+        json['myResponse'] as Map<String, dynamic>,
+      );
     }
 
     return EmergencyAlertModel(
@@ -185,11 +191,15 @@ class EmergencyAlertModel {
       expiresAt: json['expiresAt']?.toString(),
       createdAt: json['createdAt']?.toString() ?? '',
       updatedAt: json['updatedAt']?.toString(),
-      hospital: json['hospital'] != null && json['hospital'] is Map<String, dynamic>
-          ? EmergencyAlertHospital.fromJson(json['hospital'] as Map<String, dynamic>)
+      hospital:
+          json['hospital'] != null && json['hospital'] is Map<String, dynamic>
+          ? EmergencyAlertHospital.fromJson(
+              json['hospital'] as Map<String, dynamic>,
+            )
           : null,
       totalAvailable: (json['totalAvailable'] as num?)?.toInt() ?? 0,
-      responseCount: (json['responseCount'] as num?)?.toInt() ?? parsedResponses.length,
+      responseCount:
+          (json['responseCount'] as num?)?.toInt() ?? parsedResponses.length,
       myResponse: myResp,
       responses: parsedResponses,
     );

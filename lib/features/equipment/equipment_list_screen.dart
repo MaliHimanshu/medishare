@@ -84,9 +84,11 @@ class _EquipmentListScreenState extends State<EquipmentListScreen> {
                 } else {
                   messenger.showSnackBar(
                     SnackBar(
-                      content: Text(equipProv.errorMessage.isNotEmpty
-                          ? equipProv.errorMessage
-                          : "Failed to delete equipment."),
+                      content: Text(
+                        equipProv.errorMessage.isNotEmpty
+                            ? equipProv.errorMessage
+                            : "Failed to delete equipment.",
+                      ),
                       backgroundColor: AppColors.error,
                     ),
                   );
@@ -109,7 +111,7 @@ class _EquipmentListScreenState extends State<EquipmentListScreen> {
 
     return Scaffold(
       backgroundColor: context.scaffoldBg,
-      
+
       // ── App Bar ─────────────────────────────────────────
       appBar: AppBar(
         title: const Text("Equipment Catalog"),
@@ -153,14 +155,23 @@ class _EquipmentListScreenState extends State<EquipmentListScreen> {
                           : null,
                       filled: true,
                       fillColor: context.inputBg,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 0,
+                        horizontal: 16,
+                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(color: context.borderColor, width: 1.5),
+                        borderSide: BorderSide(
+                          color: context.borderColor,
+                          width: 1.5,
+                        ),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(16),
-                        borderSide: BorderSide(color: context.borderColor, width: 1.5),
+                        borderSide: BorderSide(
+                          color: context.borderColor,
+                          width: 1.5,
+                        ),
                       ),
                     ),
                   ),
@@ -178,9 +189,20 @@ class _EquipmentListScreenState extends State<EquipmentListScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
-                  const Icon(Icons.filter_list, size: 14, color: AppColors.primary),
+                  const Icon(
+                    Icons.filter_list,
+                    size: 14,
+                    color: AppColors.primary,
+                  ),
                   const SizedBox(width: 6),
-                  Text("Active Filters", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.textSecondaryColor)),
+                  Text(
+                    "Active Filters",
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: context.textSecondaryColor,
+                    ),
+                  ),
                   const Spacer(),
                   TextButton(
                     style: TextButton.styleFrom(
@@ -192,7 +214,13 @@ class _EquipmentListScreenState extends State<EquipmentListScreen> {
                       equipProv.resetFilters();
                       _searchController.clear();
                     },
-                    child: const Text("Clear All", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                    child: const Text(
+                      "Clear All",
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ],
               ),
@@ -217,7 +245,10 @@ class _EquipmentListScreenState extends State<EquipmentListScreen> {
         label: 'Add Equipment',
         backgroundColor: AppColors.primary,
         onPressed: () {
-          Navigator.push(context, AppPageTransitions.slideUp(const AddEquipmentScreen())).then((_) {
+          Navigator.push(
+            context,
+            AppPageTransitions.slideUp(const AddEquipmentScreen()),
+          ).then((_) {
             equipProv.fetchEquipment();
           });
         },
@@ -225,7 +256,11 @@ class _EquipmentListScreenState extends State<EquipmentListScreen> {
     );
   }
 
-  Widget _buildListContent(EquipmentProvider equipProv, List<EquipmentModel> list, dynamic user) {
+  Widget _buildListContent(
+    EquipmentProvider equipProv,
+    List<EquipmentModel> list,
+    dynamic user,
+  ) {
     if (equipProv.isLoading) {
       return ListView.builder(
         key: const ValueKey('loading'),
@@ -247,11 +282,26 @@ class _EquipmentListScreenState extends State<EquipmentListScreen> {
           Center(
             child: Column(
               children: [
-                const Icon(Icons.error_outline, size: 64, color: AppColors.error),
+                const Icon(
+                  Icons.error_outline,
+                  size: 64,
+                  color: AppColors.error,
+                ),
                 const SizedBox(height: 16),
-                Text("Error Loading Catalog", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: context.textPrimaryColor)),
+                Text(
+                  "Error Loading Catalog",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: context.textPrimaryColor,
+                  ),
+                ),
                 const SizedBox(height: 8),
-                Text(equipProv.errorMessage, style: TextStyle(color: context.textSecondaryColor), textAlign: TextAlign.center),
+                Text(
+                  equipProv.errorMessage,
+                  style: TextStyle(color: context.textSecondaryColor),
+                  textAlign: TextAlign.center,
+                ),
                 const SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: () => equipProv.fetchEquipment(),
@@ -279,10 +329,21 @@ class _EquipmentListScreenState extends State<EquipmentListScreen> {
                     color: AppColors.primary.withAlpha(20),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.medical_services_outlined, size: 54, color: AppColors.primary),
+                  child: const Icon(
+                    Icons.medical_services_outlined,
+                    size: 54,
+                    color: AppColors.primary,
+                  ),
                 ),
                 const SizedBox(height: 20),
-                Text("No Equipment Found", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: context.textPrimaryColor)),
+                Text(
+                  "No Equipment Found",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: context.textPrimaryColor,
+                  ),
+                ),
                 const SizedBox(height: 8),
                 Text(
                   "Try refining your search or filters, or list a new item to get started.",
@@ -310,7 +371,8 @@ class _EquipmentListScreenState extends State<EquipmentListScreen> {
       itemCount: list.length,
       itemBuilder: (context, index) {
         final equipment = list[index];
-        final bool isOwner = user?.id == equipment.ownerId || user?.role == 'ADMIN';
+        final bool isOwner =
+            user?.id == equipment.ownerId || user?.role == 'ADMIN';
 
         Color statusColor = Colors.teal;
         if (equipment.status == 'REQUESTED') {
@@ -324,153 +386,182 @@ class _EquipmentListScreenState extends State<EquipmentListScreen> {
         return AnimatedListItem(
           index: index,
           child: Card(
-          margin: const EdgeInsets.only(bottom: 12),
-          elevation: 2,
-          color: context.cardBg,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
-            side: BorderSide(color: context.borderColor, width: 1.5),
-          ),
-          child: InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                AppPageTransitions.slideUp(
-                  EquipmentDetailScreen(equipment: equipment),
-                ),
-              );
-            },
-            borderRadius: BorderRadius.circular(18),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // M3 Equipment Thumbnail
-                  Hero(
-                    tag: 'equipment-image-${equipment.id}',
-                    child: Container(
-                      width: 90,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withAlpha(15),
-                        borderRadius: BorderRadius.circular(14),
+            margin: const EdgeInsets.only(bottom: 12),
+            elevation: 2,
+            color: context.cardBg,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(18),
+              side: BorderSide(color: context.borderColor, width: 1.5),
+            ),
+            child: InkWell(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  AppPageTransitions.slideUp(
+                    EquipmentDetailScreen(equipment: equipment),
+                  ),
+                );
+              },
+              borderRadius: BorderRadius.circular(18),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // M3 Equipment Thumbnail
+                    Hero(
+                      tag: 'equipment-image-${equipment.id}',
+                      child: Container(
+                        width: 90,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withAlpha(15),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: equipment.image.isNotEmpty
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(14),
+                                child: Image.network(
+                                  equipment.image,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (ctx, err, stack) => const Icon(
+                                    Icons.medical_services_outlined,
+                                    color: AppColors.primary,
+                                    size: 30,
+                                  ),
+                                ),
+                              )
+                            : const Icon(
+                                Icons.medical_services,
+                                color: AppColors.primary,
+                                size: 32,
+                              ),
                       ),
-                      child: equipment.image.isNotEmpty
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(14),
-                              child: Image.network(
-                                equipment.image,
-                                fit: BoxFit.cover,
-                                errorBuilder: (ctx, err, stack) => const Icon(
-                                  Icons.medical_services_outlined,
-                                  color: AppColors.primary,
-                                  size: 30,
+                    ),
+                    const SizedBox(width: 14),
+
+                    // Detail Fields
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                equipment.category,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: context.textSecondaryColor,
                                 ),
                               ),
-                            )
-                          : const Icon(
-                              Icons.medical_services,
-                              color: AppColors.primary,
-                              size: 32,
-                            ),
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-
-                  // Detail Fields
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              equipment.category,
-                              style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: context.textSecondaryColor),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: statusColor.withAlpha(25),
-                                borderRadius: BorderRadius.circular(8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: statusColor.withAlpha(25),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  equipment.status,
+                                  style: TextStyle(
+                                    color: statusColor,
+                                    fontSize: 8,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
-                              child: Text(
-                                equipment.status,
-                                style: TextStyle(color: statusColor, fontSize: 8, fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          equipment.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: context.textPrimaryColor,
+                            ],
                           ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          "Hospital/Donor: ${equipment.donor}",
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(fontSize: 11, color: context.textSecondaryColor),
-                        ),
-                        const SizedBox(height: 6),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Expanded(
-                              child: Text(
-                                "Qty: ${equipment.quantity} · ${equipment.condition}",
-                                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: context.textSecondaryColor),
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 1,
-                              ),
+                          const SizedBox(height: 4),
+                          Text(
+                            equipment.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                              color: context.textPrimaryColor,
                             ),
-                            if (isOwner)
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.edit_outlined, color: AppColors.primary, size: 18),
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(),
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) => EditEquipmentScreen(equipment: equipment),
-                                        ),
-                                      ).then((_) {
-                                        equipProv.fetchEquipment();
-                                      });
-                                    },
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            "Hospital/Donor: ${equipment.donor}",
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: context.textSecondaryColor,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  "Qty: ${equipment.quantity} · ${equipment.condition}",
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: context.textSecondaryColor,
                                   ),
-                                  const SizedBox(width: 10),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete_outline, color: AppColors.error, size: 18),
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(),
-                                    onPressed: () => _confirmDelete(context, equipment),
-                                  ),
-                                ],
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
+                                ),
                               ),
-                          ],
-                        )
-                      ],
+                              if (isOwner)
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.edit_outlined,
+                                        color: AppColors.primary,
+                                        size: 18,
+                                      ),
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (_) => EditEquipmentScreen(
+                                              equipment: equipment,
+                                            ),
+                                          ),
+                                        ).then((_) {
+                                          equipProv.fetchEquipment();
+                                        });
+                                      },
+                                    ),
+                                    const SizedBox(width: 10),
+                                    IconButton(
+                                      icon: const Icon(
+                                        Icons.delete_outline,
+                                        color: AppColors.error,
+                                        size: 18,
+                                      ),
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
+                                      onPressed: () =>
+                                          _confirmDelete(context, equipment),
+                                    ),
+                                  ],
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ), // end Padding
-          ), // end InkWell
-        ), // end Card
+                  ],
+                ),
+              ), // end Padding
+            ), // end InkWell
+          ), // end Card
         ); // end AnimatedListItem
       },
     );
@@ -495,36 +586,63 @@ class _EquipmentListScreenState extends State<EquipmentListScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text("Filter & Sort Equipment", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: context.textPrimaryColor)),
+                  Text(
+                    "Filter & Sort Equipment",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: context.textPrimaryColor,
+                    ),
+                  ),
                   IconButton(
                     icon: const Icon(Icons.close),
                     onPressed: () => Navigator.pop(ctx),
-                  )
+                  ),
                 ],
               ),
               const SizedBox(height: 16),
-              
-              Text("Category", style: TextStyle(fontWeight: FontWeight.bold, color: context.textPrimaryColor)),
+
+              Text(
+                "Category",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: context.textPrimaryColor,
+                ),
+              ),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
-                children: ['All', 'Mobility', 'Respiratory', 'Monitoring', 'Furniture', 'Surgical'].map((cat) {
-                  final isSelected = equipProv.selectedCategory == cat;
-                  return ChoiceChip(
-                    label: Text(cat),
-                    selected: isSelected,
-                    onSelected: (val) => equipProv.setFilters(
-                      category: cat,
-                      condition: equipProv.selectedCondition,
-                      status: equipProv.selectedStatus,
-                      sort: equipProv.selectedSort,
-                    ),
-                  );
-                }).toList(),
+                children:
+                    [
+                      'All',
+                      'Mobility',
+                      'Respiratory',
+                      'Monitoring',
+                      'Furniture',
+                      'Surgical',
+                    ].map((cat) {
+                      final isSelected = equipProv.selectedCategory == cat;
+                      return ChoiceChip(
+                        label: Text(cat),
+                        selected: isSelected,
+                        onSelected: (val) => equipProv.setFilters(
+                          category: cat,
+                          condition: equipProv.selectedCondition,
+                          status: equipProv.selectedStatus,
+                          sort: equipProv.selectedSort,
+                        ),
+                      );
+                    }).toList(),
               ),
 
               const SizedBox(height: 16),
-              Text("Condition", style: TextStyle(fontWeight: FontWeight.bold, color: context.textPrimaryColor)),
+              Text(
+                "Condition",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: context.textPrimaryColor,
+                ),
+              ),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
@@ -544,11 +662,19 @@ class _EquipmentListScreenState extends State<EquipmentListScreen> {
               ),
 
               const SizedBox(height: 16),
-              Text("Sort By", style: TextStyle(fontWeight: FontWeight.bold, color: context.textPrimaryColor)),
+              Text(
+                "Sort By",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: context.textPrimaryColor,
+                ),
+              ),
               const SizedBox(height: 8),
               Wrap(
                 spacing: 8,
-                children: ['Newest', 'Name (A-Z)', 'Quantity (High-Low)'].map((sort) {
+                children: ['Newest', 'Name (A-Z)', 'Quantity (High-Low)'].map((
+                  sort,
+                ) {
                   final isSelected = equipProv.selectedSort == sort;
                   return ChoiceChip(
                     label: Text(sort),
@@ -583,7 +709,7 @@ class _EquipmentListScreenState extends State<EquipmentListScreen> {
                     ),
                   ),
                 ],
-              )
+              ),
             ],
           ),
         );

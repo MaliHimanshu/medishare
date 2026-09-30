@@ -91,11 +91,7 @@ class MsImage extends StatelessWidget {
 
     return ClipRRect(
       borderRadius: border,
-      child: SizedBox(
-        width: width,
-        height: height,
-        child: imageWidget,
-      ),
+      child: SizedBox(width: width, height: height, child: imageWidget),
     );
   }
 

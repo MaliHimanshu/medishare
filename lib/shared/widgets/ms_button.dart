@@ -34,9 +34,9 @@ class MsButton extends StatelessWidget {
     this.icon,
     this.height,
     this.borderRadius,
-  })  : isOutlined = true,
-        backgroundColor = null,
-        foregroundColor = AppColors.primary;
+  }) : isOutlined = true,
+       backgroundColor = null,
+       foregroundColor = AppColors.primary;
 
   @override
   Widget build(BuildContext context) {
@@ -74,7 +74,9 @@ class MsButton extends StatelessWidget {
           style: OutlinedButton.styleFrom(
             foregroundColor: foregroundColor ?? AppColors.primary,
             side: BorderSide(
-              color: disabled ? AppColors.border : (foregroundColor ?? AppColors.primary),
+              color: disabled
+                  ? AppColors.border
+                  : (foregroundColor ?? AppColors.primary),
               width: 1.5,
             ),
             shape: RoundedRectangleBorder(borderRadius: radius),

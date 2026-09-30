@@ -36,10 +36,7 @@ class MSSectionHeader extends StatelessWidget {
             ),
             child: Text(
               actionLabel!,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 13,
-              ),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
             ),
           ),
       ],

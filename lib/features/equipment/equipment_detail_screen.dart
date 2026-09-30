@@ -22,10 +22,7 @@ import '../../core/constants/app_colors.dart';
 class EquipmentDetailScreen extends StatefulWidget {
   final EquipmentModel equipment;
 
-  const EquipmentDetailScreen({
-    super.key,
-    required this.equipment,
-  });
+  const EquipmentDetailScreen({super.key, required this.equipment});
 
   @override
   State<EquipmentDetailScreen> createState() => _EquipmentDetailScreenState();
@@ -40,25 +37,36 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text("Delete Listing"),
-        content: Text("Are you sure you want to delete '${widget.equipment.name}'? This action cannot be undone."),
+        content: Text(
+          "Are you sure you want to delete '${widget.equipment.name}'? This action cannot be undone.",
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
             child: const Text("Cancel"),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error, foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: Colors.white,
+            ),
             onPressed: () async {
               final provider = context.read<EquipmentProvider>();
               final messenger = ScaffoldMessenger.of(context);
               final navigator = Navigator.of(context);
               Navigator.pop(ctx);
-              
-              final success = await provider.deleteEquipment(widget.equipment.id);
+
+              final success = await provider.deleteEquipment(
+                widget.equipment.id,
+              );
               if (mounted) {
                 messenger.showSnackBar(
                   SnackBar(
-                    content: Text(success ? "Deleted successfully." : "Failed to delete listing."),
+                    content: Text(
+                      success
+                          ? "Deleted successfully."
+                          : "Failed to delete listing.",
+                    ),
                     behavior: SnackBarBehavior.floating,
                   ),
                 );
@@ -130,18 +138,20 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
                           final navigator = Navigator.of(ctx);
                           setStateDialog(() => _isRequesting = true);
                           final success = await provider.requestEquipment(
-                                equipmentId: widget.equipment.id,
-                                reason: reasonController.text.trim(),
-                              );
+                            equipmentId: widget.equipment.id,
+                            reason: reasonController.text.trim(),
+                          );
                           setStateDialog(() => _isRequesting = false);
-                          
+
                           if (mounted) {
                             navigator.pop();
                             messenger.showSnackBar(
                               SnackBar(
-                                content: Text(success
-                                    ? "Request submitted successfully!"
-                                    : "Failed to submit request. Item may already be requested."),
+                                content: Text(
+                                  success
+                                      ? "Request submitted successfully!"
+                                      : "Failed to submit request. Item may already be requested.",
+                                ),
                                 behavior: SnackBarBehavior.floating,
                               ),
                             );
@@ -151,7 +161,10 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
                       ? const SizedBox(
                           width: 20,
                           height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
                         )
                       : const Text("Submit Request"),
                 ),
@@ -175,7 +188,11 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
     final auth = context.watch<AuthProvider>();
     final user = auth.user;
     final role = user?.role ?? 'DONOR';
-    final bool isOwner = (role != 'RECIPIENT' && user?.id != null && user?.id == widget.equipment.ownerId) || role == 'ADMIN';
+    final bool isOwner =
+        (role != 'RECIPIENT' &&
+            user?.id != null &&
+            user?.id == widget.equipment.ownerId) ||
+        role == 'ADMIN';
 
     Color statusColor = Colors.teal;
     if (widget.equipment.status == 'REQUESTED') {
@@ -189,7 +206,10 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: Text(widget.equipment.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+        title: Text(
+          widget.equipment.name,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
         actions: [
           IconButton(
@@ -210,7 +230,8 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => EditEquipmentScreen(equipment: widget.equipment),
+                    builder: (_) =>
+                        EditEquipmentScreen(equipment: widget.equipment),
                   ),
                 );
               },
@@ -252,7 +273,7 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
                       ),
               ),
             ),
-            
+
             Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
@@ -289,11 +310,17 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
                         ),
                       ),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: statusColor.withAlpha(25),
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: statusColor.withAlpha(50), width: 1),
+                          border: Border.all(
+                            color: statusColor.withAlpha(50),
+                            width: 1,
+                          ),
                         ),
                         child: Text(
                           widget.equipment.status,
@@ -319,15 +346,35 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
                       padding: const EdgeInsets.all(16),
                       child: Column(
                         children: [
-                          _buildDetailRow(Icons.business_outlined, "Manufacturer", widget.equipment.manufacturer),
+                          _buildDetailRow(
+                            Icons.business_outlined,
+                            "Manufacturer",
+                            widget.equipment.manufacturer,
+                          ),
                           const Divider(height: 20),
-                          _buildDetailRow(Icons.health_and_safety_outlined, "Condition", widget.equipment.condition),
+                          _buildDetailRow(
+                            Icons.health_and_safety_outlined,
+                            "Condition",
+                            widget.equipment.condition,
+                          ),
                           const Divider(height: 20),
-                          _buildDetailRow(Icons.inventory_2_outlined, "Quantity Available", "${widget.equipment.quantity} units"),
+                          _buildDetailRow(
+                            Icons.inventory_2_outlined,
+                            "Quantity Available",
+                            "${widget.equipment.quantity} units",
+                          ),
                           const Divider(height: 20),
-                          _buildDetailRow(Icons.location_on_outlined, "Location", widget.equipment.location),
+                          _buildDetailRow(
+                            Icons.location_on_outlined,
+                            "Location",
+                            widget.equipment.location,
+                          ),
                           const Divider(height: 20),
-                          _buildDetailRow(Icons.local_hospital_outlined, "Listed By", widget.equipment.donor),
+                          _buildDetailRow(
+                            Icons.local_hospital_outlined,
+                            "Listed By",
+                            widget.equipment.donor,
+                          ),
                         ],
                       ),
                     ),
@@ -355,14 +402,16 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: 40),
-                  
+
                   // M3 Action Buttons Row
                   Row(
                     children: [
                       // Bookmark Action Button
                       IconButton.outlined(
                         icon: Icon(
-                          _isBookmarked ? Icons.bookmark : Icons.bookmark_border_outlined,
+                          _isBookmarked
+                              ? Icons.bookmark
+                              : Icons.bookmark_border_outlined,
                           color: AppColors.primary,
                         ),
                         onPressed: () {
@@ -371,43 +420,63 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
                           });
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(_isBookmarked ? "Added to bookmarks." : "Removed from bookmarks."),
+                              content: Text(
+                                _isBookmarked
+                                    ? "Added to bookmarks."
+                                    : "Removed from bookmarks.",
+                              ),
                               behavior: SnackBarBehavior.floating,
                             ),
                           );
                         },
                       ),
                       const SizedBox(width: 8),
-                      
+
                       if (!isOwner) ...[
                         // Message Owner Button
                         IconButton.outlined(
-                          icon: const Icon(Icons.forum_outlined, color: AppColors.primary),
+                          icon: const Icon(
+                            Icons.forum_outlined,
+                            color: AppColors.primary,
+                          ),
                           tooltip: "Message Owner",
                           onPressed: () async {
                             final chatProv = context.read<ChatProvider>();
                             try {
-                              final conv = await chatProv.getOrCreateConversation(widget.equipment.ownerId);
+                              final conv = await chatProv
+                                  .getOrCreateConversation(
+                                    widget.equipment.ownerId,
+                                  );
                               if (context.mounted) {
-                                Navigator.push(context, MaterialPageRoute(
-                                  builder: (_) => PrivateChatScreen(
-                                    conversationId: conv.id,
-                                    otherUser: conv.getOtherUser(user?.id ?? '') ??
-                                        ChatUser(
-                                          id: widget.equipment.ownerId,
-                                          name: widget.equipment.donor.isNotEmpty
-                                              ? widget.equipment.donor
-                                              : 'Equipment Owner',
-                                          email: '',
-                                          role: 'DONOR',
-                                        ),
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => PrivateChatScreen(
+                                      conversationId: conv.id,
+                                      otherUser:
+                                          conv.getOtherUser(user?.id ?? '') ??
+                                          ChatUser(
+                                            id: widget.equipment.ownerId,
+                                            name:
+                                                widget
+                                                    .equipment
+                                                    .donor
+                                                    .isNotEmpty
+                                                ? widget.equipment.donor
+                                                : 'Equipment Owner',
+                                            email: '',
+                                            role: 'DONOR',
+                                          ),
+                                    ),
                                   ),
-                                ));
+                                );
                               }
                             } catch (e) {
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Could not start chat: $e'))
+                                  SnackBar(
+                                    content: Text('Could not start chat: $e'),
+                                  ),
                                 );
                               }
                             }
@@ -415,10 +484,13 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
                         ),
                         const SizedBox(width: 8),
                       ],
-                      
+
                       // Share Action Button
                       IconButton.outlined(
-                        icon: const Icon(Icons.share_outlined, color: AppColors.primary),
+                        icon: const Icon(
+                          Icons.share_outlined,
+                          color: AppColors.primary,
+                        ),
                         onPressed: () {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
@@ -428,7 +500,7 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
                           );
                         },
                       ),
-                      
+
                       // Owner Actions (DONOR / HOSPITAL / ADMIN)
                       if (isOwner) ...[
                         const SizedBox(width: 8),
@@ -438,19 +510,29 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
                             child: OutlinedButton.icon(
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: AppColors.primary,
-                                side: const BorderSide(color: AppColors.primary, width: 1.5),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                side: const BorderSide(
+                                  color: AppColors.primary,
+                                  width: 1.5,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
                               ),
                               onPressed: () {
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (_) => const MyRentalsScreen()),
+                                  MaterialPageRoute(
+                                    builder: (_) => const MyRentalsScreen(),
+                                  ),
                                 );
                               },
                               icon: const Icon(Icons.list_alt, size: 18),
                               label: const Text(
                                 "Rentals",
-                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
@@ -464,18 +546,27 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
                                 backgroundColor: AppColors.primary,
                                 foregroundColor: Colors.white,
                                 elevation: 2,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
                               ),
                               onPressed: () {
                                 Navigator.push(
                                   context,
-                                  MaterialPageRoute(builder: (_) => EditEquipmentScreen(equipment: widget.equipment)),
+                                  MaterialPageRoute(
+                                    builder: (_) => EditEquipmentScreen(
+                                      equipment: widget.equipment,
+                                    ),
+                                  ),
                                 );
                               },
                               icon: const Icon(Icons.edit, size: 18),
                               label: const Text(
                                 "Edit",
-                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
@@ -483,7 +574,9 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
                       ] else if (widget.equipment.status == 'AVAILABLE') ...[
                         // Non-owner role-based actions
                         // Rent Now: RECIPIENT or HOSPITAL (if mode is RENT or BOTH)
-                        if ((role == 'RECIPIENT' || role == 'HOSPITAL') && (widget.equipment.mode == 'RENT' || widget.equipment.mode == 'BOTH')) ...[
+                        if ((role == 'RECIPIENT' || role == 'HOSPITAL') &&
+                            (widget.equipment.mode == 'RENT' ||
+                                widget.equipment.mode == 'BOTH')) ...[
                           const SizedBox(width: 8),
                           Expanded(
                             child: SizedBox(
@@ -493,20 +586,32 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
                                   backgroundColor: const Color(0xFF0284C7),
                                   foregroundColor: Colors.white,
                                   elevation: 2,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
                                 ),
                                 onPressed: () => _showBookRentalDialog(context),
-                                icon: const Icon(Icons.handshake_outlined, size: 18),
+                                icon: const Icon(
+                                  Icons.handshake_outlined,
+                                  size: 18,
+                                ),
                                 label: const Text(
                                   "Rent Now",
-                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
                         ],
                         // Request: RECIPIENT, NGO, or HOSPITAL (if mode is DONATE or BOTH)
-                        if ((role == 'RECIPIENT' || role == 'NGO' || role == 'HOSPITAL') && (widget.equipment.mode == 'DONATE' || widget.equipment.mode == 'BOTH')) ...[
+                        if ((role == 'RECIPIENT' ||
+                                role == 'NGO' ||
+                                role == 'HOSPITAL') &&
+                            (widget.equipment.mode == 'DONATE' ||
+                                widget.equipment.mode == 'BOTH')) ...[
                           const SizedBox(width: 8),
                           Expanded(
                             child: SizedBox(
@@ -516,13 +621,18 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
                                   backgroundColor: AppColors.primary,
                                   foregroundColor: Colors.white,
                                   elevation: 2,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
                                 ),
                                 onPressed: () => _showRequestDialog(context),
                                 icon: const Icon(Icons.send_outlined, size: 18),
                                 label: const Text(
                                   "Request",
-                                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                             ),
@@ -552,16 +662,24 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
             children: [
               Text(
                 label,
-                style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.bold),
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 2),
               Text(
                 value,
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
               ),
             ],
           ),
-        )
+        ),
       ],
     );
   }

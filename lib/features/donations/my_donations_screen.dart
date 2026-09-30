@@ -97,13 +97,21 @@ class _MyDonationsScreenState extends State<MyDonationsScreen> {
                       ),
                       items: const [
                         DropdownMenuItem(
-                            value: 'PENDING', child: Text('PENDING')),
+                          value: 'PENDING',
+                          child: Text('PENDING'),
+                        ),
                         DropdownMenuItem(
-                            value: 'APPROVED', child: Text('APPROVED')),
+                          value: 'APPROVED',
+                          child: Text('APPROVED'),
+                        ),
                         DropdownMenuItem(
-                            value: 'COMPLETED', child: Text('COMPLETED')),
+                          value: 'COMPLETED',
+                          child: Text('COMPLETED'),
+                        ),
                         DropdownMenuItem(
-                            value: 'REJECTED', child: Text('REJECTED')),
+                          value: 'REJECTED',
+                          child: Text('REJECTED'),
+                        ),
                       ],
                       onChanged: (val) {
                         if (val != null) {
@@ -124,7 +132,10 @@ class _MyDonationsScreenState extends State<MyDonationsScreen> {
                           Navigator.pop(ctx);
 
                           final success = await donationProvider
-                              .updateDonationStatus(donation.id, selectedStatus);
+                              .updateDonationStatus(
+                                donation.id,
+                                selectedStatus,
+                              );
 
                           if (mounted) {
                             if (success) {
@@ -137,10 +148,11 @@ class _MyDonationsScreenState extends State<MyDonationsScreen> {
                             } else {
                               messenger.showSnackBar(
                                 SnackBar(
-                                  content: Text(donationProvider
-                                          .errorMessage.isNotEmpty
-                                      ? donationProvider.errorMessage
-                                      : 'Failed to update status.'),
+                                  content: Text(
+                                    donationProvider.errorMessage.isNotEmpty
+                                        ? donationProvider.errorMessage
+                                        : 'Failed to update status.',
+                                  ),
                                   backgroundColor: AppColors.error,
                                 ),
                               );
@@ -180,7 +192,8 @@ class _MyDonationsScreenState extends State<MyDonationsScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Delete Donation'),
         content: Text(
-            'Are you sure you want to delete donation "${donation.equipment?.name ?? 'Item'}"?'),
+          'Are you sure you want to delete donation "${donation.equipment?.name ?? 'Item'}"?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -192,8 +205,9 @@ class _MyDonationsScreenState extends State<MyDonationsScreen> {
               final messenger = ScaffoldMessenger.of(context);
               Navigator.pop(ctx);
 
-              final success =
-                  await donationProvider.deleteDonation(donation.id);
+              final success = await donationProvider.deleteDonation(
+                donation.id,
+              );
 
               if (mounted) {
                 if (success) {
@@ -206,9 +220,11 @@ class _MyDonationsScreenState extends State<MyDonationsScreen> {
                 } else {
                   messenger.showSnackBar(
                     SnackBar(
-                      content: Text(donationProvider.errorMessage.isNotEmpty
-                          ? donationProvider.errorMessage
-                          : 'Failed to delete donation.'),
+                      content: Text(
+                        donationProvider.errorMessage.isNotEmpty
+                            ? donationProvider.errorMessage
+                            : 'Failed to delete donation.',
+                      ),
                       backgroundColor: AppColors.error,
                     ),
                   );
@@ -296,37 +312,39 @@ class _MyDonationsScreenState extends State<MyDonationsScreen> {
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
-                    children: [
-                      'All',
-                      'Pending',
-                      'Approved',
-                      'Completed',
-                      'Rejected',
-                    ].map((st) {
-                      final isSelected = donationProvider.selectedStatus == st;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: FilterChip(
-                          label: Text(
-                            st == 'All' ? 'All Status' : st,
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: isSelected
-                                  ? FontWeight.bold
-                                  : FontWeight.normal,
-                              color: isSelected
-                                  ? AppColors.primary
-                                  : context.textPrimaryColor,
+                    children:
+                        [
+                          'All',
+                          'Pending',
+                          'Approved',
+                          'Completed',
+                          'Rejected',
+                        ].map((st) {
+                          final isSelected =
+                              donationProvider.selectedStatus == st;
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: FilterChip(
+                              label: Text(
+                                st == 'All' ? 'All Status' : st,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.normal,
+                                  color: isSelected
+                                      ? AppColors.primary
+                                      : context.textPrimaryColor,
+                                ),
+                              ),
+                              selected: isSelected,
+                              selectedColor: AppColors.primary.withAlpha(35),
+                              onSelected: (val) {
+                                donationProvider.setStatusFilter(st);
+                              },
                             ),
-                          ),
-                          selected: isSelected,
-                          selectedColor: AppColors.primary.withAlpha(35),
-                          onSelected: (val) {
-                            donationProvider.setStatusFilter(st);
-                          },
-                        ),
-                      );
-                    }).toList(),
+                          );
+                        }).toList(),
                   ),
                 ),
               ],
@@ -346,7 +364,9 @@ class _MyDonationsScreenState extends State<MyDonationsScreen> {
   }
 
   Widget _buildContent(
-      DonationProvider donationProvider, List<DonationModel> filtered) {
+    DonationProvider donationProvider,
+    List<DonationModel> filtered,
+  ) {
     if (donationProvider.isLoading) {
       return ListView.builder(
         padding: const EdgeInsets.all(16),
@@ -422,163 +442,175 @@ class _MyDonationsScreenState extends State<MyDonationsScreen> {
                   ),
                 );
               },
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Equipment Image with Hero transition & MsImage
-                      Hero(
-                        tag: 'donation_image_${item.id}',
-                        child: MsImage(
-                          imageUrl: equip?.image,
-                          width: 56,
-                          height: 56,
-                          borderRadius: BorderRadius.circular(12),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Equipment Image with Hero transition & MsImage
+                        Hero(
+                          tag: 'donation_image_${item.id}',
+                          child: MsImage(
+                            imageUrl: equip?.image,
+                            width: 56,
+                            height: 56,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 14),
+                        const SizedBox(width: 14),
 
-                      // Details
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              equip?.name ?? 'Medical Equipment',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                                color: context.textPrimaryColor,
+                        // Details
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                equip?.name ?? 'Medical Equipment',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                  color: context.textPrimaryColor,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Category: ${equip?.category ?? 'Medical'} • Qty: ${item.quantity}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: context.textSecondaryColor,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              'Donor: ${item.donorName} • Hospital: ${item.hospital}',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 11,
-                                color: AppColors.primary,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 12),
-                  Divider(height: 1, color: context.borderColor),
-                  const SizedBox(height: 10),
-
-                  // Bottom Row: Date, Status Badge, Action Buttons
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Row(
-                          children: [
-                            Icon(Icons.access_time,
-                                size: 14, color: context.textSecondaryColor),
-                            const SizedBox(width: 4),
-                            Expanded(
-                              child: Text(
-                                item.createdAt.isNotEmpty
-                                    ? item.createdAt
-                                        .replaceAll('T', ' ')
-                                        .split('.')
-                                        .first
-                                    : 'Recent',
+                              const SizedBox(height: 2),
+                              Text(
+                                'Category: ${equip?.category ?? 'Medical'} • Qty: ${item.quantity}',
                                 style: TextStyle(
                                   fontSize: 12,
                                   color: context.textSecondaryColor,
                                 ),
-                                overflow: TextOverflow.ellipsis,
                               ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Donor: ${item.donorName} • Hospital: ${item.hospital}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 12),
+                    Divider(height: 1, color: context.borderColor),
+                    const SizedBox(height: 10),
+
+                    // Bottom Row: Date, Status Badge, Action Buttons
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.access_time,
+                                size: 14,
+                                color: context.textSecondaryColor,
+                              ),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  item.createdAt.isNotEmpty
+                                      ? item.createdAt
+                                            .replaceAll('T', ' ')
+                                            .split('.')
+                                            .first
+                                      : 'Recent',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: context.textSecondaryColor,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Status Badge
+                            GestureDetector(
+                              onTap: () => _showStatusDialog(item),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: statusColor.withAlpha(25),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: statusColor.withAlpha(80),
+                                  ),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 3,
+                                      backgroundColor: statusColor,
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      item.status.toUpperCase(),
+                                      style: TextStyle(
+                                        color: statusColor,
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+
+                            // Edit Action (if Pending)
+                            if (isPending)
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.edit_outlined,
+                                  size: 16,
+                                  color: AppColors.primary,
+                                ),
+                                tooltip: 'Edit Donation',
+                                constraints: const BoxConstraints(),
+                                padding: const EdgeInsets.all(4),
+                                onPressed: () => _openEditDialog(item),
+                              ),
+
+                            // Delete Action
+                            IconButton(
+                              icon: const Icon(
+                                Icons.delete_outline,
+                                size: 16,
+                                color: Colors.red,
+                              ),
+                              tooltip: 'Delete Donation',
+                              constraints: const BoxConstraints(),
+                              padding: const EdgeInsets.all(4),
+                              onPressed: () => _confirmDelete(item),
                             ),
                           ],
                         ),
-                      ),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Status Badge
-                          GestureDetector(
-                            onTap: () => _showStatusDialog(item),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: statusColor.withAlpha(25),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                    color: statusColor.withAlpha(80)),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  CircleAvatar(
-                                    radius: 3,
-                                    backgroundColor: statusColor,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    item.status.toUpperCase(),
-                                    style: TextStyle(
-                                      color: statusColor,
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-
-                          // Edit Action (if Pending)
-                          if (isPending)
-                            IconButton(
-                              icon: const Icon(Icons.edit_outlined,
-                                  size: 16, color: AppColors.primary),
-                              tooltip: 'Edit Donation',
-                              constraints: const BoxConstraints(),
-                              padding: const EdgeInsets.all(4),
-                              onPressed: () => _openEditDialog(item),
-                            ),
-
-                          // Delete Action
-                          IconButton(
-                            icon: const Icon(Icons.delete_outline,
-                                size: 16, color: Colors.red),
-                            tooltip: 'Delete Donation',
-                            constraints: const BoxConstraints(),
-                            padding: const EdgeInsets.all(4),
-                            onPressed: () => _confirmDelete(item),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
-        ),
-      );
-    },
+        );
+      },
     );
   }
 }

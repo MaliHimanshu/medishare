@@ -17,10 +17,7 @@ import '../../core/constants/app_colors.dart';
 class LiveTrackingScreen extends StatefulWidget {
   final RentalModel rental;
 
-  const LiveTrackingScreen({
-    super.key,
-    required this.rental,
-  });
+  const LiveTrackingScreen({super.key, required this.rental});
 
   @override
   State<LiveTrackingScreen> createState() => _LiveTrackingScreenState();
@@ -79,7 +76,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
   Widget build(BuildContext context) {
     final authProv = context.watch<AuthProvider>();
     final trackingProv = context.watch<TrackingProvider>();
-    
+
     final currentUserId = authProv.user?.id;
     final isRenter = currentUserId == widget.rental.renterId;
 
@@ -126,7 +123,9 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Equipment Base Location: ${widget.rental.equipment?.name ?? "Base"}'),
+                  content: Text(
+                    'Equipment Base Location: ${widget.rental.equipment?.name ?? "Base"}',
+                  ),
                   duration: const Duration(seconds: 2),
                 ),
               );
@@ -137,7 +136,9 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.2),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.2),
                     blurRadius: 6,
                     offset: const Offset(0, 3),
                   ),
@@ -198,12 +199,18 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.7),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.7),
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
                   isRenter ? 'You' : 'Renter',
-                  style: const TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 8,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],
@@ -219,8 +226,8 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Live Tracking'),
-        backgroundColor: Colors.white,
+        title: Text('Live Tracking'),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         foregroundColor: Colors.black,
         elevation: 0.5,
         actions: [
@@ -283,11 +290,16 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                 ),
                 const SizedBox(height: 10),
                 _buildMapActionButton(
-                  icon: _showBaseLocation ? Icons.home_work : Icons.home_work_outlined,
+                  icon: _showBaseLocation
+                      ? Icons.home_work
+                      : Icons.home_work_outlined,
                   tooltip: 'Toggle Base Location Pin',
                   color: Colors.white,
-                  iconColor: _showBaseLocation ? Colors.teal.shade700 : Colors.black54,
-                  onPressed: () => setState(() => _showBaseLocation = !_showBaseLocation),
+                  iconColor: _showBaseLocation
+                      ? Colors.teal.shade700
+                      : Colors.black54,
+                  onPressed: () =>
+                      setState(() => _showBaseLocation = !_showBaseLocation),
                 ),
                 const SizedBox(height: 10),
                 _buildMapActionButton(
@@ -309,9 +321,14 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
               right: 80,
               child: Card(
                 color: Colors.red.shade50,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 10,
+                  ),
                   child: Row(
                     children: [
                       const Icon(Icons.error_outline, color: Colors.red),
@@ -319,7 +336,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                       Expanded(
                         child: Text(
                           trackingProv.errorMessage,
-                          style: const TextStyle(color: Colors.red, fontSize: 12),
+                          style: TextStyle(color: Colors.red, fontSize: 12),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -335,7 +352,12 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
             bottom: 0,
             left: 0,
             right: 0,
-            child: _buildBottomPanel(trackingProv, isRenter, liveLocation, baseLocation),
+            child: _buildBottomPanel(
+              trackingProv,
+              isRenter,
+              liveLocation,
+              baseLocation,
+            ),
           ),
         ],
       ),
@@ -355,7 +377,9 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.15),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -376,7 +400,8 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
     LatLng baseLocation,
   ) {
     final latestPing = trackingProv.currentSession?.latestPing;
-    final isSessionActive = trackingProv.currentSession?.isTrackingActive ?? false;
+    final isSessionActive =
+        trackingProv.currentSession?.isTrackingActive ?? false;
 
     // Calculate dynamic distance label if both coordinates are present
     String distanceStr = "Awaiting live GPS...";
@@ -398,9 +423,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
       margin: const EdgeInsets.all(16),
       elevation: 8,
       color: Colors.white,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: Column(
@@ -417,10 +440,10 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                     children: [
                       Text(
                         widget.rental.equipment?.name ?? 'Live Tracking',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -430,7 +453,9 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                         distanceStr,
                         style: TextStyle(
                           fontSize: 13,
-                          color: liveLocation != null ? AppColors.primary : Colors.black54,
+                          color: liveLocation != null
+                              ? AppColors.primary
+                              : Colors.black54,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -439,12 +464,19 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                 ),
                 // Status Badge
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 5,
+                  ),
                   decoration: BoxDecoration(
-                    color: isSessionActive ? Colors.green.shade50 : Colors.grey.shade100,
+                    color: isSessionActive
+                        ? Colors.green.shade50
+                        : Colors.grey.shade100,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: isSessionActive ? Colors.green.shade300 : Colors.grey.shade300,
+                      color: isSessionActive
+                          ? Colors.green.shade300
+                          : Colors.grey.shade300,
                     ),
                   ),
                   child: Row(
@@ -464,7 +496,9 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
-                          color: isSessionActive ? Colors.green.shade800 : Colors.grey.shade700,
+                          color: isSessionActive
+                              ? Colors.green.shade800
+                              : Colors.grey.shade700,
                         ),
                       ),
                     ],
@@ -479,18 +513,26 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           'Share My Location',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
                         ),
                         SizedBox(height: 2),
                         Text(
                           'Publishes foreground GPS to the owner',
-                          style: TextStyle(color: Colors.black54, fontSize: 11),
+                          style: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurface.withValues(alpha: 0.6),
+                            fontSize: 11,
+                          ),
                         ),
                       ],
                     ),
@@ -500,7 +542,8 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                     activeThumbColor: AppColors.primary,
                     onChanged: (val) async {
                       if (val) {
-                        final success = await trackingProv.startLocationPublishing(widget.rental.id);
+                        final success = await trackingProv
+                            .startLocationPublishing(widget.rental.id);
                         if (success && mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
@@ -510,7 +553,9 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                           );
                         }
                       } else {
-                        await trackingProv.stopLocationPublishing(widget.rental.id);
+                        await trackingProv.stopLocationPublishing(
+                          widget.rental.id,
+                        );
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
@@ -571,12 +616,21 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
           const SizedBox(height: 6),
           Text(
             title,
-            style: const TextStyle(fontSize: 11, color: Colors.black54),
+            style: TextStyle(
+              fontSize: 11,
+              color: Theme.of(
+                context,
+              ).colorScheme.onSurface.withValues(alpha: 0.6),
+            ),
           ),
           const SizedBox(height: 2),
           Text(
             value,
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.black87),
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
           ),
         ],
       ),

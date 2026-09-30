@@ -49,7 +49,9 @@ class GlobalSearchProvider extends ChangeNotifier {
   Future<void> _loadRecentSearches() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      _recentSearches = prefs.getStringList(_recentPrefKey) ?? ['Wheelchair', 'Hospital Bed', 'Oxygen', 'Civil Hospital'];
+      _recentSearches =
+          prefs.getStringList(_recentPrefKey) ??
+          ['Wheelchair', 'Hospital Bed', 'Oxygen', 'Civil Hospital'];
       notifyListeners();
     } catch (_) {}
   }
@@ -58,7 +60,9 @@ class GlobalSearchProvider extends ChangeNotifier {
     final trimmed = term.trim();
     if (trimmed.isEmpty) return;
 
-    _recentSearches.removeWhere((item) => item.toLowerCase() == trimmed.toLowerCase());
+    _recentSearches.removeWhere(
+      (item) => item.toLowerCase() == trimmed.toLowerCase(),
+    );
     _recentSearches.insert(0, trimmed);
     if (_recentSearches.length > 10) {
       _recentSearches = _recentSearches.sublist(0, 10);
@@ -127,7 +131,9 @@ class GlobalSearchProvider extends ChangeNotifier {
       // 1. Equipment Results
       if (futures[0].data != null && futures[0].data['success'] == true) {
         final List listData = futures[0].data['data'] ?? [];
-        final items = listData.map((json) => EquipmentModel.fromJson(json)).toList();
+        final items = listData
+            .map((json) => EquipmentModel.fromJson(json))
+            .toList();
         _equipmentResults = items.where((item) {
           return item.name.toLowerCase().contains(queryLower) ||
               item.category.toLowerCase().contains(queryLower) ||
@@ -138,10 +144,14 @@ class GlobalSearchProvider extends ChangeNotifier {
       // 2. Donation Results
       if (futures[1].data != null && futures[1].data['success'] == true) {
         final List listData = futures[1].data['data'] ?? [];
-        final items = listData.map((json) => DonationModel.fromJson(json)).toList();
+        final items = listData
+            .map((json) => DonationModel.fromJson(json))
+            .toList();
         _donationResults = items.where((item) {
-          return (item.equipment?.name.toLowerCase().contains(queryLower) ?? false) ||
-              (item.equipment?.category.toLowerCase().contains(queryLower) ?? false) ||
+          return (item.equipment?.name.toLowerCase().contains(queryLower) ??
+                  false) ||
+              (item.equipment?.category.toLowerCase().contains(queryLower) ??
+                  false) ||
               item.donorName.toLowerCase().contains(queryLower) ||
               item.hospital.toLowerCase().contains(queryLower);
         }).toList();
@@ -150,10 +160,14 @@ class GlobalSearchProvider extends ChangeNotifier {
       // 3. Request Results
       if (futures[2].data != null && futures[2].data['success'] == true) {
         final List listData = futures[2].data['data'] ?? [];
-        final items = listData.map((json) => RequestModel.fromJson(json)).toList();
+        final items = listData
+            .map((json) => RequestModel.fromJson(json))
+            .toList();
         _requestResults = items.where((item) {
-          return (item.equipment?.name.toLowerCase().contains(queryLower) ?? false) ||
-              (item.equipment?.category.toLowerCase().contains(queryLower) ?? false) ||
+          return (item.equipment?.name.toLowerCase().contains(queryLower) ??
+                  false) ||
+              (item.equipment?.category.toLowerCase().contains(queryLower) ??
+                  false) ||
               item.requesterName.toLowerCase().contains(queryLower) ||
               item.hospital.toLowerCase().contains(queryLower);
         }).toList();
@@ -162,7 +176,9 @@ class GlobalSearchProvider extends ChangeNotifier {
       // 4. Hospital Results
       if (futures[3].data != null && futures[3].data['success'] == true) {
         final List listData = futures[3].data['data'] ?? [];
-        final items = listData.map((json) => HospitalModel.fromJson(json)).toList();
+        final items = listData
+            .map((json) => HospitalModel.fromJson(json))
+            .toList();
         _hospitalResults = items.where((item) {
           return item.hospitalName.toLowerCase().contains(queryLower) ||
               item.city.toLowerCase().contains(queryLower) ||

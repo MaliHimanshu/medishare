@@ -8,10 +8,7 @@ import '../../providers/notification_provider.dart';
 class NotificationDetailScreen extends StatelessWidget {
   final NotificationModel notification;
 
-  const NotificationDetailScreen({
-    super.key,
-    required this.notification,
-  });
+  const NotificationDetailScreen({super.key, required this.notification});
 
   IconData _getIconForModule(String module, String type) {
     if (type.contains('APPROVAL') || type.contains('APPROVED')) {
@@ -75,7 +72,9 @@ class NotificationDetailScreen extends StatelessWidget {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Delete Notification'),
-        content: const Text('Are you sure you want to delete this notification?'),
+        content: const Text(
+          'Are you sure you want to delete this notification?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -88,7 +87,9 @@ class NotificationDetailScreen extends StatelessWidget {
               final navigator = Navigator.of(context);
               Navigator.pop(ctx);
 
-              final success = await provider.deleteNotification(notification.id);
+              final success = await provider.deleteNotification(
+                notification.id,
+              );
 
               if (context.mounted) {
                 if (success) {
@@ -119,7 +120,10 @@ class NotificationDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final iconData = _getIconForModule(notification.module, notification.type);
-    final themeColor = _getColorForModule(notification.module, notification.type);
+    final themeColor = _getColorForModule(
+      notification.module,
+      notification.type,
+    );
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -188,29 +192,43 @@ class NotificationDetailScreen extends StatelessWidget {
                   ListTile(
                     leading: CircleAvatar(
                       backgroundColor: Colors.indigo.shade50,
-                      child: const Icon(Icons.calendar_today, color: Colors.indigo),
+                      child: const Icon(
+                        Icons.calendar_today,
+                        color: Colors.indigo,
+                      ),
                     ),
                     title: const Text('Date & Time'),
                     subtitle: Text(
                       notification.createdAt.isNotEmpty
-                          ? notification.createdAt.replaceAll('T', ' • ').split('.').first
+                          ? notification.createdAt
+                                .replaceAll('T', ' • ')
+                                .split('.')
+                                .first
                           : 'Recently',
                     ),
                   ),
                   const Divider(height: 1),
                   ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: notification.isRead ? Colors.grey.shade100 : AppColors.primary.withAlpha(20),
+                      backgroundColor: notification.isRead
+                          ? Colors.grey.shade100
+                          : AppColors.primary.withAlpha(20),
                       child: Icon(
-                        notification.isRead ? Icons.mark_email_read : Icons.mark_email_unread,
-                        color: notification.isRead ? Colors.grey : AppColors.primary,
+                        notification.isRead
+                            ? Icons.mark_email_read
+                            : Icons.mark_email_unread,
+                        color: notification.isRead
+                            ? Colors.grey
+                            : AppColors.primary,
                       ),
                     ),
                     title: const Text('Status'),
                     subtitle: Text(
                       notification.isRead ? 'Read' : 'Unread',
                       style: TextStyle(
-                        color: notification.isRead ? Colors.grey : AppColors.primary,
+                        color: notification.isRead
+                            ? Colors.grey
+                            : AppColors.primary,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -242,7 +260,11 @@ class NotificationDetailScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(18),
                 child: Text(
                   notification.message,
-                  style: const TextStyle(fontSize: 15, height: 1.5, color: AppColors.textPrimary),
+                  style: const TextStyle(
+                    fontSize: 15,
+                    height: 1.5,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
               ),
             ),
@@ -258,7 +280,9 @@ class NotificationDetailScreen extends StatelessWidget {
                 icon: const Icon(Icons.arrow_back),
                 label: const Text('Back to Notifications'),
                 style: OutlinedButton.styleFrom(
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
             ),

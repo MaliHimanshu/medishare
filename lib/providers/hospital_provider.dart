@@ -26,7 +26,11 @@ class HospitalProvider extends ChangeNotifier {
   String get selectedState => _selectedState;
 
   List<String> get availableCities {
-    final cities = _hospitals.map((h) => h.city).where((c) => c.isNotEmpty).toSet().toList();
+    final cities = _hospitals
+        .map((h) => h.city)
+        .where((c) => c.isNotEmpty)
+        .toSet()
+        .toList();
     cities.sort();
     return ['All', ...cities];
   }
@@ -64,18 +68,28 @@ class HospitalProvider extends ChangeNotifier {
         final name = item.hospitalName.toLowerCase();
         final city = item.city.toLowerCase();
         final state = item.state.toLowerCase();
-        return name.contains(query) || city.contains(query) || state.contains(query);
+        return name.contains(query) ||
+            city.contains(query) ||
+            state.contains(query);
       }).toList();
     }
 
     // 2. Filter by City
     if (_selectedCity != 'All') {
-      list = list.where((item) => item.city.toLowerCase() == _selectedCity.toLowerCase()).toList();
+      list = list
+          .where(
+            (item) => item.city.toLowerCase() == _selectedCity.toLowerCase(),
+          )
+          .toList();
     }
 
     // 3. Filter by State
     if (_selectedState != 'All') {
-      list = list.where((item) => item.state.toLowerCase() == _selectedState.toLowerCase()).toList();
+      list = list
+          .where(
+            (item) => item.state.toLowerCase() == _selectedState.toLowerCase(),
+          )
+          .toList();
     }
 
     return list;
@@ -93,11 +107,14 @@ class HospitalProvider extends ChangeNotifier {
         final rawData = response.data['hospitals'] ?? response.data['data'];
         if (rawData is List) {
           _hospitals = rawData
-              .map((item) => HospitalModel.fromJson(item as Map<String, dynamic>))
+              .map(
+                (item) => HospitalModel.fromJson(item as Map<String, dynamic>),
+              )
               .toList();
         }
       } else {
-        _errorMessage = response.data?['message'] ?? 'Failed to load hospitals.';
+        _errorMessage =
+            response.data?['message'] ?? 'Failed to load hospitals.';
       }
     } on DioException catch (e) {
       _errorMessage = DioClient.handleError(e);
@@ -115,11 +132,14 @@ class HospitalProvider extends ChangeNotifier {
       final response = await _dio.get('${ApiEndpoints.hospital}/$id');
       if (response.data != null && response.data['success'] == true) {
         return HospitalModel.fromJson(
-            response.data['data'] as Map<String, dynamic>);
+          response.data['data'] as Map<String, dynamic>,
+        );
       }
     } catch (_) {}
-    return _hospitals.firstWhere((item) => item.id == id,
-        orElse: () => throw Exception('Hospital not found'));
+    return _hospitals.firstWhere(
+      (item) => item.id == id,
+      orElse: () => throw Exception('Hospital not found'),
+    );
   }
 
   // ── Add Hospital (POST /api/hospital) ─────────────────────────────
@@ -150,20 +170,22 @@ class HospitalProvider extends ChangeNotifier {
         'phone': phone,
         'email': email,
         if (website != null && website.isNotEmpty) 'website': website,
-        if (description != null && description.isNotEmpty) 'description': description,
+        if (description != null && description.isNotEmpty)
+          'description': description,
         if (image != null && image.isNotEmpty) 'image': image,
-        if (contactPerson != null && contactPerson.isNotEmpty) 'contactPerson': contactPerson,
+        if (contactPerson != null && contactPerson.isNotEmpty)
+          'contactPerson': contactPerson,
       };
 
       final response = await _dio.post(ApiEndpoints.hospital, data: payload);
       if (response.data != null && response.data['success'] == true) {
         final newHosp = HospitalModel.fromJson(
-            response.data['data'] as Map<String, dynamic>);
+          response.data['data'] as Map<String, dynamic>,
+        );
         _hospitals.insert(0, newHosp);
         return true;
       } else {
-        _errorMessage =
-            response.data?['message'] ?? 'Failed to add hospital.';
+        _errorMessage = response.data?['message'] ?? 'Failed to add hospital.';
         return false;
       }
     } on DioException catch (e) {
@@ -207,15 +229,21 @@ class HospitalProvider extends ChangeNotifier {
         'phone': phone,
         'email': email,
         if (website != null && website.isNotEmpty) 'website': website,
-        if (description != null && description.isNotEmpty) 'description': description,
+        if (description != null && description.isNotEmpty)
+          'description': description,
         if (image != null && image.isNotEmpty) 'image': image,
-        if (contactPerson != null && contactPerson.isNotEmpty) 'contactPerson': contactPerson,
+        if (contactPerson != null && contactPerson.isNotEmpty)
+          'contactPerson': contactPerson,
       };
 
-      final response = await _dio.put('${ApiEndpoints.hospital}/$id', data: payload);
+      final response = await _dio.put(
+        '${ApiEndpoints.hospital}/$id',
+        data: payload,
+      );
       if (response.data != null && response.data['success'] == true) {
         final updated = HospitalModel.fromJson(
-            response.data['data'] as Map<String, dynamic>);
+          response.data['data'] as Map<String, dynamic>,
+        );
         final idx = _hospitals.indexWhere((item) => item.id == id);
         if (idx != -1) {
           _hospitals[idx] = updated;

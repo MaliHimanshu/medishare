@@ -69,7 +69,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         showDialog(
           context: context,
           builder: (ctx) => AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
             title: const Row(
               children: [
                 Icon(Icons.check_circle_outline, color: AppColors.success),
@@ -80,7 +82,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
             content: const Text('Your password has been changed successfully.'),
             actions: [
               FilledButton(
-                style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                ),
                 onPressed: () {
                   Navigator.pop(ctx);
                   navigator.pop();
@@ -93,9 +97,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       } else {
         messenger.showSnackBar(
           SnackBar(
-            content: Text(profileProvider.errorMessage.isNotEmpty
-                ? profileProvider.errorMessage
-                : 'Failed to update password.'),
+            content: Text(
+              profileProvider.errorMessage.isNotEmpty
+                  ? profileProvider.errorMessage
+                  : 'Failed to update password.',
+            ),
             backgroundColor: AppColors.error,
           ),
         );
@@ -138,7 +144,10 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     Expanded(
                       child: Text(
                         'Choose a strong password with uppercase, lowercase, numbers, and special characters.',
-                        style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ),
                   ],
@@ -155,14 +164,20 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   labelText: 'Current Password *',
                   prefixIcon: const Icon(Icons.lock_outline),
                   suffixIcon: IconButton(
-                    icon: Icon(_obscureOld ? Icons.visibility_off : Icons.visibility),
+                    icon: Icon(
+                      _obscureOld ? Icons.visibility_off : Icons.visibility,
+                    ),
                     onPressed: () => setState(() => _obscureOld = !_obscureOld),
                   ),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                   filled: true,
                   fillColor: AppColors.surface,
                 ),
-                validator: (val) => val == null || val.isEmpty ? 'Current password is required' : null,
+                validator: (val) => val == null || val.isEmpty
+                    ? 'Current password is required'
+                    : null,
               ),
 
               const SizedBox(height: 16),
@@ -175,10 +190,14 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   labelText: 'New Password *',
                   prefixIcon: const Icon(Icons.lock_reset_outlined),
                   suffixIcon: IconButton(
-                    icon: Icon(_obscureNew ? Icons.visibility_off : Icons.visibility),
+                    icon: Icon(
+                      _obscureNew ? Icons.visibility_off : Icons.visibility,
+                    ),
                     onPressed: () => setState(() => _obscureNew = !_obscureNew),
                   ),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                   filled: true,
                   fillColor: AppColors.surface,
                 ),
@@ -195,16 +214,23 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   labelText: 'Confirm New Password *',
                   prefixIcon: const Icon(Icons.check_circle_outline),
                   suffixIcon: IconButton(
-                    icon: Icon(_obscureConfirm ? Icons.visibility_off : Icons.visibility),
-                    onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
+                    icon: Icon(
+                      _obscureConfirm ? Icons.visibility_off : Icons.visibility,
+                    ),
+                    onPressed: () =>
+                        setState(() => _obscureConfirm = !_obscureConfirm),
                   ),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
                   filled: true,
                   fillColor: AppColors.surface,
                 ),
                 validator: (val) {
-                  if (val == null || val.isEmpty) return 'Please confirm new password';
-                  if (val != _newPasswordController.text) return 'Passwords do not match';
+                  if (val == null || val.isEmpty)
+                    return 'Please confirm new password';
+                  if (val != _newPasswordController.text)
+                    return 'Passwords do not match';
                   return null;
                 },
               ),
@@ -216,21 +242,33 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                 width: double.infinity,
                 height: 54,
                 child: FilledButton.icon(
-                  onPressed: profileProvider.isLoading ? null : _submitChangePassword,
+                  onPressed: profileProvider.isLoading
+                      ? null
+                      : _submitChangePassword,
                   icon: profileProvider.isLoading
                       ? const SizedBox(
                           width: 20,
                           height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
                         )
                       : const Icon(Icons.lock_open_rounded),
                   label: Text(
-                    profileProvider.isLoading ? 'Updating Password...' : 'Update Password',
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    profileProvider.isLoading
+                        ? 'Updating Password...'
+                        : 'Update Password',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                   style: FilledButton.styleFrom(
                     backgroundColor: AppColors.primary,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
                 ),
               ),

@@ -9,7 +9,7 @@ class ApiEndpoints {
   // Android Emulator: 10.0.2.2  |  iOS Simulator: 127.0.0.1
   // Production Render API: https://medishare-zgmj.onrender.com/api
   // Local Dev (Physical Phone): laptop's Wi-Fi IPv4 address
-  static const String _liveUrl     = 'https://medishare-zgmj.onrender.com/api';
+  static const String _liveUrl = 'https://medishare-zgmj.onrender.com/api';
   static const String _localDevUrl = 'http://10.124.196.70:5000/api';
 
   // Set to true to use the live Render API on physical device or emulator during debug
@@ -43,15 +43,16 @@ class ApiEndpoints {
   }
 
   // ── Auth ────────────────────────────────────────────────
-  static const String register               = '/auth/register';
-  static const String login                  = '/auth/login';
-  static const String me                     = '/auth/me';
-  static const String sendOtp                = '/auth/send-otp';
-  static const String verifyOtp              = '/auth/verify-otp';
-  static const String resendOtp              = '/auth/resend-otp';
-  static const String forgotPasswordSendOtp  = '/auth/forgot-password/send-otp';
-  static const String forgotPasswordVerifyOtp= '/auth/forgot-password/verify-otp';
-  static const String resetPassword          = '/auth/forgot-password/reset-password';
+  static const String register = '/auth/register';
+  static const String login = '/auth/login';
+  static const String me = '/auth/me';
+  static const String sendOtp = '/auth/send-otp';
+  static const String verifyOtp = '/auth/verify-otp';
+  static const String resendOtp = '/auth/resend-otp';
+  static const String forgotPasswordSendOtp = '/auth/forgot-password/send-otp';
+  static const String forgotPasswordVerifyOtp =
+      '/auth/forgot-password/verify-otp';
+  static const String resetPassword = '/auth/forgot-password/reset-password';
 
   // ── Equipment ───────────────────────────────────────────
   static const String equipment = '/equipment';
@@ -88,17 +89,18 @@ class ApiEndpoints {
   static const String nearbyEquipment = '/equipment/nearby';
 
   // ── Rental ──────────────────────────────────────────────
-  static const String rental           = '/rental';
-  static const String rentalById       = '/rental';       // append /{id}
-  static const String createRental     = '/rental';
-  static const String updateRentalStatus = '/rental';     // append /{id}/status
-  static const String rentalPayment    = '/rental';       // append /{id}/payment-verify
+  static const String rental = '/rental';
+  static const String rentalById = '/rental'; // append /{id}
+  static const String createRental = '/rental';
+  static const String updateRentalStatus = '/rental'; // append /{id}/status
+  static const String rentalPayment = '/rental'; // append /{id}/payment-verify
 
   // ── Tracking ────────────────────────────────────────────
-  static const String tracking        = '/tracking';      // append /{rentalId}/...
+  static const String tracking = '/tracking'; // append /{rentalId}/...
 
   // ── Emergency Alerts ────────────────────────────────────
-  static const String emergencyAlerts           = '/emergency-alerts';
-  static const String emergencyAlertsMy         = '/emergency-alerts/my';
-  static const String emergencyAlertDeviceToken = '/emergency-alerts/device-token';
+  static const String emergencyAlerts = '/emergency-alerts';
+  static const String emergencyAlertsMy = '/emergency-alerts/my';
+  static const String emergencyAlertDeviceToken =
+      '/emergency-alerts/device-token';
 }

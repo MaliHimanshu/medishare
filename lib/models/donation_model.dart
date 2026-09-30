@@ -31,9 +31,15 @@ class DonationModel {
 
   factory DonationModel.fromJson(Map<String, dynamic> json) {
     try {
-      final donor = json['donor'] is Map ? json['donor'] as Map<String, dynamic> : null;
-      final equipJson = json['equipment'] is Map ? json['equipment'] as Map<String, dynamic> : null;
-      final equip = equipJson != null ? EquipmentModel.fromJson(equipJson) : null;
+      final donor = json['donor'] is Map
+          ? json['donor'] as Map<String, dynamic>
+          : null;
+      final equipJson = json['equipment'] is Map
+          ? json['equipment'] as Map<String, dynamic>
+          : null;
+      final equip = equipJson != null
+          ? EquipmentModel.fromJson(equipJson)
+          : null;
 
       int parsedQty = 1;
       if (json['quantity'] != null) {
@@ -42,13 +48,15 @@ class DonationModel {
         parsedQty = equip.quantity;
       }
 
-      final hospitalName = json['hospital']?.toString() ??
+      final hospitalName =
+          json['hospital']?.toString() ??
           donor?['hospital']?.toString() ??
           donor?['address']?.toString() ??
           equip?.location ??
           'MediShare Partner Hospital';
 
-      final notesText = json['notes']?.toString() ??
+      final notesText =
+          json['notes']?.toString() ??
           json['note']?.toString() ??
           equip?.description ??
           'No additional notes provided.';
@@ -56,7 +64,10 @@ class DonationModel {
       return DonationModel(
         id: json['id']?.toString() ?? '',
         donorId: json['donorId']?.toString() ?? donor?['id']?.toString() ?? '',
-        equipmentId: json['equipmentId']?.toString() ?? equipJson?['id']?.toString() ?? '',
+        equipmentId:
+            json['equipmentId']?.toString() ??
+            equipJson?['id']?.toString() ??
+            '',
         status: json['status']?.toString() ?? 'PENDING',
         createdAt: json['createdAt']?.toString() ?? '',
         updatedAt: json['updatedAt']?.toString() ?? '',

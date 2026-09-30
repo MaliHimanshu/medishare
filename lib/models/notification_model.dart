@@ -32,17 +32,27 @@ class NotificationModel {
       final lowerTitle = titleText.toLowerCase();
       final lowerMsg = msgText.toLowerCase();
 
-      if (rawType.contains('EMERGENCY') || lowerTitle.contains('emergency') || lowerMsg.contains('emergency')) {
+      if (rawType.contains('EMERGENCY') ||
+          lowerTitle.contains('emergency') ||
+          lowerMsg.contains('emergency')) {
         parsedModule = 'Emergency';
-      } else if (rawType == 'DONATION' || lowerTitle.contains('donat') || lowerMsg.contains('donat')) {
+      } else if (rawType == 'DONATION' ||
+          lowerTitle.contains('donat') ||
+          lowerMsg.contains('donat')) {
         parsedModule = 'Donations';
-      } else if (rawType == 'REQUEST' || lowerTitle.contains('request') || lowerMsg.contains('request')) {
+      } else if (rawType == 'REQUEST' ||
+          lowerTitle.contains('request') ||
+          lowerMsg.contains('request')) {
         parsedModule = 'Requests';
-      } else if (lowerTitle.contains('hospital') || lowerMsg.contains('hospital')) {
+      } else if (lowerTitle.contains('hospital') ||
+          lowerMsg.contains('hospital')) {
         parsedModule = 'Hospitals';
-      } else if (lowerTitle.contains('equipment') || lowerMsg.contains('equipment')) {
+      } else if (lowerTitle.contains('equipment') ||
+          lowerMsg.contains('equipment')) {
         parsedModule = 'Equipment';
-      } else if (lowerTitle.contains('ai') || lowerTitle.contains('chat') || lowerMsg.contains('ai')) {
+      } else if (lowerTitle.contains('ai') ||
+          lowerTitle.contains('chat') ||
+          lowerMsg.contains('ai')) {
         parsedModule = 'AI';
       }
 

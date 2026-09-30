@@ -18,7 +18,10 @@ class EmergencyAudioUtil {
   static final Set<String> _playedAlerts = {};
 
   /// Plays a single-shot emergency siren for NEW CRITICAL or HIGH alerts
-  static Future<void> playEmergencyAlertTone(String alertId, String priority) async {
+  static Future<void> playEmergencyAlertTone(
+    String alertId,
+    String priority,
+  ) async {
     try {
       final p = priority.toUpperCase();
       if (p != 'CRITICAL' && p != 'HIGH') return;

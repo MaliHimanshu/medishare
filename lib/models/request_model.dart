@@ -33,9 +33,15 @@ class RequestModel {
 
   factory RequestModel.fromJson(Map<String, dynamic> json) {
     try {
-      final requester = json['requester'] is Map ? json['requester'] as Map<String, dynamic> : null;
-      final equipJson = json['equipment'] is Map ? json['equipment'] as Map<String, dynamic> : null;
-      final equip = equipJson != null ? EquipmentModel.fromJson(equipJson) : null;
+      final requester = json['requester'] is Map
+          ? json['requester'] as Map<String, dynamic>
+          : null;
+      final equipJson = json['equipment'] is Map
+          ? json['equipment'] as Map<String, dynamic>
+          : null;
+      final equip = equipJson != null
+          ? EquipmentModel.fromJson(equipJson)
+          : null;
 
       int parsedQty = 1;
       if (json['quantity'] != null) {
@@ -44,24 +50,33 @@ class RequestModel {
         parsedQty = equip.quantity;
       }
 
-      final hospitalName = json['hospital']?.toString() ??
+      final hospitalName =
+          json['hospital']?.toString() ??
           requester?['hospital']?.toString() ??
           requester?['address']?.toString() ??
           equip?.location ??
           'MediShare Partner Hospital';
 
-      final reasonText = json['reason']?.toString() ??
+      final reasonText =
+          json['reason']?.toString() ??
           equip?.description ??
           'For patient medical care and recovery support.';
 
-      final notesText = json['notes']?.toString() ??
+      final notesText =
+          json['notes']?.toString() ??
           json['note']?.toString() ??
           'No extra notes.';
 
       return RequestModel(
         id: json['id']?.toString() ?? '',
-        equipmentId: json['equipmentId']?.toString() ?? equipJson?['id']?.toString() ?? '',
-        requesterId: json['requesterId']?.toString() ?? requester?['id']?.toString() ?? '',
+        equipmentId:
+            json['equipmentId']?.toString() ??
+            equipJson?['id']?.toString() ??
+            '',
+        requesterId:
+            json['requesterId']?.toString() ??
+            requester?['id']?.toString() ??
+            '',
         reason: reasonText,
         notes: notesText,
         status: json['status']?.toString() ?? 'PENDING',

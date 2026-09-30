@@ -36,7 +36,8 @@ class TrackingProvider extends ChangeNotifier {
         );
         _errorMessage = '';
       } else {
-        _errorMessage = response.data?['message'] ?? 'Failed to get latest location.';
+        _errorMessage =
+            response.data?['message'] ?? 'Failed to get latest location.';
       }
     } on DioException catch (e) {
       _errorMessage = DioClient.handleError(e);
@@ -50,15 +51,21 @@ class TrackingProvider extends ChangeNotifier {
   // ── Fetch Ping History Trail ─────────────────────────────
   Future<void> fetchTrackingHistory(String rentalId) async {
     try {
-      final response = await _dio.get('${ApiEndpoints.tracking}/$rentalId/history?limit=100');
+      final response = await _dio.get(
+        '${ApiEndpoints.tracking}/$rentalId/history?limit=100',
+      );
       if (response.data != null && response.data['success'] == true) {
         final listData = response.data['data']['pings'] as List<dynamic>;
         _history = listData
-            .map((item) => TrackingPingModel.fromJson(item as Map<String, dynamic>))
+            .map(
+              (item) =>
+                  TrackingPingModel.fromJson(item as Map<String, dynamic>),
+            )
             .toList();
         _errorMessage = '';
       } else {
-        _errorMessage = response.data?['message'] ?? 'Failed to get location history.';
+        _errorMessage =
+            response.data?['message'] ?? 'Failed to get location history.';
       }
     } on DioException catch (e) {
       _errorMessage = DioClient.handleError(e);
@@ -76,12 +83,15 @@ class TrackingProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _dio.post('${ApiEndpoints.tracking}/$rentalId/start');
+      final response = await _dio.post(
+        '${ApiEndpoints.tracking}/$rentalId/start',
+      );
       if (response.data != null && response.data['success'] == true) {
         await fetchLatestTracking(rentalId);
         return true;
       } else {
-        _errorMessage = response.data?['message'] ?? 'Failed to start tracking session.';
+        _errorMessage =
+            response.data?['message'] ?? 'Failed to start tracking session.';
         return false;
       }
     } on DioException catch (e) {
@@ -103,7 +113,9 @@ class TrackingProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _dio.post('${ApiEndpoints.tracking}/$rentalId/stop');
+      final response = await _dio.post(
+        '${ApiEndpoints.tracking}/$rentalId/stop',
+      );
       if (response.data != null && response.data['success'] == true) {
         if (_currentSession != null && _currentSession!.rentalId == rentalId) {
           _currentSession = LiveTrackingSessionModel(
@@ -127,7 +139,8 @@ class TrackingProvider extends ChangeNotifier {
         }
         return true;
       } else {
-        _errorMessage = response.data?['message'] ?? 'Failed to stop tracking session.';
+        _errorMessage =
+            response.data?['message'] ?? 'Failed to stop tracking session.';
         return false;
       }
     } on DioException catch (e) {
@@ -166,7 +179,9 @@ class TrackingProvider extends ChangeNotifier {
       );
 
       if (response.data != null && response.data['success'] == true) {
-        final newPing = TrackingPingModel.fromJson(response.data['data'] as Map<String, dynamic>);
+        final newPing = TrackingPingModel.fromJson(
+          response.data['data'] as Map<String, dynamic>,
+        );
         _history.add(newPing);
         if (_currentSession != null) {
           _currentSession = LiveTrackingSessionModel(
@@ -237,7 +252,8 @@ class TrackingProvider extends ChangeNotifier {
       }
 
       if (permission == LocationPermission.deniedForever) {
-        _errorMessage = 'Location permissions are permanently denied. Please enable in settings.';
+        _errorMessage =
+            'Location permissions are permanently denied. Please enable in settings.';
         notifyListeners();
         return false;
       }
@@ -248,7 +264,9 @@ class TrackingProvider extends ChangeNotifier {
 
       // 3. Obtain initial position & ping
       final initPos = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
       );
       await publishPing(
         rentalId,
@@ -265,18 +283,19 @@ class TrackingProvider extends ChangeNotifier {
         distanceFilter: 10, // trigger update only when moved 10 meters
       );
 
-      _positionSubscription = Geolocator.getPositionStream(
-        locationSettings: locationSettings,
-      ).listen((Position position) {
-        publishPing(
-          rentalId,
-          latitude: position.latitude,
-          longitude: position.longitude,
-          accuracy: position.accuracy,
-          speed: position.speed,
-          heading: position.heading,
-        );
-      });
+      _positionSubscription =
+          Geolocator.getPositionStream(
+            locationSettings: locationSettings,
+          ).listen((Position position) {
+            publishPing(
+              rentalId,
+              latitude: position.latitude,
+              longitude: position.longitude,
+              accuracy: position.accuracy,
+              speed: position.speed,
+              heading: position.heading,
+            );
+          });
 
       _isPublishing = true;
       _errorMessage = '';

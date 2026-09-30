@@ -94,7 +94,10 @@ class _AddHospitalScreenState extends State<AddHospitalScreen> {
               ),
               const SizedBox(height: 12),
               ListTile(
-                leading: const Icon(Icons.camera_alt_outlined, color: AppColors.primary),
+                leading: const Icon(
+                  Icons.camera_alt_outlined,
+                  color: AppColors.primary,
+                ),
                 title: const Text('Take Photo'),
                 onTap: () {
                   Navigator.pop(ctx);
@@ -102,7 +105,10 @@ class _AddHospitalScreenState extends State<AddHospitalScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.photo_library_outlined, color: AppColors.primary),
+                leading: const Icon(
+                  Icons.photo_library_outlined,
+                  color: AppColors.primary,
+                ),
                 title: const Text('Choose from Gallery'),
                 onTap: () {
                   Navigator.pop(ctx);
@@ -134,7 +140,9 @@ class _AddHospitalScreenState extends State<AddHospitalScreen> {
         if (mounted) {
           messenger.showSnackBar(
             SnackBar(
-              content: Text('Logo upload failed: ${e.toString().replaceAll('Exception: ', '')}'),
+              content: Text(
+                'Logo upload failed: ${e.toString().replaceAll('Exception: ', '')}',
+              ),
               backgroundColor: AppColors.error,
               behavior: SnackBarBehavior.floating,
             ),
@@ -173,9 +181,11 @@ class _AddHospitalScreenState extends State<AddHospitalScreen> {
       } else {
         messenger.showSnackBar(
           SnackBar(
-            content: Text(provider.errorMessage.isNotEmpty
-                ? provider.errorMessage
-                : 'Failed to add hospital.'),
+            content: Text(
+              provider.errorMessage.isNotEmpty
+                  ? provider.errorMessage
+                  : 'Failed to add hospital.',
+            ),
             backgroundColor: AppColors.error,
             behavior: SnackBarBehavior.floating,
           ),
@@ -216,7 +226,9 @@ class _AddHospitalScreenState extends State<AddHospitalScreen> {
                         onTap: _showImagePickerSheet,
                         child: CircleAvatar(
                           radius: 48,
-                          backgroundColor: AppColors.primary.withValues(alpha: 0.15),
+                          backgroundColor: AppColors.primary.withValues(
+                            alpha: 0.15,
+                          ),
                           child: _imageFile != null
                               ? ClipRRect(
                                   borderRadius: BorderRadius.circular(48),
@@ -263,14 +275,21 @@ class _AddHospitalScreenState extends State<AddHospitalScreen> {
                   decoration: InputDecoration(
                     labelText: 'Hospital Name *',
                     labelStyle: TextStyle(color: context.textSecondaryColor),
-                    prefixIcon: const Icon(Icons.local_hospital_outlined, color: AppColors.primary),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                    prefixIcon: const Icon(
+                      Icons.local_hospital_outlined,
+                      color: AppColors.primary,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                     filled: true,
                     fillColor: context.inputBg,
                   ),
                   validator: (val) {
-                    if (val == null || val.trim().isEmpty) return 'Hospital name is required';
-                    if (val.trim().length < 3) return 'Name must be at least 3 characters';
+                    if (val == null || val.trim().isEmpty)
+                      return 'Hospital name is required';
+                    if (val.trim().length < 3)
+                      return 'Name must be at least 3 characters';
                     return null;
                   },
                 ),
@@ -284,8 +303,13 @@ class _AddHospitalScreenState extends State<AddHospitalScreen> {
                   decoration: InputDecoration(
                     labelText: 'Contact Person',
                     labelStyle: TextStyle(color: context.textSecondaryColor),
-                    prefixIcon: const Icon(Icons.person_outline, color: AppColors.primary),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                    prefixIcon: const Icon(
+                      Icons.person_outline,
+                      color: AppColors.primary,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                     filled: true,
                     fillColor: context.inputBg,
                   ),
@@ -301,13 +325,19 @@ class _AddHospitalScreenState extends State<AddHospitalScreen> {
                   decoration: InputDecoration(
                     labelText: 'Phone (10 digits) *',
                     labelStyle: TextStyle(color: context.textSecondaryColor),
-                    prefixIcon: const Icon(Icons.phone_outlined, color: AppColors.primary),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                    prefixIcon: const Icon(
+                      Icons.phone_outlined,
+                      color: AppColors.primary,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                     filled: true,
                     fillColor: context.inputBg,
                   ),
                   validator: (val) {
-                    if (val == null || val.trim().isEmpty) return 'Phone is required';
+                    if (val == null || val.trim().isEmpty)
+                      return 'Phone is required';
                     if (!RegExp(r'^[0-9]{10}$').hasMatch(val.trim())) {
                       return 'Enter valid 10 digit phone';
                     }
@@ -324,14 +354,22 @@ class _AddHospitalScreenState extends State<AddHospitalScreen> {
                   decoration: InputDecoration(
                     labelText: 'Email Address *',
                     labelStyle: TextStyle(color: context.textSecondaryColor),
-                    prefixIcon: const Icon(Icons.email_outlined, color: AppColors.primary),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                    prefixIcon: const Icon(
+                      Icons.email_outlined,
+                      color: AppColors.primary,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                     filled: true,
                     fillColor: context.inputBg,
                   ),
                   validator: (val) {
-                    if (val == null || val.trim().isEmpty) return 'Email is required';
-                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(val.trim())) {
+                    if (val == null || val.trim().isEmpty)
+                      return 'Email is required';
+                    if (!RegExp(
+                      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                    ).hasMatch(val.trim())) {
                       return 'Enter a valid email address';
                     }
                     return null;
@@ -347,14 +385,21 @@ class _AddHospitalScreenState extends State<AddHospitalScreen> {
                   decoration: InputDecoration(
                     labelText: 'Address *',
                     labelStyle: TextStyle(color: context.textSecondaryColor),
-                    prefixIcon: const Icon(Icons.location_on_outlined, color: AppColors.primary),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                    prefixIcon: const Icon(
+                      Icons.location_on_outlined,
+                      color: AppColors.primary,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                     filled: true,
                     fillColor: context.inputBg,
                   ),
                   validator: (val) {
-                    if (val == null || val.trim().isEmpty) return 'Address is required';
-                    if (val.trim().length < 5) return 'Address must be at least 5 characters';
+                    if (val == null || val.trim().isEmpty)
+                      return 'Address is required';
+                    if (val.trim().length < 5)
+                      return 'Address must be at least 5 characters';
                     return null;
                   },
                 ),
@@ -370,12 +415,18 @@ class _AddHospitalScreenState extends State<AddHospitalScreen> {
                         style: TextStyle(color: context.textPrimaryColor),
                         decoration: InputDecoration(
                           labelText: 'City *',
-                          labelStyle: TextStyle(color: context.textSecondaryColor),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                          labelStyle: TextStyle(
+                            color: context.textSecondaryColor,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
                           filled: true,
                           fillColor: context.inputBg,
                         ),
-                        validator: (val) => val == null || val.trim().isEmpty ? 'City required' : null,
+                        validator: (val) => val == null || val.trim().isEmpty
+                            ? 'City required'
+                            : null,
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -385,12 +436,18 @@ class _AddHospitalScreenState extends State<AddHospitalScreen> {
                         style: TextStyle(color: context.textPrimaryColor),
                         decoration: InputDecoration(
                           labelText: 'State *',
-                          labelStyle: TextStyle(color: context.textSecondaryColor),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                          labelStyle: TextStyle(
+                            color: context.textSecondaryColor,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
                           filled: true,
                           fillColor: context.inputBg,
                         ),
-                        validator: (val) => val == null || val.trim().isEmpty ? 'State required' : null,
+                        validator: (val) => val == null || val.trim().isEmpty
+                            ? 'State required'
+                            : null,
                       ),
                     ),
                   ],
@@ -405,13 +462,19 @@ class _AddHospitalScreenState extends State<AddHospitalScreen> {
                   decoration: InputDecoration(
                     labelText: 'Pincode (6 digits) *',
                     labelStyle: TextStyle(color: context.textSecondaryColor),
-                    prefixIcon: const Icon(Icons.pin_outlined, color: AppColors.primary),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                    prefixIcon: const Icon(
+                      Icons.pin_outlined,
+                      color: AppColors.primary,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                     filled: true,
                     fillColor: context.inputBg,
                   ),
                   validator: (val) {
-                    if (val == null || val.trim().isEmpty) return 'Pincode is required';
+                    if (val == null || val.trim().isEmpty)
+                      return 'Pincode is required';
                     if (!RegExp(r'^[0-9]{6}$').hasMatch(val.trim())) {
                       return 'Enter valid 6-digit pincode';
                     }
@@ -429,8 +492,13 @@ class _AddHospitalScreenState extends State<AddHospitalScreen> {
                   decoration: InputDecoration(
                     labelText: 'Website (Optional)',
                     labelStyle: TextStyle(color: context.textSecondaryColor),
-                    prefixIcon: const Icon(Icons.language_outlined, color: AppColors.primary),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                    prefixIcon: const Icon(
+                      Icons.language_outlined,
+                      color: AppColors.primary,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                     filled: true,
                     fillColor: context.inputBg,
                   ),
@@ -446,8 +514,13 @@ class _AddHospitalScreenState extends State<AddHospitalScreen> {
                   decoration: InputDecoration(
                     labelText: 'Description (Optional)',
                     labelStyle: TextStyle(color: context.textSecondaryColor),
-                    prefixIcon: const Icon(Icons.description_outlined, color: AppColors.primary),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+                    prefixIcon: const Icon(
+                      Icons.description_outlined,
+                      color: AppColors.primary,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                     filled: true,
                     fillColor: context.inputBg,
                   ),
@@ -465,20 +538,28 @@ class _AddHospitalScreenState extends State<AddHospitalScreen> {
                         ? const SizedBox(
                             width: 20,
                             height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
                           )
                         : const Icon(Icons.add_business_outlined),
                     label: Text(
                       _isUploadingImage
                           ? 'Uploading Logo...'
                           : provider.isLoading
-                              ? 'Saving Hospital...'
-                              : 'Add Hospital',
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          ? 'Saving Hospital...'
+                          : 'Add Hospital',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                     style: FilledButton.styleFrom(
                       backgroundColor: AppColors.primary,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
                     ),
                   ),
                 ),

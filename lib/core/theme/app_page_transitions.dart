@@ -13,8 +13,14 @@ class AppPageTransitions {
         const end = Offset.zero;
         const curve = Curves.easeOutCubic;
 
-        final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-        final fadeTween = Tween<double>(begin: 0.0, end: 1.0).chain(CurveTween(curve: curve));
+        final tween = Tween(
+          begin: begin,
+          end: end,
+        ).chain(CurveTween(curve: curve));
+        final fadeTween = Tween<double>(
+          begin: 0.0,
+          end: 1.0,
+        ).chain(CurveTween(curve: curve));
 
         return SlideTransition(
           position: animation.drive(tween),
@@ -35,8 +41,14 @@ class AppPageTransitions {
       transitionsBuilder: (context, animation, secondaryAnimation, child) {
         const curve = Curves.easeOutBack;
 
-        final scaleTween = Tween<double>(begin: 0.92, end: 1.0).chain(CurveTween(curve: curve));
-        final fadeTween = Tween<double>(begin: 0.0, end: 1.0).chain(CurveTween(curve: Curves.easeOut));
+        final scaleTween = Tween<double>(
+          begin: 0.92,
+          end: 1.0,
+        ).chain(CurveTween(curve: curve));
+        final fadeTween = Tween<double>(
+          begin: 0.0,
+          end: 1.0,
+        ).chain(CurveTween(curve: Curves.easeOut));
 
         return ScaleTransition(
           scale: animation.drive(scaleTween),
@@ -59,8 +71,14 @@ class AppPageTransitions {
         const end = Offset.zero;
         const curve = Curves.easeOutCubic;
 
-        final tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-        final fadeTween = Tween<double>(begin: 0.0, end: 1.0).chain(CurveTween(curve: curve));
+        final tween = Tween(
+          begin: begin,
+          end: end,
+        ).chain(CurveTween(curve: curve));
+        final fadeTween = Tween<double>(
+          begin: 0.0,
+          end: 1.0,
+        ).chain(CurveTween(curve: curve));
 
         return SlideTransition(
           position: animation.drive(tween),

@@ -10,10 +10,7 @@ import 'edit_hospital_screen.dart';
 class HospitalDetailScreen extends StatefulWidget {
   final dynamic hospital; // Accepts HospitalModel or Map<String, dynamic>
 
-  const HospitalDetailScreen({
-    super.key,
-    required this.hospital,
-  });
+  const HospitalDetailScreen({super.key, required this.hospital});
 
   @override
   State<HospitalDetailScreen> createState() => _HospitalDetailScreenState();
@@ -28,7 +25,9 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
     if (widget.hospital is HospitalModel) {
       _currentHospital = widget.hospital as HospitalModel;
     } else if (widget.hospital is Map<String, dynamic>) {
-      _currentHospital = HospitalModel.fromJson(widget.hospital as Map<String, dynamic>);
+      _currentHospital = HospitalModel.fromJson(
+        widget.hospital as Map<String, dynamic>,
+      );
     } else {
       _currentHospital = const HospitalModel(
         id: '',
@@ -86,11 +85,13 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
             Text('Delete Hospital?'),
           ],
         ),
-        content: Text('Are you sure you want to delete "${_currentHospital.hospitalName}" from the MediShare network?'),
+        content: Text(
+          'Are you sure you want to delete "${_currentHospital.hospitalName}" from the MediShare network?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: Text('Cancel'),
           ),
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
@@ -99,7 +100,9 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
               final navigator = Navigator.of(context);
               Navigator.pop(ctx);
 
-              final success = await provider.deleteHospital(_currentHospital.id);
+              final success = await provider.deleteHospital(
+                _currentHospital.id,
+              );
 
               if (mounted) {
                 if (success) {
@@ -113,16 +116,18 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
                 } else {
                   messenger.showSnackBar(
                     SnackBar(
-                      content: Text(provider.errorMessage.isNotEmpty
-                          ? provider.errorMessage
-                          : 'Failed to delete hospital.'),
+                      content: Text(
+                        provider.errorMessage.isNotEmpty
+                            ? provider.errorMessage
+                            : 'Failed to delete hospital.',
+                      ),
                       backgroundColor: AppColors.error,
                     ),
                   );
                 }
               }
             },
-            child: const Text('Delete'),
+            child: Text('Delete'),
           ),
         ],
       ),
@@ -136,7 +141,7 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Hospital Details'),
+        title: Text('Hospital Details'),
         centerTitle: true,
         backgroundColor: AppColors.surface,
         foregroundColor: AppColors.textPrimary,
@@ -182,7 +187,7 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
                     children: [
                       Text(
                         h.hospitalName,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                           color: AppColors.textPrimary,
@@ -191,7 +196,7 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
                       const SizedBox(height: 4),
                       Text(
                         'Registration ID: #${h.id.isNotEmpty ? h.id : 'MS-HOSP-001'}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           color: AppColors.textSecondary,
                           fontWeight: FontWeight.w500,
@@ -201,7 +206,10 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.amber.shade50,
                     borderRadius: BorderRadius.circular(16),
@@ -214,10 +222,10 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
                       const SizedBox(width: 4),
                       Text(
                         h.rating.toStringAsFixed(1),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
-                          color: Colors.black87,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                     ],
@@ -239,11 +247,26 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildStatItem('Equipment', h.availableEquipmentCount.toString(), Icons.medical_services_outlined, Colors.teal),
+                  _buildStatItem(
+                    'Equipment',
+                    h.availableEquipmentCount.toString(),
+                    Icons.medical_services_outlined,
+                    Colors.teal,
+                  ),
                   Container(height: 30, width: 1, color: Colors.grey.shade300),
-                  _buildStatItem('Donations', h.totalDonationsCount.toString(), Icons.volunteer_activism_outlined, Colors.pink),
+                  _buildStatItem(
+                    'Donations',
+                    h.totalDonationsCount.toString(),
+                    Icons.volunteer_activism_outlined,
+                    Colors.pink,
+                  ),
                   Container(height: 30, width: 1, color: Colors.grey.shade300),
-                  _buildStatItem('Requests', h.activeRequestsCount.toString(), Icons.assignment_outlined, Colors.orange),
+                  _buildStatItem(
+                    'Requests',
+                    h.activeRequestsCount.toString(),
+                    Icons.assignment_outlined,
+                    Colors.orange,
+                  ),
                 ],
               ),
             ),
@@ -265,8 +288,10 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
                       backgroundColor: Colors.red.shade50,
                       child: const Icon(Icons.location_on, color: Colors.red),
                     ),
-                    title: const Text('Full Address'),
-                    subtitle: Text('${h.address}, ${h.city}, ${h.state} - ${h.pincode}'),
+                    title: Text('Full Address'),
+                    subtitle: Text(
+                      '${h.address}, ${h.city}, ${h.state} - ${h.pincode}',
+                    ),
                   ),
                   const Divider(height: 1),
                   ListTile(
@@ -274,8 +299,10 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
                       backgroundColor: Colors.green.shade50,
                       child: const Icon(Icons.phone, color: Colors.green),
                     ),
-                    title: const Text('Phone Number'),
-                    subtitle: Text(h.phone.isNotEmpty ? h.phone : 'Not Provided'),
+                    title: Text('Phone Number'),
+                    subtitle: Text(
+                      h.phone.isNotEmpty ? h.phone : 'Not Provided',
+                    ),
                   ),
                   const Divider(height: 1),
                   ListTile(
@@ -283,8 +310,10 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
                       backgroundColor: Colors.blue.shade50,
                       child: const Icon(Icons.email, color: Colors.blue),
                     ),
-                    title: const Text('Email Address'),
-                    subtitle: Text(h.email.isNotEmpty ? h.email : 'Not Provided'),
+                    title: Text('Email Address'),
+                    subtitle: Text(
+                      h.email.isNotEmpty ? h.email : 'Not Provided',
+                    ),
                   ),
                   const Divider(height: 1),
                   ListTile(
@@ -292,7 +321,7 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
                       backgroundColor: Colors.purple.shade50,
                       child: const Icon(Icons.person, color: Colors.purple),
                     ),
-                    title: const Text('Contact Person'),
+                    title: Text('Contact Person'),
                     subtitle: Text(h.contactPerson),
                   ),
                   const Divider(height: 1),
@@ -301,17 +330,26 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
                       backgroundColor: Colors.indigo.shade50,
                       child: const Icon(Icons.language, color: Colors.indigo),
                     ),
-                    title: const Text('Website'),
-                    subtitle: Text(h.website.isNotEmpty ? h.website : 'None listed'),
+                    title: Text('Website'),
+                    subtitle: Text(
+                      h.website.isNotEmpty ? h.website : 'None listed',
+                    ),
                   ),
                   const Divider(height: 1),
                   ListTile(
                     leading: CircleAvatar(
                       backgroundColor: Colors.teal.shade50,
-                      child: const Icon(Icons.calendar_month, color: Colors.teal),
+                      child: const Icon(
+                        Icons.calendar_month,
+                        color: Colors.teal,
+                      ),
                     ),
-                    title: const Text('Joined Date'),
-                    subtitle: Text(h.createdAt.isNotEmpty ? h.createdAt.split('T').first : 'Recently Joined'),
+                    title: Text('Joined Date'),
+                    subtitle: Text(
+                      h.createdAt.isNotEmpty
+                          ? h.createdAt.split('T').first
+                          : 'Recently Joined',
+                    ),
                   ),
                 ],
               ),
@@ -320,7 +358,7 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
             const SizedBox(height: 20),
 
             // Description Header & Body
-            const Text(
+            Text(
               'Facility Description',
               style: TextStyle(
                 fontSize: 16,
@@ -339,8 +377,10 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Text(
-                  h.description.isNotEmpty ? h.description : 'No description provided for this healthcare center.',
-                  style: const TextStyle(fontSize: 14, height: 1.4),
+                  h.description.isNotEmpty
+                      ? h.description
+                      : 'No description provided for this healthcare center.',
+                  style: TextStyle(fontSize: 14, height: 1.4),
                 ),
               ),
             ),
@@ -354,10 +394,12 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
                   child: OutlinedButton.icon(
                     onPressed: _openEditScreen,
                     icon: const Icon(Icons.edit_outlined),
-                    label: const Text('Edit Facility'),
+                    label: Text('Edit Facility'),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   ),
                 ),
@@ -366,11 +408,13 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
                   child: FilledButton.icon(
                     onPressed: _confirmDelete,
                     icon: const Icon(Icons.delete_outline),
-                    label: const Text('Delete'),
+                    label: Text('Delete'),
                     style: FilledButton.styleFrom(
                       backgroundColor: Colors.red,
                       padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
                   ),
                 ),
@@ -383,19 +427,21 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
     );
   }
 
-  Widget _buildStatItem(String label, String value, IconData icon, Color color) {
+  Widget _buildStatItem(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Column(
       children: [
         Icon(icon, color: color, size: 22),
         const SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
-        Text(
-          label,
-          style: const TextStyle(fontSize: 11, color: Colors.grey),
-        ),
+        Text(label, style: TextStyle(fontSize: 11, color: Colors.grey)),
       ],
     );
   }
