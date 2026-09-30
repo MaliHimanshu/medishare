@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1070100510061",
+    "project_id": "medishare-e6b5c",
+    "storage_bucket": "medishare-e6b5c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1070100510061:android:bcbeb691c11bcd475a5664",
+        "android_client_info": {
+          "package_name": "com.example.medishare"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBJc7fFvYH92IDKGLL25xQuGRIiuS7yiDg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
