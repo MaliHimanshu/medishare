@@ -39,7 +39,8 @@ class ChatProvider with ChangeNotifier {
   }
 
   Future<void> _initSocket() async {
-    final token = await _storage.read(key: 'jwt_token');
+    String? token = await _storage.read(key: 'auth_token');
+    token ??= await _storage.read(key: 'medishare_token');
     if (token == null) return;
 
     // Connect to WebSocket server using the base URL

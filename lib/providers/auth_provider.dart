@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../models/user_model.dart';
 import '../services/api_service.dart';
+import '../core/services/fcm_service.dart';
 
 enum AuthStatus { initial, loading, authenticated, unauthenticated, error }
 
@@ -41,6 +42,7 @@ class AuthProvider extends ChangeNotifier {
       if (user != null) {
         _user = user;
         _setStatus(AuthStatus.authenticated);
+        FcmService().registerDeviceToken();
       } else {
         await _authService.clearAuth();
         _setStatus(AuthStatus.unauthenticated);
@@ -59,6 +61,7 @@ class AuthProvider extends ChangeNotifier {
       final result = await _authService.login(email, password);
       _user = result.user;
       _setStatus(AuthStatus.authenticated);
+      FcmService().registerDeviceToken();
       return true;
     } catch (e) {
       _errorMessage = e.toString().replaceAll('Exception: ', '');
@@ -100,6 +103,7 @@ class AuthProvider extends ChangeNotifier {
         _errorMessage = result.otpError;
       }
       _setStatus(AuthStatus.authenticated);
+      FcmService().registerDeviceToken();
       return true;
     } catch (e) {
       _errorMessage = e.toString().replaceAll('Exception: ', '');

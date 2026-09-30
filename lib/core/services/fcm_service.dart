@@ -2,6 +2,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/material.dart';
+import '../network/dio_client.dart';
+import '../network/api_endpoints.dart';
 
 // Top-level background message handler
 @pragma('vm:entry-point')
@@ -33,7 +35,7 @@ class FcmService {
 
     await _requestPermission();
     await _initLocalNotifications();
-    await _getToken();
+    await registerDeviceToken();
 
     FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
     FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
@@ -60,7 +62,7 @@ class FcmService {
 
   Future<void> _initLocalNotifications() async {
     const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+        AndroidInitializationSettings('ic_launcher');
 
     const InitializationSettings initializationSettings = InitializationSettings(
       android: initializationSettingsAndroid,
@@ -79,11 +81,21 @@ class FcmService {
         ?.createNotificationChannel(_channel);
   }
 
-  Future<void> _getToken() async {
+  Future<void> registerDeviceToken() async {
     try {
       String? token = await _messaging.getToken();
       debugPrint('[FCM] Device Token: $token');
-      // In a real app, send this token to the backend
+      if (token != null) {
+        try {
+          await DioClient.instance.post(
+            ApiEndpoints.emergencyAlertDeviceToken,
+            data: {'token': token},
+          );
+          debugPrint('[FCM] Token updated on backend successfully');
+        } catch (e) {
+          debugPrint('[FCM] Error updating token on backend: $e');
+        }
+      }
     } catch (e) {
       debugPrint('[FCM] Error getting token: $e');
     }
@@ -108,7 +120,7 @@ class FcmService {
             channelDescription: _channel.description,
             importance: Importance.max,
             priority: Priority.high,
-            icon: '@mipmap/ic_launcher',
+            icon: 'ic_launcher',
             playSound: true,
           ),
         ),

@@ -12,14 +12,15 @@ class ApiEndpoints {
   static const String _liveUrl     = 'https://medishare-zgmj.onrender.com/api';
   static const String _localDevUrl = 'http://10.124.196.70:5000/api';
 
-  // Set to true to use the live Render API on physical device or emulator
-  static const bool _useLiveApi = false;
+  // Set to true to use the live Render API on physical device or emulator during debug
+  static const bool _useLiveApi = true;
 
   // Set to true if testing on a physical mobile phone connected to local backend via Wi-Fi
-  static const bool _usePhysicalPhoneLocal = true;
+  static const bool _usePhysicalPhoneLocal = false;
 
   static String get baseUrl {
-    if (_useLiveApi) return _liveUrl;
+    // ALWAYS use live URL in release mode, or if _useLiveApi is manually set to true
+    if (kReleaseMode || _useLiveApi) return _liveUrl;
 
     if (kIsWeb) {
       return 'http://localhost:5000/api';

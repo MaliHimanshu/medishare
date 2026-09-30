@@ -64,7 +64,8 @@ class EmergencyAlertProvider extends ChangeNotifier {
   Future<void> initSocket() async {
     if (_socket != null) return;
 
-    final token = await _storage.read(key: 'jwt_token');
+    String? token = await _storage.read(key: 'auth_token');
+    token ??= await _storage.read(key: 'medishare_token');
     if (token == null) return;
 
     final serverUrl = ApiEndpoints.baseUrl.replaceAll('/api', '');
