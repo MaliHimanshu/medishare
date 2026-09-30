@@ -120,10 +120,10 @@ const notifyNgosOfEmergency = async ({ alert, hospitalName, targetNgos, io }) =>
           android: {
             priority: "high",
             notification: {
-              channelId: "emergency_alerts_channel",
-              sound: "emergency_alert",
+              channelId: "medishare_alerts_v2",
+              sound: "default",
               priority: "high",
-              defaultSound: false,
+              defaultSound: true,
               defaultVibrateTimings: true,
             },
           },
@@ -205,8 +205,10 @@ const notifyHospitalOfResponse = async ({ alert, response, ngoName, totalAvailab
           android: {
             priority: "high",
             notification: {
-              channelId: "emergency_alerts_channel",
-              sound: "emergency_alert",
+              channelId: "medishare_alerts_v2",
+              sound: "default",
+              defaultSound: true,
+              defaultVibrateTimings: true,
             },
           },
         });
