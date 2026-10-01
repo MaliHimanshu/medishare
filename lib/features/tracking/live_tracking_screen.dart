@@ -422,7 +422,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
     return Card(
       margin: const EdgeInsets.all(16),
       elevation: 8,
-      color: Colors.white,
+      color: context.cardBg,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
@@ -455,7 +455,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                           fontSize: 13,
                           color: liveLocation != null
                               ? AppColors.primary
-                              : Colors.black54,
+                              : context.textSecondaryColor,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -498,7 +498,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                           fontWeight: FontWeight.bold,
                           color: isSessionActive
                               ? Colors.green.shade800
-                              : Colors.grey.shade700,
+                              : context.textSecondaryColor,
                         ),
                       ),
                     ],

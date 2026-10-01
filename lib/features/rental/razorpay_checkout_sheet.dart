@@ -99,9 +99,9 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
     final equip = widget.rental.equipment;
 
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: context.surfaceBg,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       padding: EdgeInsets.only(
         left: 20,
@@ -180,9 +180,9 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.grey.shade50,
+                color: context.cardBg,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey.shade200),
+                border: Border.all(color: context.borderColor),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -262,7 +262,7 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 18,
-                          color: Color(0xFF0C2340),
+                          color: context.textPrimaryColor,
                         ),
                       ),
                     ],
@@ -310,9 +310,9 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.red.shade50,
+                  color: AppColors.error.withAlpha(25),
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.red.shade200),
+                  border: Border.all(color: AppColors.error.withAlpha(50)),
                 ),
                 child: Row(
                   children: [
@@ -414,10 +414,10 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.blue.shade50.withAlpha(80) : Colors.white,
+          color: isSelected ? Colors.blue.withAlpha(40) : context.surfaceBg,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isSelected ? Colors.blueAccent : Colors.grey.shade300,
+            color: isSelected ? Colors.blueAccent : context.borderColor,
             width: isSelected ? 1.8 : 1.0,
           ),
         ),
@@ -428,12 +428,14 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
               decoration: BoxDecoration(
                 color: isSelected
                     ? Colors.blueAccent.withAlpha(25)
-                    : Colors.grey.shade100,
+                    : context.borderColor.withAlpha(100),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
                 icon,
-                color: isSelected ? Colors.blueAccent : Colors.grey.shade700,
+                color: isSelected
+                    ? Colors.blueAccent
+                    : context.textSecondaryColor,
                 size: 22,
               ),
             ),
@@ -455,7 +457,10 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
                   const SizedBox(height: 2),
                   Text(
                     subtitle,
-                    style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: context.textSecondaryColor,
+                    ),
                   ),
                 ],
               ),
@@ -466,7 +471,7 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: isSelected ? Colors.blueAccent : Colors.grey.shade400,
+                  color: isSelected ? Colors.blueAccent : context.borderColor,
                   width: 2,
                 ),
                 color: isSelected ? Colors.blueAccent : Colors.transparent,

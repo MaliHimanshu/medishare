@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../providers/chat_provider.dart';
 import '../../models/chat_user_model.dart';
 import '../../services/chat_service.dart';
+import '../../core/constants/app_colors.dart';
 import 'private_chat_screen.dart';
 
 class FindUsersScreen extends StatefulWidget {
@@ -60,35 +61,48 @@ class _FindUsersScreenState extends State<FindUsersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7FAFC),
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'New Message',
           style: TextStyle(
-            color: Color(0xFF172033),
+            color: context.textPrimaryColor,
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: context.surfaceBg,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Color(0xFF172033)),
+        iconTheme: IconThemeData(color: context.textPrimaryColor),
       ),
       body: Column(
         children: [
           Container(
-            color: Colors.white,
+            color: context.surfaceBg,
             padding: const EdgeInsets.all(16),
             child: TextField(
               controller: _searchCtrl,
               onChanged: _search,
+              style: TextStyle(color: context.textPrimaryColor),
               decoration: InputDecoration(
                 hintText: 'Search by name or email...',
-                prefixIcon: const Icon(Icons.search, color: Color(0xFF64748B)),
+                hintStyle: TextStyle(color: context.textSecondaryColor),
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: context.textSecondaryColor,
+                ),
                 filled: true,
-                fillColor: const Color(0xFFF7FAFC),
+                fillColor: context.inputBg,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: context.borderColor),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppColors.primary),
                 ),
               ),
             ),
@@ -104,18 +118,18 @@ class _FindUsersScreenState extends State<FindUsersScreen> {
                       _searchCtrl.text.isEmpty
                           ? 'Type to search users'
                           : 'No users found',
-                      style: const TextStyle(color: Color(0xFF64748B)),
+                      style: TextStyle(color: context.textSecondaryColor),
                     ),
                   )
                 : ListView.separated(
                     itemCount: _users.length,
                     separatorBuilder: (context, index) =>
-                        const Divider(height: 1),
+                        Divider(height: 1, color: context.borderColor),
                     itemBuilder: (context, index) {
                       final user = _users[index];
                       return ListTile(
                         leading: CircleAvatar(
-                          backgroundColor: const Color(0xFFCCFBF1),
+                          backgroundColor: AppColors.primary.withAlpha(25),
                           backgroundImage: user.profileImage != null
                               ? NetworkImage(user.profileImage!)
                               : null,
@@ -123,7 +137,7 @@ class _FindUsersScreenState extends State<FindUsersScreen> {
                               ? Text(
                                   user.name[0].toUpperCase(),
                                   style: const TextStyle(
-                                    color: Color(0xFF14B8A6),
+                                    color: AppColors.primary,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 )
@@ -131,9 +145,15 @@ class _FindUsersScreenState extends State<FindUsersScreen> {
                         ),
                         title: Text(
                           user.name,
-                          style: const TextStyle(fontWeight: FontWeight.w600),
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: context.textPrimaryColor,
+                          ),
                         ),
-                        subtitle: Text(user.role),
+                        subtitle: Text(
+                          user.role,
+                          style: TextStyle(color: context.textSecondaryColor),
+                        ),
                         trailing: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF2563EB),

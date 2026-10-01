@@ -403,7 +403,7 @@ class _NgoEmergencyDetailScreenState extends State<NgoEmergencyDetailScreen> {
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 16,
-                                      color: Colors.green.shade800,
+                                      color: Colors.green,
                                     ),
                                   ),
                                 ),

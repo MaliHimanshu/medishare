@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../providers/chat_provider.dart';
 import '../../models/chat_user_model.dart';
 import '../../models/message_model.dart';
+import '../../core/constants/app_colors.dart';
 
 class PrivateChatScreen extends StatefulWidget {
   final String conversationId;
@@ -63,11 +64,11 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7FAFC),
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: context.scaffoldBg,
         elevation: 1,
-        iconTheme: const IconThemeData(color: Color(0xFF172033)),
+        iconTheme: IconThemeData(color: context.textPrimaryColor),
         titleSpacing: 0,
         title: Row(
           children: [
@@ -95,8 +96,8 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
                 children: [
                   Text(
                     widget.otherUser?.name ?? 'Unknown User',
-                    style: const TextStyle(
-                      color: Color(0xFF172033),
+                    style: TextStyle(
+                      color: context.textPrimaryColor,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
@@ -169,7 +170,7 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
         margin: const EdgeInsets.symmetric(vertical: 4),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: isMe ? const Color(0xFF2563EB) : Colors.white,
+          color: isMe ? const Color(0xFF2563EB) : context.cardBg,
           borderRadius: BorderRadius.circular(16).copyWith(
             bottomRight: isMe
                 ? const Radius.circular(4)
@@ -178,7 +179,7 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
                 ? const Radius.circular(16)
                 : const Radius.circular(4),
           ),
-          border: isMe ? null : Border.all(color: Colors.grey.shade200),
+          border: isMe ? null : Border.all(color: context.borderColor),
         ),
         constraints: BoxConstraints(
           maxWidth: MediaQuery.of(context).size.width * 0.75,
@@ -191,7 +192,7 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
             Text(
               msg.content,
               style: TextStyle(
-                color: isMe ? Colors.white : const Color(0xFF172033),
+                color: isMe ? Colors.white : context.textPrimaryColor,
                 fontSize: 15,
               ),
             ),
@@ -227,7 +228,7 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
   Widget _buildMessageComposer() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      color: Colors.white,
+      color: context.cardBg,
       child: SafeArea(
         child: Row(
           children: [
@@ -239,9 +240,9 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF7FAFC),
+                  color: context.scaffoldBg,
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: Colors.grey.shade200),
+                  border: Border.all(color: context.borderColor),
                 ),
                 child: TextField(
                   controller: _msgController,
@@ -252,10 +253,10 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
                       text.isNotEmpty,
                     );
                   },
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintText: 'Type a message...',
                     border: InputBorder.none,
-                    hintStyle: TextStyle(color: Color(0xFF64748B)),
+                    hintStyle: TextStyle(color: context.textSecondaryColor),
                   ),
                 ),
               ),

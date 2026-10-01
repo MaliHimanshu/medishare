@@ -4,6 +4,7 @@ import '../../providers/chat_provider.dart';
 import '../../providers/auth_provider.dart';
 import 'find_users_screen.dart';
 import 'private_chat_screen.dart';
+import '../../core/constants/app_colors.dart';
 
 class MessagesScreen extends StatefulWidget {
   const MessagesScreen({super.key});
@@ -28,18 +29,18 @@ class _MessagesScreenState extends State<MessagesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7FAFC),
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'Messages',
           style: TextStyle(
-            color: Color(0xFF172033),
+            color: context.textPrimaryColor,
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        backgroundColor: context.scaffoldBg,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Color(0xFF172033)),
+        iconTheme: IconThemeData(color: context.textPrimaryColor),
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
@@ -69,7 +70,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
             child: ListView.separated(
               itemCount: chatProv.conversations.length,
               separatorBuilder: (context, index) =>
-                  const Divider(height: 1, color: Colors.black12),
+                  Divider(height: 1, color: context.borderColor),
               itemBuilder: (context, index) {
                 final conv = chatProv.conversations[index];
                 final otherUser = conv.getOtherUser(
@@ -105,9 +106,9 @@ class _MessagesScreenState extends State<MessagesScreen> {
                   ),
                   title: Text(
                     otherUser?.name ?? 'Unknown User',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF172033),
+                      color: context.textPrimaryColor,
                     ),
                   ),
                   subtitle: Text(
@@ -116,8 +117,8 @@ class _MessagesScreenState extends State<MessagesScreen> {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: unreadCount > 0
-                          ? const Color(0xFF172033)
-                          : const Color(0xFF64748B),
+                          ? context.textPrimaryColor
+                          : context.textSecondaryColor,
                       fontWeight: unreadCount > 0
                           ? FontWeight.bold
                           : FontWeight.normal,
@@ -173,18 +174,18 @@ class _MessagesScreenState extends State<MessagesScreen> {
         children: [
           Icon(Icons.chat_bubble_outline, size: 80, color: Colors.grey[400]),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'No conversations yet',
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF172033),
+              color: context.textPrimaryColor,
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Start a conversation with a MediShare user',
-            style: TextStyle(color: Color(0xFF64748B)),
+            style: TextStyle(color: context.textSecondaryColor),
           ),
         ],
       ),

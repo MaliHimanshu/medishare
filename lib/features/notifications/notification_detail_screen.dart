@@ -126,12 +126,12 @@ class NotificationDetailScreen extends StatelessWidget {
     );
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         title: const Text('Notification Details'),
         centerTitle: true,
-        backgroundColor: AppColors.surface,
-        foregroundColor: AppColors.textPrimary,
+        backgroundColor: context.surfaceBg,
+        foregroundColor: context.textPrimaryColor,
         elevation: 0,
         actions: [
           IconButton(
@@ -160,10 +160,10 @@ class NotificationDetailScreen extends StatelessWidget {
               child: Text(
                 notification.title,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+                  color: context.textPrimaryColor,
                 ),
               ),
             ),
@@ -173,10 +173,10 @@ class NotificationDetailScreen extends StatelessWidget {
             // Meta Info Card
             Card(
               elevation: 0,
-              color: AppColors.surface,
+              color: context.cardBg,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: Colors.grey.shade200),
+                side: BorderSide(color: context.borderColor),
               ),
               child: Column(
                 children: [
@@ -191,7 +191,7 @@ class NotificationDetailScreen extends StatelessWidget {
                   const Divider(height: 1),
                   ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: Colors.indigo.shade50,
+                      backgroundColor: Colors.indigo.withAlpha(25),
                       child: const Icon(
                         Icons.calendar_today,
                         color: Colors.indigo,
@@ -211,8 +211,8 @@ class NotificationDetailScreen extends StatelessWidget {
                   ListTile(
                     leading: CircleAvatar(
                       backgroundColor: notification.isRead
-                          ? Colors.grey.shade100
-                          : AppColors.primary.withAlpha(20),
+                          ? context.textSecondaryColor.withAlpha(25)
+                          : AppColors.primary.withAlpha(25),
                       child: Icon(
                         notification.isRead
                             ? Icons.mark_email_read
@@ -240,30 +240,30 @@ class NotificationDetailScreen extends StatelessWidget {
             const SizedBox(height: 20),
 
             // Message Box
-            const Text(
+            Text(
               'Notification Message',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
+                color: context.textPrimaryColor,
               ),
             ),
             const SizedBox(height: 8),
             Card(
               elevation: 0,
-              color: AppColors.surface,
+              color: context.cardBg,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
-                side: BorderSide(color: Colors.grey.shade200),
+                side: BorderSide(color: context.borderColor),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(18),
                 child: Text(
                   notification.message,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     height: 1.5,
-                    color: AppColors.textPrimary,
+                    color: context.textPrimaryColor,
                   ),
                 ),
               ),

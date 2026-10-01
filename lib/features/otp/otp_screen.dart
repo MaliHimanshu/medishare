@@ -10,6 +10,7 @@ import '../../providers/auth_provider.dart';
 import '../../shared/widgets/ms_logo.dart';
 import '../reset_password/reset_password_screen.dart';
 import '../home/home_screen.dart';
+import '../../shared/widgets/ms_verification_animation.dart';
 
 class OtpScreen extends StatefulWidget {
   final String target;
@@ -35,6 +36,7 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
   late List<TextEditingController> _controllers;
 
   bool _isVerifying = false;
+  bool _isSuccess = false;
   bool _isResending = false;
   String? _errorMessage;
 
@@ -292,6 +294,10 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
         if (!mounted) return;
 
         if (success) {
+          setState(() {
+            _isSuccess = true;
+          });
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: const Text('Phone number verified successfully! 🎉'),
@@ -302,6 +308,10 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
               ),
             ),
           );
+
+          await Future.delayed(const Duration(milliseconds: 1000));
+
+          if (!mounted) return;
 
           if (auth.isAuthenticated) {
             Navigator.pushAndRemoveUntil(
@@ -345,8 +355,6 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
     final boxWidth = ((screenWidth - 48 - ((_otpLength - 1) * 8)) / _otpLength)
         .clamp(42.0, 56.0);
 
-    const subtitleText = "Enter the 6-digit OTP sent to your phone";
-
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
@@ -375,19 +383,7 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
 
               SlideTransition(
                 position: _formSlide,
-                child: Container(
-                  height: 84,
-                  width: 84,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withAlpha(20),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.phonelink_ring_rounded,
-                    size: 42,
-                    color: AppColors.primary,
-                  ),
-                ),
+                child: MsVerificationAnimation(isSuccess: _isSuccess),
               ),
               const SizedBox(height: 24),
 
@@ -397,7 +393,9 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
                 child: Column(
                   children: [
                     Text(
-                      "Verify OTP",
+                      widget.type == 'phone'
+                          ? "Verify Your Phone"
+                          : "Verify Your Email",
                       style: TextStyle(
                         fontSize: 26,
                         fontWeight: FontWeight.w800,
@@ -407,7 +405,9 @@ class _OtpScreenState extends State<OtpScreen> with TickerProviderStateMixin {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      subtitleText,
+                      widget.type == 'phone'
+                          ? "We sent a 6-digit verification code to"
+                          : "We sent a 6-digit verification code to",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 14,

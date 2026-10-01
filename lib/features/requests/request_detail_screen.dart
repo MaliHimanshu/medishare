@@ -63,12 +63,12 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Update Request Status',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+                      color: context.textPrimaryColor,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -256,12 +256,12 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
     final statusColor = _getStatusColor(_currentRequest.status);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         title: const Text('Request Details'),
         centerTitle: true,
-        backgroundColor: AppColors.surface,
-        foregroundColor: AppColors.textPrimary,
+        backgroundColor: context.surfaceBg,
+        foregroundColor: context.textPrimaryColor,
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -294,18 +294,18 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                     children: [
                       Text(
                         equip?.name ?? 'Requested Equipment',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
+                          color: context.textPrimaryColor,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         'Request ID: #${_currentRequest.id}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
-                          color: AppColors.textSecondary,
+                          color: context.textSecondaryColor,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -339,10 +339,10 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
             // Information Grid Card
             Card(
               elevation: 0,
-              color: AppColors.surface,
+              color: context.cardBg,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: Colors.grey.shade200),
+                side: BorderSide(color: context.borderColor),
               ),
               child: Column(
                 children: [
@@ -407,21 +407,21 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
             const SizedBox(height: 20),
 
             // Purpose & Reason Card
-            const Text(
+            Text(
               'Purpose of Request',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
+                color: context.textPrimaryColor,
               ),
             ),
             const SizedBox(height: 8),
             Card(
               elevation: 0,
-              color: AppColors.surface,
+              color: context.cardBg,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
-                side: BorderSide(color: Colors.grey.shade200),
+                side: BorderSide(color: context.borderColor),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -437,21 +437,21 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
             const SizedBox(height: 16),
 
             // Additional Notes Card
-            const Text(
+            Text(
               'Additional Notes',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
+                color: context.textPrimaryColor,
               ),
             ),
             const SizedBox(height: 8),
             Card(
               elevation: 0,
-              color: AppColors.surface,
+              color: context.cardBg,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
-                side: BorderSide(color: Colors.grey.shade200),
+                side: BorderSide(color: context.borderColor),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16),

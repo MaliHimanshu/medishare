@@ -100,12 +100,12 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
         .toList();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         title: const Text('Request Equipment'),
         centerTitle: true,
-        backgroundColor: AppColors.surface,
-        foregroundColor: AppColors.textPrimary,
+        backgroundColor: context.surfaceBg,
+        foregroundColor: context.textPrimaryColor,
         elevation: 0,
       ),
       body: SafeArea(
@@ -164,12 +164,12 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                 const SizedBox(height: 24),
 
                 // Select Equipment Dropdown
-                const Text(
+                Text(
                   'Select Equipment *',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
-                    color: AppColors.textPrimary,
+                    color: context.textPrimaryColor,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -183,9 +183,9 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.amber.shade50,
+                      color: Colors.amber.withAlpha(20),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.amber.shade200),
+                      border: Border.all(color: Colors.amber.withAlpha(50)),
                     ),
                     child: Row(
                       children: [
@@ -196,7 +196,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                             'No available equipment currently listed.',
                             style: TextStyle(
                               fontSize: 13,
-                              color: Colors.amber.shade900,
+                              color: Colors.amber.shade800,
                             ),
                           ),
                         ),
@@ -214,7 +214,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                         borderRadius: BorderRadius.circular(14),
                       ),
                       filled: true,
-                      fillColor: AppColors.surface,
+                      fillColor: context.inputBg,
                     ),
                     items: availableItems.map((item) {
                       return DropdownMenuItem<EquipmentModel>(
@@ -298,12 +298,12 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                 const SizedBox(height: 20),
 
                 // Quantity Input
-                const Text(
+                Text(
                   'Requested Quantity *',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
-                    color: AppColors.textPrimary,
+                    color: context.textPrimaryColor,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -338,12 +338,12 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                 const SizedBox(height: 20),
 
                 // Purpose Input
-                const Text(
+                Text(
                   'Purpose of Request *',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
-                    color: AppColors.textPrimary,
+                    color: context.textPrimaryColor,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -374,12 +374,12 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                 const SizedBox(height: 20),
 
                 // Additional Notes Input
-                const Text(
+                Text(
                   'Additional Notes (Optional)',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 14,
-                    color: AppColors.textPrimary,
+                    color: context.textPrimaryColor,
                   ),
                 ),
                 const SizedBox(height: 8),
