@@ -1,0 +1,62 @@
+﻿<!DOCTYPE html>
+<html>
+<body>
+<script>
+async function analyze() {
+  try {
+    const response = await fetch('assets/audio/medishare_clear_sound.mp3');
+    const arrayBuffer = await response.arrayBuffer();
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+    
+    const channelData = audioBuffer.getChannelData(0); // mono
+    const sampleRate = audioBuffer.sampleRate;
+    const duration = audioBuffer.duration;
+    
+    // Simple peak detection (windowed RMS)
+    const windowSize = Math.floor(sampleRate * 0.05); // 50ms windows
+    let peaks = [];
+    for(let i = 0; i < channelData.length; i += windowSize) {
+      let sumSq = 0;
+      for(let j = 0; j < windowSize && (i+j) < channelData.length; j++) {
+        sumSq += channelData[i+j] * channelData[i+j];
+      }
+      let rms = Math.sqrt(sumSq / windowSize);
+      if (rms > 0.05) {
+        peaks.push({time: i / sampleRate, rms: rms});
+      }
+    }
+    
+    // Group nearby peaks
+    let majorEvents = [];
+    let currentEvent = null;
+    for(let p of peaks) {
+      if (!currentEvent) {
+        currentEvent = {start: p.time, end: p.time, maxRms: p.rms, peakTime: p.time};
+      } else {
+        if (p.time - currentEvent.end < 0.3) {
+          currentEvent.end = p.time;
+          if (p.rms > currentEvent.maxRms) {
+            currentEvent.maxRms = p.rms;
+            currentEvent.peakTime = p.time;
+          }
+        } else {
+          majorEvents.push(currentEvent);
+          currentEvent = {start: p.time, end: p.time, maxRms: p.rms, peakTime: p.time};
+        }
+      }
+    }
+    if (currentEvent) majorEvents.push(currentEvent);
+    
+    document.body.innerHTML = `Duration: ${duration.toFixed(3)}s<br>Events:<br>` + 
+      majorEvents.map(e => `[${e.start.toFixed(2)}s - ${e.end.toFixed(2)}s] Peak at ${e.peakTime.toFixed(2)}s (RMS: ${e.maxRms.toFixed(3)})`).join('<br>');
+    console.log("DONE_ANALYSIS");
+  } catch(e) {
+    document.body.innerHTML = "Error: " + e;
+    console.error(e);
+  }
+}
+analyze();
+</script>
+</body>
+</html>

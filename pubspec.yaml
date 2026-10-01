@@ -62,4 +62,4 @@ flutter:
     - assets/images/
     - assets/icons/
     - assets/animations/
-    - assets/audio/
+    - assets/audio/medishare_clear_sound.mp3

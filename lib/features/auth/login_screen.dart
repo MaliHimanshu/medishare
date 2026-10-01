@@ -74,8 +74,9 @@ class _LoginScreenState extends State<LoginScreen>
   }
 
   String? _validateIdentifier(String? v) {
-    if (v == null || v.trim().isEmpty)
+    if (v == null || v.trim().isEmpty) {
       return 'Email or phone number is required';
+    }
     final trimmed = v.trim();
     if (trimmed.contains('@')) {
       if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(trimmed)) {
@@ -204,7 +205,7 @@ class _LoginScreenState extends State<LoginScreen>
                           prefixIcon: Icons.person_outline_rounded,
                           errorText: _identifierError,
                           textInputAction: TextInputAction.next,
-                          autofocus: true,
+                          autofocus: false,
                           onChanged: (_) {
                             if (_identifierError != null) {
                               setState(() => _identifierError = null);
