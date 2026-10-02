@@ -13,34 +13,14 @@
 
 const prisma = require("../config/prisma");
 
-let firebaseAdmin = null;
-let isFcmConfigured = false;
+const { app, getMessaging } = require("../config/firebaseAdmin");
 
-// Attempt optional Firebase Admin initialization
-try {
-  const serviceAccountRaw = process.env.FIREBASE_SERVICE_ACCOUNT;
-  if (serviceAccountRaw) {
-    const admin = require("firebase-admin");
-    let serviceAccount;
-    try {
-      serviceAccount = JSON.parse(serviceAccountRaw);
-    } catch (_) {
-      serviceAccount = require(serviceAccountRaw);
-    }
-    if (!admin.apps.length) {
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-      });
-    }
-    firebaseAdmin = admin;
-    isFcmConfigured = true;
-    console.log("🔥 Firebase Admin (FCM) initialized successfully");
-  } else {
-    console.log("ℹ️ [Push Notification] FCM credentials not set. Using in-app DB + WebSocket notifications.");
-  }
-} catch (err) {
-  console.warn("⚠️ [Push Notification] Firebase initialization skipped:", err.message);
-  isFcmConfigured = false;
+const isFcmConfigured = !!app;
+
+if (isFcmConfigured) {
+  console.log("🔥 [Push Notification] Using shared Firebase Admin (FCM)");
+} else {
+  console.log("ℹ️ [Push Notification] FCM credentials not set. Using in-app DB + WebSocket notifications.");
 }
 
 /**
@@ -98,7 +78,7 @@ const notifyNgosOfEmergency = async ({ alert, hospitalName, targetNgos, io }) =>
   }
 
   // 3. FCM Push Notifications (if configured and tokens available)
-  if (isFcmConfigured && firebaseAdmin) {
+  if (isFcmConfigured && getMessaging) {
     const fcmTokens = targetNgos
       .map((ngo) => ngo.fcmToken)
       .filter((token) => Boolean(token && token.trim()));
@@ -130,7 +110,7 @@ const notifyNgosOfEmergency = async ({ alert, hospitalName, targetNgos, io }) =>
           tokens: fcmTokens,
         };
 
-        const response = await firebaseAdmin.messaging().sendEachForMulticast(message);
+        const response = await getMessaging().sendEachForMulticast(message);
         console.log(`[FCM] Sent emergency notification: ${response.successCount} succeeded, ${response.failureCount} failed`);
       } catch (fcmErr) {
         console.error("[FCM] Error dispatching multicast notification:", fcmErr.message);
@@ -183,7 +163,7 @@ const notifyHospitalOfResponse = async ({ alert, response, ngoName, totalAvailab
   }
 
   // 3. FCM Push to Hospital (if configured)
-  if (isFcmConfigured && firebaseAdmin) {
+  if (isFcmConfigured && getMessaging) {
     try {
       const hospitalUser = await prisma.user.findUnique({
         where: { id: alert.hospitalId },
@@ -191,7 +171,7 @@ const notifyHospitalOfResponse = async ({ alert, response, ngoName, totalAvailab
       });
 
       if (hospitalUser && hospitalUser.fcmToken) {
-        await firebaseAdmin.messaging().send({
+        await getMessaging().send({
           token: hospitalUser.fcmToken,
           notification: {
             title,
