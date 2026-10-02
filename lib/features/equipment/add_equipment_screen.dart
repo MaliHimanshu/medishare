@@ -11,6 +11,7 @@ import '../../services/image_upload_service.dart';
 
 // Shared Constants & Extensions
 import '../../core/constants/app_colors.dart';
+import '../../shared/widgets/ms_snackbars.dart';
 
 class AddEquipmentScreen extends StatefulWidget {
   const AddEquipmentScreen({super.key});
@@ -184,6 +185,7 @@ class _AddEquipmentScreenState extends State<AddEquipmentScreen> {
   // ─────────────────────────────────────────────
   Future<void> submitEquipment() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_isSaving) return;
 
     final provider = context.read<EquipmentProvider>();
     final messenger = ScaffoldMessenger.of(context);
@@ -194,82 +196,76 @@ class _AddEquipmentScreenState extends State<AddEquipmentScreen> {
       _uploadProgress = 0.0;
     });
 
-    String uploadedImageUrl = '';
-    if (_imageFile != null) {
-      setState(() => _isUploadingImage = true);
-      try {
-        uploadedImageUrl = await ImageUploadService.instance.uploadImage(
-          _imageFile!,
-          onProgress: (sent, total) {
-            if (total > 0 && mounted) {
-              setState(() {
-                _uploadProgress = sent / total;
-              });
+    try {
+      String uploadedImageUrl = '';
+      if (_imageFile != null) {
+        setState(() => _isUploadingImage = true);
+        try {
+          debugPrint('[AddEquipment] Starting image upload...');
+          uploadedImageUrl = await ImageUploadService.instance.uploadImage(
+            _imageFile!,
+            onProgress: (sent, total) {
+              if (total > 0 && mounted) {
+                setState(() {
+                  _uploadProgress = sent / total;
+                });
+              }
+            },
+          );
+          debugPrint('[AddEquipment] Image uploaded successfully. URL: $uploadedImageUrl');
+        } catch (e) {
+          debugPrint('[AddEquipment] Upload failed: $e');
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              MSSnackBars.showError(context, e.toString().replaceAll('Exception: ', ''));
             }
-          },
-        );
-      } catch (e) {
+          });
+          return;
+        } finally {
+          if (mounted) {
+            setState(() => _isUploadingImage = false);
+          }
+        }
+      }
+
+      debugPrint('[AddEquipment] Starting listing save...');
+      final success = await provider.addEquipment(
+        name: _nameController.text.trim(),
+        category: selectedCategory,
+        condition: selectedCondition,
+        quantity: int.tryParse(_quantityController.text.trim()) ?? 1,
+        manufacturer: _manufacturerController.text.trim(),
+        description: _descriptionController.text.trim(),
+        location: _locationController.text.trim(),
+        image: uploadedImageUrl,
+        mode: _selectedMode,
+        rentalPricePerDay: _selectedMode == 'RENT'
+            ? double.tryParse(_rentalPriceController.text.trim())
+            : null,
+        securityDeposit: _selectedMode == 'RENT'
+            ? double.tryParse(_securityDepositController.text.trim())
+            : null,
+      );
+      debugPrint('[AddEquipment] Listing save completed. Success: $success');
+
+      if (mounted) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            if (success) {
+              MSSnackBars.showSuccess(context, "Equipment listed successfully");
+              navigator.pop(true);
+            } else {
+              final err = provider.errorMessage;
+              MSSnackBars.showError(context, err.isNotEmpty ? err : "Failed to create listing.");
+            }
+          }
+        });
+      }
+    } finally {
+      if (mounted) {
         setState(() {
           _isSaving = false;
-          _isUploadingImage = false;
         });
-        if (mounted) {
-          messenger.showSnackBar(
-            SnackBar(
-              content: Text(
-                "Image upload failed: ${e.toString().replaceAll('Exception: ', '')}",
-              ),
-              behavior: SnackBarBehavior.floating,
-              backgroundColor: AppColors.error,
-              duration: const Duration(seconds: 4),
-            ),
-          );
-        }
-        return;
-      } finally {
-        if (mounted) setState(() => _isUploadingImage = false);
-      }
-    }
-
-    final success = await provider.addEquipment(
-      name: _nameController.text.trim(),
-      category: selectedCategory,
-      condition: selectedCondition,
-      quantity: int.tryParse(_quantityController.text.trim()) ?? 1,
-      manufacturer: _manufacturerController.text.trim(),
-      description: _descriptionController.text.trim(),
-      location: _locationController.text.trim(),
-      image: uploadedImageUrl,
-      mode: _selectedMode,
-      rentalPricePerDay: _selectedMode == 'RENT'
-          ? double.tryParse(_rentalPriceController.text.trim())
-          : null,
-      securityDeposit: _selectedMode == 'RENT'
-          ? double.tryParse(_securityDepositController.text.trim())
-          : null,
-    );
-
-    setState(() => _isSaving = false);
-
-    if (mounted) {
-      if (success) {
-        messenger.showSnackBar(
-          const SnackBar(
-            content: Text("Equipment Listing Created Successfully!"),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: AppColors.success,
-          ),
-        );
-        navigator.pop(true);
-      } else {
-        final err = provider.errorMessage;
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text(err.isNotEmpty ? err : "Failed to create listing."),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: AppColors.error,
-          ),
-        );
       }
     }
   }
@@ -331,476 +327,479 @@ class _AddEquipmentScreenState extends State<AddEquipmentScreen> {
         child: Stack(
           children: [
             Positioned.fill(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 16,
-                ),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Circular Image Upload UI Section
-                      Center(
-                        child: Stack(
-                          children: [
-                            GestureDetector(
-                              onTap: _showImagePickerSheet,
-                              child: Container(
-                                width: 110,
-                                height: 110,
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary.withValues(
-                                    alpha: 0.15,
-                                  ),
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
+              child: AbsorbPointer(
+                absorbing: _isSaving,
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Circular Image Upload UI Section
+                        Center(
+                          child: Stack(
+                            children: [
+                              GestureDetector(
+                                onTap: _showImagePickerSheet,
+                                child: Container(
+                                  width: 110,
+                                  height: 110,
+                                  decoration: BoxDecoration(
                                     color: AppColors.primary.withValues(
-                                      alpha: 0.3,
+                                      alpha: 0.15,
                                     ),
-                                    width: 2,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: AppColors.primary.withValues(
+                                        alpha: 0.3,
+                                      ),
+                                      width: 2,
+                                    ),
                                   ),
-                                ),
-                                child: _imageFile != null
-                                    ? ClipRRect(
-                                        borderRadius: BorderRadius.circular(55),
-                                        child: Image.file(
-                                          _imageFile!,
-                                          fit: BoxFit.cover,
-                                          width: 110,
-                                          height: 110,
-                                        ),
-                                      )
-                                    : Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: const [
-                                          Icon(
-                                            Icons.camera_alt_outlined,
-                                            size: 36,
-                                            color: AppColors.primary,
+                                  child: _imageFile != null
+                                      ? ClipRRect(
+                                          borderRadius: BorderRadius.circular(55),
+                                          child: Image.file(
+                                            _imageFile!,
+                                            fit: BoxFit.cover,
+                                            width: 110,
+                                            height: 110,
                                           ),
-                                          SizedBox(height: 4),
-                                          Text(
-                                            "Add Photo",
-                                            style: TextStyle(
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.w600,
+                                        )
+                                      : Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: const [
+                                            Icon(
+                                              Icons.camera_alt_outlined,
+                                              size: 36,
                                               color: AppColors.primary,
                                             ),
-                                          ),
-                                        ],
-                                      ),
+                                            SizedBox(height: 4),
+                                            Text(
+                                              "Add Photo",
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w600,
+                                                color: AppColors.primary,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                ),
                               ),
-                            ),
-                            if (_imageFile != null)
-                              Positioned(
-                                top: 0,
-                                right: 0,
-                                child: GestureDetector(
-                                  onTap: _removeImage,
+                              if (_imageFile != null)
+                                Positioned(
+                                  top: 0,
+                                  right: 0,
+                                  child: GestureDetector(
+                                    onTap: _removeImage,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(6),
+                                      decoration: const BoxDecoration(
+                                        color: AppColors.error,
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.close,
+                                        color: Colors.white,
+                                        size: 16,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                              else
+                                Positioned(
+                                  bottom: 0,
+                                  right: 0,
                                   child: Container(
                                     padding: const EdgeInsets.all(6),
                                     decoration: const BoxDecoration(
-                                      color: AppColors.error,
+                                      color: AppColors.primary,
                                       shape: BoxShape.circle,
                                     ),
                                     child: const Icon(
-                                      Icons.close,
+                                      Icons.add,
                                       color: Colors.white,
-                                      size: 16,
+                                      size: 14,
                                     ),
                                   ),
                                 ),
-                              )
-                            else
-                              Positioned(
-                                bottom: 0,
-                                right: 0,
-                                child: Container(
-                                  padding: const EdgeInsets.all(6),
-                                  decoration: const BoxDecoration(
-                                    color: AppColors.primary,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(
-                                    Icons.add,
-                                    color: Colors.white,
-                                    size: 14,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Equipment Name
-                      buildTextField(
-                        controller: _nameController,
-                        label: "Equipment Name *",
-                        icon: Icons.medical_services_outlined,
-                        validator: (val) => val == null || val.trim().isEmpty
-                            ? "Name is required"
-                            : null,
-                      ),
-
-                      // Category Dropdown
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 18),
-                        child: DropdownButtonFormField<String>(
-                          initialValue: selectedCategory,
-                          dropdownColor: context.cardBg,
-                          style: TextStyle(color: context.textPrimaryColor),
-                          decoration: InputDecoration(
-                            labelText: "Category *",
-                            labelStyle: TextStyle(
-                              color: context.textSecondaryColor,
-                            ),
-                            prefixIcon: const Icon(
-                              Icons.category_outlined,
-                              color: AppColors.primary,
-                            ),
-                            filled: true,
-                            fillColor: context.inputBg,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide(
-                                color: context.borderColor,
-                                width: 1.5,
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide(
-                                color: context.borderColor,
-                                width: 1.5,
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              borderSide: const BorderSide(
-                                color: AppColors.primary,
-                                width: 2,
-                              ),
-                            ),
-                          ),
-                          items: categories.map((category) {
-                            return DropdownMenuItem(
-                              value: category,
-                              child: Text(category),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            if (value != null) {
-                              setState(() {
-                                selectedCategory = value;
-                              });
-                            }
-                          },
-                        ),
-                      ),
-
-                      // Manufacturer
-                      buildTextField(
-                        controller: _manufacturerController,
-                        label: "Manufacturer (Optional)",
-                        icon: Icons.business_outlined,
-                      ),
-
-                      // Quantity
-                      buildTextField(
-                        controller: _quantityController,
-                        label: "Quantity *",
-                        icon: Icons.inventory_2_outlined,
-                        keyboard: TextInputType.number,
-                        validator: (val) {
-                          if (val == null || val.trim().isEmpty)
-                            return "Quantity is required";
-                          final parsed = int.tryParse(val.trim());
-                          if (parsed == null || parsed <= 0)
-                            return "Must be a valid positive number";
-                          return null;
-                        },
-                      ),
-
-                      // Condition Dropdown
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 18),
-                        child: DropdownButtonFormField<String>(
-                          initialValue: selectedCondition,
-                          dropdownColor: context.cardBg,
-                          style: TextStyle(color: context.textPrimaryColor),
-                          decoration: InputDecoration(
-                            labelText: "Condition *",
-                            labelStyle: TextStyle(
-                              color: context.textSecondaryColor,
-                            ),
-                            prefixIcon: const Icon(
-                              Icons.health_and_safety_outlined,
-                              color: AppColors.primary,
-                            ),
-                            filled: true,
-                            fillColor: context.inputBg,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide(
-                                color: context.borderColor,
-                                width: 1.5,
-                              ),
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide(
-                                color: context.borderColor,
-                                width: 1.5,
-                              ),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              borderSide: const BorderSide(
-                                color: AppColors.primary,
-                                width: 2,
-                              ),
-                            ),
-                          ),
-                          items: conditions.map((cond) {
-                            return DropdownMenuItem(
-                              value: cond,
-                              child: Text(cond.replaceAll('_', ' ')),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            if (value != null) {
-                              setState(() {
-                                selectedCondition = value;
-                              });
-                            }
-                          },
-                        ),
-                      ),
-
-                      // Location
-                      buildTextField(
-                        controller: _locationController,
-                        label: "Location *",
-                        icon: Icons.location_on_outlined,
-                        validator: (val) => val == null || val.trim().isEmpty
-                            ? "Location is required"
-                            : null,
-                      ),
-
-                      // Description
-                      buildTextField(
-                        controller: _descriptionController,
-                        label: "Description (Optional)",
-                        icon: Icons.description_outlined,
-                        maxLines: 4,
-                      ),
-
-                      // ── Listing Mode: DONATE / RENT ──────────────────────
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Text(
-                          'Listing Mode',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: context.textSecondaryColor,
+                            ],
                           ),
                         ),
-                      ),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () =>
-                                  setState(() => _selectedMode = 'DONATE'),
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 14,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: _selectedMode == 'DONATE'
-                                      ? AppColors.primary
-                                      : context.inputBg,
-                                  borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(
-                                    color: _selectedMode == 'DONATE'
-                                        ? AppColors.primary
-                                        : context.borderColor,
-                                    width: 1.5,
-                                  ),
-                                ),
-                                child: Column(
-                                  children: [
-                                    Icon(
-                                      Icons.volunteer_activism,
-                                      color: _selectedMode == 'DONATE'
-                                          ? Colors.white
-                                          : AppColors.primary,
-                                      size: 26,
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'DONATE',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 13,
-                                        color: _selectedMode == 'DONATE'
-                                            ? Colors.white
-                                            : context.textPrimaryColor,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () =>
-                                  setState(() => _selectedMode = 'RENT'),
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 14,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: _selectedMode == 'RENT'
-                                      ? const Color(0xFF0284C7)
-                                      : context.inputBg,
-                                  borderRadius: BorderRadius.circular(14),
-                                  border: Border.all(
-                                    color: _selectedMode == 'RENT'
-                                        ? const Color(0xFF0284C7)
-                                        : context.borderColor,
-                                    width: 1.5,
-                                  ),
-                                ),
-                                child: Column(
-                                  children: [
-                                    Icon(
-                                      Icons.handshake_outlined,
-                                      color: _selectedMode == 'RENT'
-                                          ? Colors.white
-                                          : const Color(0xFF0284C7),
-                                      size: 26,
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'RENT',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 13,
-                                        color: _selectedMode == 'RENT'
-                                            ? Colors.white
-                                            : context.textPrimaryColor,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 18),
+                        const SizedBox(height: 24),
 
-                      // ── Rental Pricing (only shown when mode == RENT) ─────
-                      if (_selectedMode == 'RENT') ...[
+                        // Equipment Name
                         buildTextField(
-                          controller: _rentalPriceController,
-                          label: 'Rental Price per Day (INR) *',
-                          icon: Icons.currency_rupee,
-                          keyboard: TextInputType.numberWithOptions(
-                            decimal: true,
+                          controller: _nameController,
+                          label: "Equipment Name *",
+                          icon: Icons.medical_services_outlined,
+                          validator: (val) => val == null || val.trim().isEmpty
+                              ? "Name is required"
+                              : null,
+                        ),
+
+                        // Category Dropdown
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 18),
+                          child: DropdownButtonFormField<String>(
+                            initialValue: selectedCategory,
+                            dropdownColor: context.cardBg,
+                            style: TextStyle(color: context.textPrimaryColor),
+                            decoration: InputDecoration(
+                              labelText: "Category *",
+                              labelStyle: TextStyle(
+                                color: context.textSecondaryColor,
+                              ),
+                              prefixIcon: const Icon(
+                                Icons.category_outlined,
+                                color: AppColors.primary,
+                              ),
+                              filled: true,
+                              fillColor: context.inputBg,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: BorderSide(
+                                  color: context.borderColor,
+                                  width: 1.5,
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: BorderSide(
+                                  color: context.borderColor,
+                                  width: 1.5,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: const BorderSide(
+                                  color: AppColors.primary,
+                                  width: 2,
+                                ),
+                              ),
+                            ),
+                            items: categories.map((category) {
+                              return DropdownMenuItem(
+                                value: category,
+                                child: Text(category),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              if (value != null) {
+                                setState(() {
+                                  selectedCategory = value;
+                                });
+                              }
+                            },
                           ),
+                        ),
+
+                        // Manufacturer
+                        buildTextField(
+                          controller: _manufacturerController,
+                          label: "Manufacturer (Optional)",
+                          icon: Icons.business_outlined,
+                        ),
+
+                        // Quantity
+                        buildTextField(
+                          controller: _quantityController,
+                          label: "Quantity *",
+                          icon: Icons.inventory_2_outlined,
+                          keyboard: TextInputType.number,
                           validator: (val) {
-                            if (_selectedMode != 'RENT') return null;
                             if (val == null || val.trim().isEmpty)
-                              return 'Price is required for rental';
-                            if (double.tryParse(val.trim()) == null)
-                              return 'Enter a valid number';
+                              return "Quantity is required";
+                            final parsed = int.tryParse(val.trim());
+                            if (parsed == null || parsed <= 0)
+                              return "Must be a valid positive number";
                             return null;
                           },
                         ),
+
+                        // Condition Dropdown
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 18),
+                          child: DropdownButtonFormField<String>(
+                            initialValue: selectedCondition,
+                            dropdownColor: context.cardBg,
+                            style: TextStyle(color: context.textPrimaryColor),
+                            decoration: InputDecoration(
+                              labelText: "Condition *",
+                              labelStyle: TextStyle(
+                                color: context.textSecondaryColor,
+                              ),
+                              prefixIcon: const Icon(
+                                Icons.health_and_safety_outlined,
+                                color: AppColors.primary,
+                              ),
+                              filled: true,
+                              fillColor: context.inputBg,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: BorderSide(
+                                  color: context.borderColor,
+                                  width: 1.5,
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: BorderSide(
+                                  color: context.borderColor,
+                                  width: 1.5,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: const BorderSide(
+                                  color: AppColors.primary,
+                                  width: 2,
+                                ),
+                              ),
+                            ),
+                            items: conditions.map((cond) {
+                              return DropdownMenuItem(
+                                value: cond,
+                                child: Text(cond.replaceAll('_', ' ')),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              if (value != null) {
+                                setState(() {
+                                  selectedCondition = value;
+                                });
+                              }
+                            },
+                          ),
+                        ),
+
+                        // Location
                         buildTextField(
-                          controller: _securityDepositController,
-                          label: 'Security Deposit (INR)',
-                          icon: Icons.shield_outlined,
-                          keyboard: TextInputType.numberWithOptions(
-                            decimal: true,
+                          controller: _locationController,
+                          label: "Location *",
+                          icon: Icons.location_on_outlined,
+                          validator: (val) => val == null || val.trim().isEmpty
+                              ? "Location is required"
+                              : null,
+                        ),
+
+                        // Description
+                        buildTextField(
+                          controller: _descriptionController,
+                          label: "Description (Optional)",
+                          icon: Icons.description_outlined,
+                          maxLines: 4,
+                        ),
+
+                        // ── Listing Mode: DONATE / RENT ──────────────────────
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Text(
+                            'Listing Mode',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: context.textSecondaryColor,
+                            ),
                           ),
                         ),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () =>
+                                    setState(() => _selectedMode = 'DONATE'),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: _selectedMode == 'DONATE'
+                                        ? AppColors.primary
+                                        : context.inputBg,
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(
+                                      color: _selectedMode == 'DONATE'
+                                          ? AppColors.primary
+                                          : context.borderColor,
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Icon(
+                                        Icons.volunteer_activism,
+                                        color: _selectedMode == 'DONATE'
+                                            ? Colors.white
+                                            : AppColors.primary,
+                                        size: 26,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'DONATE',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                          color: _selectedMode == 'DONATE'
+                                              ? Colors.white
+                                              : context.textPrimaryColor,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () =>
+                                    setState(() => _selectedMode = 'RENT'),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 200),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: _selectedMode == 'RENT'
+                                        ? const Color(0xFF0284C7)
+                                        : context.inputBg,
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(
+                                      color: _selectedMode == 'RENT'
+                                          ? const Color(0xFF0284C7)
+                                          : context.borderColor,
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Icon(
+                                        Icons.handshake_outlined,
+                                        color: _selectedMode == 'RENT'
+                                            ? Colors.white
+                                            : const Color(0xFF0284C7),
+                                        size: 26,
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'RENT',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                          color: _selectedMode == 'RENT'
+                                              ? Colors.white
+                                              : context.textPrimaryColor,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 18),
+
+                        // ── Rental Pricing (only shown when mode == RENT) ─────
+                        if (_selectedMode == 'RENT') ...[
+                          buildTextField(
+                            controller: _rentalPriceController,
+                            label: 'Rental Price per Day (INR) *',
+                            icon: Icons.currency_rupee,
+                            keyboard: TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            validator: (val) {
+                              if (_selectedMode != 'RENT') return null;
+                              if (val == null || val.trim().isEmpty)
+                                return 'Price is required for rental';
+                              if (double.tryParse(val.trim()) == null)
+                                return 'Enter a valid number';
+                              return null;
+                            },
+                          ),
+                          buildTextField(
+                            controller: _securityDepositController,
+                            label: 'Security Deposit (INR)',
+                            icon: Icons.shield_outlined,
+                            keyboard: TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                          ),
+                        ],
+
+                        const SizedBox(height: 20),
+
+                        // Save Button
+                        SizedBox(
+                          width: double.infinity,
+                          height: 55,
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: Colors.white,
+                              elevation: 3,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            onPressed: _isSaving ? null : submitEquipment,
+                            icon: const Icon(Icons.save_outlined),
+                            label: Text(
+                              _isSaving ? "Saving Listing..." : "Submit Listing",
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 40),
                       ],
-
-                      const SizedBox(height: 20),
-
-                      // Save Button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 55,
-                        child: ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: Colors.white,
-                            elevation: 3,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                          ),
-                          onPressed: _isSaving ? null : submitEquipment,
-                          icon: const Icon(Icons.save_outlined),
-                          label: Text(
-                            _isSaving ? "Saving Listing..." : "Submit Listing",
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 40),
-                    ],
+                    ),
                   ),
                 ),
               ),
             ),
 
             if (_isSaving)
-              Container(
-                color: Theme.of(
-                  context,
-                ).colorScheme.onSurface.withValues(alpha: 0.5),
+              Positioned.fill(
                 child: Center(
                   child: Card(
-                    margin: const EdgeInsets.symmetric(horizontal: 32),
+                    elevation: 8,
+                    color: context.cardBg,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(20),
                     ),
+                    margin: const EdgeInsets.symmetric(horizontal: 40),
                     child: Padding(
-                      padding: const EdgeInsets.all(24),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           const CircularProgressIndicator(
                             color: AppColors.primary,
+                            strokeWidth: 3,
                           ),
-                          const SizedBox(height: 18),
+                          const SizedBox(height: 20),
                           Text(
                             _isUploadingImage
                                 ? "Uploading Image (${(_uploadProgress * 100).toInt()}%)..."
-                                : "Submitting Equipment Listing...",
+                                : "Saving listing...",
                             textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontSize: 15,
+                            style: TextStyle(
+                              fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              color: AppColors.textPrimary,
+                              color: context.textPrimaryColor,
                             ),
                           ),
                         ],
