@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../core/network/dio_client.dart';
 import '../core/network/api_endpoints.dart';
@@ -60,7 +62,7 @@ class RentalProvider extends ChangeNotifier {
     if (_selectedStatus != 'All') {
       final selectedUpper = _selectedStatus.toUpperCase();
       list = list.where((item) {
-        final itemStatus = item.status.toUpperCase();
+        final itemStatus = item.status.name.toUpperCase();
         return itemStatus == selectedUpper;
       }).toList();
     }
@@ -75,32 +77,44 @@ class RentalProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _dio.get(ApiEndpoints.rental);
-      if (response.data != null && response.data['success'] == true) {
-        final listData = response.data['data'] as List<dynamic>;
-        _rentals = listData
-            .map((item) => RentalModel.fromJson(item as Map<String, dynamic>))
-            .toList();
-      } else {
-        _errorMessage = response.data?['message'] ?? 'Failed to load rentals.';
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        _errorMessage = 'Unauthorized: Please log in.';
+        return;
       }
-    } on DioException catch (e) {
-      if (e.response != null) {
-        final status = e.response!.statusCode;
-        if (status == 401) {
-          _errorMessage = 'Unauthorized (401): Please log in again.';
-        } else if (status == 404) {
-          _errorMessage = 'Rentals service not found (404).';
-        } else if (status == 500) {
-          _errorMessage =
-              'Internal Server Error (500): Please try again later.';
-        } else {
-          _errorMessage =
-              e.response!.data?['message'] ?? DioClient.handleError(e);
-        }
-      } else {
-        _errorMessage = DioClient.handleError(e);
-      }
+      
+      final db = FirebaseFirestore.instance;
+      
+      final snapshot = await db.collection('rentals').where(
+        Filter.or(
+          Filter('renterId', isEqualTo: user.uid),
+          Filter('ngoId', isEqualTo: user.uid),
+          Filter('ownerId', isEqualTo: user.uid),
+        )
+      ).get();
+      final allRentals = snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        return RentalModel(
+          id: data['id'] ?? doc.id,
+          equipmentId: data['equipmentId'] ?? '',
+          renterId: data['renterId'] ?? '',
+          ownerId: data['ownerId'] ?? '',
+          ngoId: data['ngoId'] ?? '',
+          startDate: data['startDate'] ?? '',
+          expectedReturnDate: data['expectedReturnDate'] ?? '',
+          status: RentalStatus.values.firstWhere(
+            (e) => e.name == data['status'],
+            orElse: () => RentalStatus.REQUESTED,
+          ),
+          agreementAccepted: data['agreementAccepted'] ?? true,
+          createdAt: data['createdAt'] ?? '',
+          updatedAt: data['updatedAt'] ?? '',
+          renterName: data['renterName'] ?? 'Unknown Renter',
+        );
+      }).toList();
+
+      _rentals = allRentals.where((r) => r.renterId == user.uid || r.ngoId == user.uid || r.ownerId == user.uid).toList();
+
     } catch (e) {
       _errorMessage = 'An unexpected error occurred: $e';
     } finally {
@@ -120,27 +134,45 @@ class RentalProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final payload = {
-        'equipmentId': equipmentId,
-        'startDate': startDate.toIso8601String(),
-        'endDate': endDate.toIso8601String(),
-      };
-
-      final response = await _dio.post(ApiEndpoints.rental, data: payload);
-      if (response.data != null && response.data['success'] == true) {
-        final newRental = RentalModel.fromJson(
-          response.data['data'] as Map<String, dynamic>,
-        );
-        _rentals.insert(0, newRental);
-        return true;
-      } else {
-        _errorMessage =
-            response.data?['message'] ?? 'Failed to submit rental request.';
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        _errorMessage = 'Unauthorized: Please log in.';
         return false;
       }
-    } on DioException catch (e) {
-      _errorMessage = DioClient.handleError(e);
-      return false;
+      final db = FirebaseFirestore.instance;
+      final newDoc = db.collection('rentals').doc();
+      final newRental = RentalModel(
+        id: newDoc.id,
+        equipmentId: equipmentId,
+        renterId: user.uid,
+        ownerId: '', // Ideally fetched from equipment
+        ngoId: '', // Ideally fetched from equipment
+        startDate: startDate.toIso8601String(),
+        expectedReturnDate: endDate.toIso8601String(),
+        status: RentalStatus.REQUESTED,
+        agreementAccepted: true,
+        createdAt: DateTime.now().toIso8601String(),
+        updatedAt: DateTime.now().toIso8601String(),
+        renterName: user.displayName ?? 'Unknown',
+      );
+      
+      await db.collection('rentals').doc(newDoc.id).set({
+        'id': newRental.id,
+        'equipmentId': newRental.equipmentId,
+        'renterId': newRental.renterId,
+        'ownerId': newRental.ownerId,
+        'ngoId': newRental.ngoId,
+        'startDate': newRental.startDate,
+        'expectedReturnDate': newRental.expectedReturnDate,
+        'status': newRental.status.name.toUpperCase(),
+        'agreementAccepted': newRental.agreementAccepted,
+        'createdAt': newRental.createdAt,
+        'updatedAt': newRental.updatedAt,
+        'renterName': newRental.renterName,
+      });
+
+      _rentals.insert(0, newRental);
+      return true;
     } catch (e) {
       _errorMessage = 'An unexpected error occurred: $e';
       return false;
@@ -157,29 +189,22 @@ class RentalProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final payload = {'status': status.toUpperCase()};
-      final response = await _dio.patch(
-        '${ApiEndpoints.rental}/$id/status',
-        data: payload,
-      );
+      final db = FirebaseFirestore.instance;
+      await db.collection('rentals').doc(id).update({
+        'status': status.toUpperCase(),
+        'updatedAt': DateTime.now().toIso8601String(),
+      });
 
-      if (response.data != null && response.data['success'] == true) {
-        final updated = RentalModel.fromJson(
-          response.data['data'] as Map<String, dynamic>,
+      final idx = _rentals.indexWhere((item) => item.id == id);
+      if (idx != -1) {
+        _rentals[idx] = _rentals[idx].copyWith(
+          status: RentalStatus.values.firstWhere(
+            (e) => e.name == status.toUpperCase(),
+            orElse: () => RentalStatus.REQUESTED,
+          ),
         );
-        final idx = _rentals.indexWhere((item) => item.id == id);
-        if (idx != -1) {
-          _rentals[idx] = updated;
-        }
-        return true;
-      } else {
-        _errorMessage =
-            response.data?['message'] ?? 'Failed to update rental status.';
-        return false;
       }
-    } on DioException catch (e) {
-      _errorMessage = DioClient.handleError(e);
-      return false;
+      return true;
     } catch (e) {
       _errorMessage = 'An unexpected error occurred: $e';
       return false;
@@ -196,17 +221,10 @@ class RentalProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _dio.delete('${ApiEndpoints.rental}/$id');
-      if (response.data != null && response.data['success'] == true) {
-        _rentals.removeWhere((item) => item.id == id);
-        return true;
-      } else {
-        _errorMessage = response.data?['message'] ?? 'Failed to delete rental.';
-        return false;
-      }
-    } on DioException catch (e) {
-      _errorMessage = DioClient.handleError(e);
-      return false;
+      final db = FirebaseFirestore.instance;
+      await db.collection('rentals').doc(id).delete();
+      _rentals.removeWhere((item) => item.id == id);
+      return true;
     } catch (e) {
       _errorMessage = 'An unexpected error occurred: $e';
       return false;

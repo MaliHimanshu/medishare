@@ -163,6 +163,28 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
     );
   }
 
+  String _formatMessageTime(DateTime utcTime) {
+    final localTime = utcTime.toLocal();
+    final now = DateTime.now();
+    final difference = now.difference(localTime);
+
+    if (difference.inSeconds < 60) {
+      return 'just now';
+    } else if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}m ago';
+    } else if (difference.inHours < 24 && now.day == localTime.day) {
+      final hour = localTime.hour;
+      final minute = localTime.minute.toString().padLeft(2, '0');
+      final period = hour >= 12 ? 'PM' : 'AM';
+      final hour12 = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
+      return '$hour12:$minute $period';
+    } else if (now.difference(localTime).inDays < 2 && now.day != localTime.day) {
+      return 'Yesterday';
+    } else {
+      return '${localTime.day}/${localTime.month}/${localTime.year}';
+    }
+  }
+
   Widget _buildMessageBubble(ChatMessage msg, bool isMe) {
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
@@ -201,9 +223,9 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  '${msg.createdAt.hour}:${msg.createdAt.minute.toString().padLeft(2, '0')}',
+                  _formatMessageTime(msg.createdAt),
                   style: TextStyle(
-                    color: isMe ? Colors.white70 : Colors.grey,
+                    color: isMe ? Colors.white70 : context.textSecondaryColor,
                     fontSize: 10,
                   ),
                 ),
@@ -227,15 +249,11 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
 
   Widget _buildMessageComposer() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       color: context.cardBg,
       child: SafeArea(
         child: Row(
           children: [
-            IconButton(
-              icon: const Icon(Icons.attach_file, color: Color(0xFF64748B)),
-              onPressed: () {},
-            ),
             Expanded(
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -247,6 +265,8 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
                 child: TextField(
                   controller: _msgController,
                   textCapitalization: TextCapitalization.sentences,
+                  maxLines: null,
+                  keyboardType: TextInputType.multiline,
                   onChanged: (text) {
                     context.read<ChatProvider>().setTyping(
                       widget.conversationId,
@@ -263,7 +283,7 @@ class _PrivateChatScreenState extends State<PrivateChatScreen> {
             ),
             const SizedBox(width: 8),
             CircleAvatar(
-              radius: 20,
+              radius: 22,
               backgroundColor: const Color(0xFF2563EB),
               child: IconButton(
                 icon: const Icon(Icons.send, color: Colors.white, size: 20),

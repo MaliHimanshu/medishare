@@ -204,13 +204,16 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
     }
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         title: Text(
           widget.equipment.name,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
+        backgroundColor: context.surfaceBg,
+        foregroundColor: context.textPrimaryColor,
+        elevation: 0,
         actions: [
           IconButton(
             icon: const Icon(Icons.share_outlined, color: AppColors.primary),
@@ -250,27 +253,29 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
             // Hero Large Image
             Hero(
               tag: 'equipment-image-${widget.equipment.id}',
-              child: Container(
-                width: double.infinity,
-                height: 240,
-                decoration: const BoxDecoration(
-                  gradient: AppColors.primaryGradient,
-                ),
-                child: widget.equipment.image.isNotEmpty
-                    ? Image.network(
-                        widget.equipment.image,
-                        fit: BoxFit.cover,
-                        errorBuilder: (ctx, err, stack) => const Icon(
-                          Icons.medical_services_outlined,
+              child: AspectRatio(
+                aspectRatio: 4 / 3,
+                child: Container(
+                  width: double.infinity,
+                  decoration: const BoxDecoration(
+                    gradient: AppColors.primaryGradient,
+                  ),
+                  child: widget.equipment.image.isNotEmpty
+                      ? Image.network(
+                          widget.equipment.image,
+                          fit: BoxFit.cover,
+                          errorBuilder: (ctx, err, stack) => const Icon(
+                            Icons.broken_image_outlined,
+                            color: Colors.white,
+                            size: 70,
+                          ),
+                        )
+                      : const Icon(
+                          Icons.medical_services,
                           color: Colors.white,
-                          size: 70,
+                          size: 80,
                         ),
-                      )
-                    : const Icon(
-                        Icons.medical_services,
-                        color: Colors.white,
-                        size: 80,
-                      ),
+                ),
               ),
             ),
 
@@ -382,12 +387,12 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
                   const SizedBox(height: 24),
 
                   // Description Block
-                  const Text(
+                  Text(
                     "Description",
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+                      color: context.textPrimaryColor,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -395,9 +400,9 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
                     widget.equipment.description.isNotEmpty
                         ? widget.equipment.description
                         : "No description provided for this listing.",
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
-                      color: AppColors.textSecondary,
+                      color: context.textSecondaryColor,
                       height: 1.5,
                     ),
                   ),
@@ -527,11 +532,14 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
                                 );
                               },
                               icon: const Icon(Icons.list_alt, size: 18),
-                              label: const Text(
-                                "Rentals",
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
+                              label: const Flexible(
+                                child: Text(
+                                  "Rentals",
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ),
@@ -561,11 +569,14 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
                                 );
                               },
                               icon: const Icon(Icons.edit, size: 18),
-                              label: const Text(
-                                "Edit",
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
+                              label: const Flexible(
+                                child: Text(
+                                  "Edit",
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ),
@@ -595,11 +606,14 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
                                   Icons.handshake_outlined,
                                   size: 18,
                                 ),
-                                label: const Text(
-                                  "Rent Now",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
+                                label: const Flexible(
+                                  child: Text(
+                                    "Rent Now",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                               ),
@@ -627,11 +641,14 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
                                 ),
                                 onPressed: () => _showRequestDialog(context),
                                 icon: const Icon(Icons.send_outlined, size: 18),
-                                label: const Text(
-                                  "Request",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
+                                label: const Flexible(
+                                  child: Text(
+                                    "Request",
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                               ),
@@ -671,10 +688,10 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
               const SizedBox(height: 2),
               Text(
                 value,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.textPrimary,
+                  color: context.textPrimaryColor,
                 ),
               ),
             ],
