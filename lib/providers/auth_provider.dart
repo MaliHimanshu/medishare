@@ -2,7 +2,8 @@ import 'package:flutter/foundation.dart';
 import '../models/user_model.dart';
 import '../services/api_service.dart';
 import '../core/services/fcm_service.dart';
-
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 enum AuthStatus { initial, loading, authenticated, unauthenticated, error }
 
 /// Auth Provider — manages authentication state across the app.
@@ -37,19 +38,49 @@ class AuthProvider extends ChangeNotifier {
         _setStatus(AuthStatus.unauthenticated);
         return;
       }
-      // Validate token by fetching user profile
+      
+      // Firebase is the source of truth. Mark authenticated immediately.
+      _setStatus(AuthStatus.authenticated);
+
+      // Attempt to load profile but DO NOT sign out on failure
       final user = await _authService.getMe();
       if (user != null) {
         _user = user;
-        _setStatus(AuthStatus.authenticated);
-        FcmService().registerDeviceToken();
+        debugPrint('[ROLE SYNC] AuthProvider.checkAuthStatus(): uid=${_user?.id} role=${_user?.role}');
       } else {
-        await _authService.clearAuth();
-        _setStatus(AuthStatus.unauthenticated);
+        // Fallback to minimal user from FirebaseAuth if profile missing
+        final fUser = FirebaseAuth.instance.currentUser;
+        if (fUser != null) {
+          // Fetch real role from Firestore to prevent DONOR default bug
+          String role = 'UNKNOWN';
+          try {
+            final doc = await FirebaseFirestore.instance.collection('users').doc(fUser.uid).get();
+            if (doc.exists) {
+              role = doc.data()?['role'] ?? 'UNKNOWN';
+            }
+          } catch (e) {
+            debugPrint('[ROLE SYNC] AuthProvider: fallback Firestore fetch failed: $e');
+          }
+          
+          debugPrint('[ROLE SYNC] AuthProvider.checkAuthStatus() fallback: uid=${fUser.uid} role=$role');
+          _user = UserModel(
+            id: fUser.uid,
+            name: fUser.displayName ?? 'User',
+            email: fUser.email ?? '',
+            role: role,
+            createdAt: DateTime.now(),
+          );
+        }
       }
-    } catch (_) {
-      await _authService.clearAuth();
-      _setStatus(AuthStatus.unauthenticated);
+      
+      if (_user != null) {
+        // Register FCM in background without awaiting
+        FcmService().registerDeviceToken(_user!.id).ignore();
+      }
+      notifyListeners();
+    } catch (e) {
+      debugPrint('[AuthProvider] checkAuthStatus error: $e');
+      // Already marked as authenticated above. Do NOT call clearAuth().
     }
   }
 
@@ -60,8 +91,14 @@ class AuthProvider extends ChangeNotifier {
     try {
       final result = await _authService.login(email, password);
       _user = result.user;
+      debugPrint('[ROLE SYNC] AuthProvider.login(): uid=${_user?.id} role=${_user?.role}');
       _setStatus(AuthStatus.authenticated);
-      FcmService().registerDeviceToken();
+      FcmService().registerDeviceToken(_user!.id);
+      // If Firestore resolution failed during login and role is UNKNOWN,
+      // schedule a background role refresh so the UI updates quickly.
+      if (_user?.role == 'UNKNOWN') {
+        _refreshRoleFromFirestore();
+      }
       return true;
     } catch (e) {
       _errorMessage = e.toString().replaceAll('Exception: ', '');
@@ -69,6 +106,45 @@ class AuthProvider extends ChangeNotifier {
       return false;
     }
   }
+
+  // ── Background Role Refresh (when login yields UNKNOWN) ────────────
+  Future<void> _refreshRoleFromFirestore() async {
+    try {
+      final fUser = FirebaseAuth.instance.currentUser;
+      if (fUser == null) return;
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(fUser.uid)
+          .get();
+      if (doc.exists) {
+        final role = doc.data()?['role']?.toString() ?? 'DONOR';
+        debugPrint('[ROLE SYNC] AuthProvider._refreshRoleFromFirestore(): resolved role=$role');
+        if (_user != null && _user!.role != role) {
+          _user = UserModel(
+            id: _user!.id,
+            name: _user!.name,
+            email: _user!.email,
+            role: role,
+            phone: _user!.phone,
+            phoneVerified: _user!.phoneVerified,
+            address: _user!.address,
+            profileImage: _user!.profileImage,
+            organizationName: _user!.organizationName,
+            registrationNumber: _user!.registrationNumber,
+            contactPerson: _user!.contactPerson,
+            equipmentPreference: _user!.equipmentPreference,
+            verificationStatus: _user!.verificationStatus,
+            createdAt: _user!.createdAt,
+          );
+          notifyListeners();
+        }
+      }
+    } catch (e) {
+      debugPrint('[ROLE SYNC] AuthProvider._refreshRoleFromFirestore() failed: $e');
+    }
+  }
+
+
 
   // ── Register ──────────────────────────────────────────
   Future<bool> register({
@@ -103,7 +179,7 @@ class AuthProvider extends ChangeNotifier {
         _errorMessage = result.otpError;
       }
       _setStatus(AuthStatus.authenticated);
-      FcmService().registerDeviceToken();
+      FcmService().registerDeviceToken(_user!.id);
       return true;
     } catch (e) {
       _errorMessage = e.toString().replaceAll('Exception: ', '');

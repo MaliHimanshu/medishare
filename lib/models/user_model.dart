@@ -37,7 +37,8 @@ class UserModel {
       id: json['id']?.toString() ?? '',
       name: json['name']?.toString() ?? '',
       email: json['email']?.toString() ?? '',
-      role: json['role']?.toString() ?? 'DONOR',
+      // Do NOT default to DONOR — use UNKNOWN so callers know to resolve it.
+      role: json['role']?.toString() ?? 'UNKNOWN',
       phone: json['phone']?.toString(),
       phoneVerified: json['phoneVerified'] == true,
       address: json['address']?.toString(),
@@ -75,7 +76,7 @@ class UserModel {
 
   /// Pretty role label
   String get roleLabel {
-    switch (role) {
+    switch (role.toUpperCase()) {
       case 'ADMIN':
         return 'Administrator';
       case 'DONOR':
@@ -86,6 +87,8 @@ class UserModel {
         return 'Hospital';
       case 'RECIPIENT':
         return 'Recipient';
+      case 'UNKNOWN':
+        return 'Loading...';
       default:
         return role;
     }

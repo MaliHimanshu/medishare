@@ -1,5 +1,8 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'dart:convert';
 
 import '../core/network/dio_client.dart';
@@ -16,26 +19,81 @@ class AuthService {
 
   final Dio _dio = DioClient.instance;
 
-  // ── Login ─────────────────────────────────────────────
-  /// POST /api/auth/login
   Future<AuthResponseModel> login(String email, String password) async {
     try {
-      final response = await _dio.post(
-        ApiEndpoints.login,
-        data: {'email': email, 'password': password},
+      final sanitizedDomain = email.contains('@') ? '@${email.split('@').last}' : '(invalid)';
+      debugPrint('[AuthService] Attempting signInWithEmailAndPassword (domain: $sanitizedDomain)...');
+      final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
       );
-      final authResponse = AuthResponseModel.fromJson(
-        response.data as Map<String, dynamic>,
+      debugPrint('[AuthService] signInWithEmailAndPassword succeeded for uid: ${credential.user?.uid}');
+
+      UserModel user;
+      try {
+        // Try Firestore with a generous timeout (Render cold starts can take 5-7s)
+        DocumentSnapshot<Map<String, dynamic>>? doc;
+        try {
+          doc = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(credential.user!.uid)
+              .get()
+              .timeout(const Duration(seconds: 10));
+        } catch (timeoutErr) {
+          debugPrint('[AuthService][ROLE SYNC] First Firestore read timed out, retrying without timeout: $timeoutErr');
+          // Retry once without timeout — role MUST be correct
+          doc = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(credential.user!.uid)
+              .get();
+        }
+            
+        if (doc.exists) {
+          final data = doc.data()!;
+          data['id'] = credential.user!.uid;
+          user = UserModel.fromJson(data);
+          debugPrint('[ROLE SYNC] login() Firestore role: ${user.role} for uid: ${credential.user!.uid}');
+        } else {
+          // Document truly doesn't exist — create a minimal placeholder.
+          // Do NOT default to DONOR; role will be resolved on next fetchProfile().
+          debugPrint('[ROLE SYNC] login() Firestore doc missing for uid: ${credential.user!.uid}');
+          user = UserModel(
+            id: credential.user!.uid,
+            name: credential.user!.displayName ?? 'User',
+            email: email,
+            role: 'UNKNOWN',
+            createdAt: DateTime.now(),
+          );
+        }
+      } catch (e) {
+        debugPrint('[AuthService][ROLE SYNC] Profile fetch failed after retry: $e');
+        // Still do NOT default to DONOR — use UNKNOWN so the UI knows to resolve
+        user = UserModel(
+          id: credential.user!.uid,
+          name: credential.user!.displayName ?? 'User',
+          email: email,
+          role: 'UNKNOWN',
+          createdAt: DateTime.now(),
+        );
+      }
+
+      await _storage.write(key: _userKey, value: jsonEncode(user.toJson()));
+      return AuthResponseModel(
+        success: true,
+        message: 'Logged in successfully',
+        user: user,
+        token: '',
       );
-      await _persistAuth(authResponse.token, authResponse.user);
-      return authResponse;
-    } on DioException catch (e) {
-      throw Exception(DioClient.handleError(e));
+    } on FirebaseAuthException catch (e) {
+      debugPrint('[AuthService] FirebaseAuthException: code=${e.code}, message=${e.message}');
+      throw Exception(e.message ?? 'Authentication failed.');
+    } catch (e) {
+      debugPrint('[AuthService] Unexpected error during login: $e');
+      throw Exception(e.toString());
     }
   }
 
   // ── Register ──────────────────────────────────────────
-  /// POST /api/auth/register
   Future<AuthResponseModel> register({
     required String name,
     required String email,
@@ -49,31 +107,40 @@ class AuthService {
     String? equipmentPreference,
   }) async {
     try {
-      final payload = <String, dynamic>{
-        'name': name,
-        'email': email,
-        'password': password,
-        'role': role,
-        if (phone != null && phone.isNotEmpty) 'phone': phone,
-        if (address != null && address.isNotEmpty) 'address': address,
-        if (organizationName != null && organizationName.isNotEmpty)
-          'organizationName': organizationName,
-        if (registrationNumber != null && registrationNumber.isNotEmpty)
-          'registrationNumber': registrationNumber,
-        if (contactPerson != null && contactPerson.isNotEmpty)
-          'contactPerson': contactPerson,
-        if (equipmentPreference != null && equipmentPreference.isNotEmpty)
-          'equipmentPreference': equipmentPreference,
-      };
-
-      final response = await _dio.post(ApiEndpoints.register, data: payload);
-      final authResponse = AuthResponseModel.fromJson(
-        response.data as Map<String, dynamic>,
+      final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
       );
-      await _persistAuth(authResponse.token, authResponse.user);
-      return authResponse;
-    } on DioException catch (e) {
-      throw Exception(DioClient.handleError(e));
+
+      await credential.user!.updateDisplayName(name);
+
+      final user = UserModel(
+        id: credential.user!.uid,
+        name: name,
+        email: email,
+        role: role,
+        phone: phone,
+        address: address,
+        organizationName: organizationName,
+        registrationNumber: registrationNumber,
+        contactPerson: contactPerson,
+        equipmentPreference: equipmentPreference,
+        createdAt: DateTime.now(),
+      );
+
+      await FirebaseFirestore.instance.collection('users').doc(user.id).set(user.toJson());
+      await _storage.write(key: _userKey, value: jsonEncode(user.toJson()));
+
+      return AuthResponseModel(
+        success: true,
+        message: 'Registered successfully',
+        user: user,
+        token: '',
+      );
+    } on FirebaseAuthException catch (e) {
+      throw Exception(e.message ?? 'Registration failed.');
+    } catch (e) {
+      throw Exception(e.toString());
     }
   }
 
@@ -89,31 +156,9 @@ class AuthService {
 
   Future<bool> verifyOtp(String phone, String otp) async {
     try {
-      final response = await _dio.post(
-        ApiEndpoints.verifyOtp,
-        data: {'phone': phone, 'otp': otp},
-      );
-      final data = response.data;
-      if (data is Map<String, dynamic>) {
-        final token = data['token']?.toString();
-        final rawUser = data['user'] ?? data['data'];
-        if (token != null &&
-            token.isNotEmpty &&
-            rawUser is Map<String, dynamic>) {
-          final user = UserModel.fromJson(rawUser);
-          await _persistAuth(token, user);
-        } else {
-          // If already logged in, refresh user profile to update phoneVerified
-          final user = await getMe();
-          if (user != null) {
-            final existingToken = await getToken();
-            if (existingToken != null) {
-              await _persistAuth(existingToken, user);
-            }
-          }
-        }
-      }
-      return true;
+      final success = await _dio.post(ApiEndpoints.verifyOtp, data: {'phone': phone, 'otp': otp});
+      // OTP verification for phone typically doesn't login the user into Firebase.
+      return success.statusCode == 200;
     } on DioException catch (e) {
       throw Exception(DioClient.handleError(e));
     }
@@ -131,16 +176,14 @@ class AuthService {
   // ── Forgot Password Flow ──────────────────────────────
   Future<bool> sendForgotPasswordOtp(String target, String type) async {
     try {
-      final response = await _dio.post(
-        ApiEndpoints.forgotPasswordSendOtp,
-        data: {'target': target, 'type': type},
-      );
-      DioClient.debugLog('sendForgotPasswordOtp success: ${response.data}');
-      return true;
-    } on DioException catch (e) {
-      throw Exception(DioClient.handleError(e));
+      if (type == 'email') {
+        await FirebaseAuth.instance.sendPasswordResetEmail(email: target);
+        return true;
+      }
+      return false; // Phone reset not natively supported by Firebase Auth in this simplified manner without custom logic
+    } on FirebaseAuthException catch (e) {
+      throw Exception(e.message ?? 'Failed to send password reset email.');
     } catch (e) {
-      if (e is Exception) rethrow;
       throw Exception(e.toString());
     }
   }
@@ -150,22 +193,9 @@ class AuthService {
     String type,
     String otp,
   ) async {
-    try {
-      final response = await _dio.post(
-        ApiEndpoints.forgotPasswordVerifyOtp,
-        data: {'target': target, 'type': type, 'otp': otp},
-      );
-      final data = response.data;
-      if (data is Map && data['resetToken'] != null) {
-        return data['resetToken'].toString();
-      }
-      throw Exception('Invalid response from server: reset token missing');
-    } on DioException catch (e) {
-      throw Exception(DioClient.handleError(e));
-    } catch (e) {
-      if (e is Exception) rethrow;
-      throw Exception(e.toString());
-    }
+    // With Firebase Auth native password reset, verification is handled via email link.
+    // This is no longer applicable for email resets in the app UI.
+    throw Exception('Password reset verification is now handled via email link.');
   }
 
   Future<bool> resetPassword(
@@ -174,69 +204,49 @@ class AuthService {
     String resetToken,
     String newPassword,
   ) async {
-    try {
-      await _dio.post(
-        ApiEndpoints.resetPassword,
-        data: {
-          'target': target,
-          'type': type,
-          'resetToken': resetToken,
-          'newPassword': newPassword,
-        },
-      );
-      return true;
-    } on DioException catch (e) {
-      throw Exception(DioClient.handleError(e));
-    } catch (e) {
-      if (e is Exception) rethrow;
-      throw Exception(e.toString());
-    }
+    // Handled via Firebase native email link.
+    throw Exception('Password reset is now handled via email link.');
   }
 
-  // ── Get Me ────────────────────────────────────────────
-  /// GET /api/auth/me (requires token in header)
   Future<UserModel?> getMe() async {
     try {
-      final response = await _dio.get(ApiEndpoints.me);
-      final data = response.data as Map<String, dynamic>;
-      final userMap = (data['user'] ?? data['data']) as Map<String, dynamic>?;
-      if (userMap != null) {
-        final user = UserModel.fromJson(userMap);
+      final fUser = FirebaseAuth.instance.currentUser;
+      if (fUser == null) return null;
+
+      // Try with generous timeout; retry without timeout if it fails
+      DocumentSnapshot<Map<String, dynamic>>? doc;
+      try {
+        doc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(fUser.uid)
+            .get()
+            .timeout(const Duration(seconds: 10));
+      } catch (timeoutErr) {
+        debugPrint('[AuthService][ROLE SYNC] getMe() timed out, retrying: $timeoutErr');
+        doc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(fUser.uid)
+            .get();
+      }
+
+      if (doc != null && doc!.exists) {
+        final data = doc.data()!;
+        data['id'] = fUser.uid;
+        final user = UserModel.fromJson(data);
+        debugPrint('[ROLE SYNC] getMe() Firestore role: ${user.role} uid: ${fUser.uid}');
+        // Always update cache with the fresh Firestore role
         await _storage.write(key: _userKey, value: jsonEncode(user.toJson()));
         return user;
       }
+      debugPrint('[ROLE SYNC] getMe() Firestore doc missing for uid: ${fUser.uid}');
       return null;
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 401) {
-        await clearAuth();
-        return null;
-      }
-      return await getCachedUser();
-    } catch (_) {
+    } catch (e) {
+      debugPrint('[ROLE SYNC] getMe() Firestore read failed: $e — falling back to cache');
       return await getCachedUser();
     }
   }
 
   // ── Storage Helpers ───────────────────────────────────
-  Future<void> _persistAuth(String token, UserModel user) async {
-    try {
-      await _storage.write(key: _tokenKey, value: token);
-      await _storage.write(key: _userKey, value: jsonEncode(user.toJson()));
-    } catch (e) {
-      // Safe storage error handling without exposing secrets
-    }
-  }
-
-  Future<String?> getToken() async {
-    try {
-      final token = await _storage.read(key: _tokenKey);
-      if (token != null && token.isNotEmpty) return token;
-      return await _storage.read(key: 'medishare_token');
-    } catch (_) {
-      return null;
-    }
-  }
-
   Future<UserModel?> getCachedUser() async {
     try {
       final raw = await _storage.read(key: _userKey);
@@ -249,6 +259,7 @@ class AuthService {
 
   Future<void> clearAuth() async {
     try {
+      await FirebaseAuth.instance.signOut();
       await _storage.delete(key: _tokenKey);
       await _storage.delete(key: 'medishare_token');
       await _storage.delete(key: _userKey);
@@ -256,7 +267,7 @@ class AuthService {
   }
 
   Future<bool> hasToken() async {
-    final token = await getToken();
-    return token != null && token.isNotEmpty;
+    // Verify Firebase has an active session
+    return FirebaseAuth.instance.currentUser != null;
   }
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../core/network/dio_client.dart';
 import '../core/network/api_endpoints.dart';
@@ -51,9 +53,68 @@ class ProfileProvider extends ChangeNotifier {
         _errorMessage = 'Failed to load profile: $e';
       }
     } finally {
+      // ── ROLE SYNC: Always apply authoritative role from Firestore ──────
+      // This ensures ProfileProvider ALWAYS shows the same role as Firestore,
+      // regardless of what the REST API returns or whether it timed out.
+      await _applyFirestoreRole();
       await fetchStats();
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  // ── Apply Firestore Role as Single Source of Truth ─────────────────
+  /// Reads users/{uid} from Firestore and overrides the role on the current
+  /// user model. This prevents ProfileProvider from ever showing a stale role
+  /// that was cached or returned by the REST backend.
+  Future<void> _applyFirestoreRole() async {
+    try {
+      final fUser = FirebaseAuth.instance.currentUser;
+      if (fUser == null) return;
+
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(fUser.uid)
+          .get()
+          .timeout(const Duration(seconds: 10));
+
+      if (!doc.exists) return;
+
+      final firestoreData = doc.data()!;
+      final firestoreRole = firestoreData['role']?.toString();
+      if (firestoreRole == null || firestoreRole.isEmpty) return;
+
+      if (_user == null) {
+        // REST API call failed entirely — build user from Firestore directly
+        firestoreData['id'] = fUser.uid;
+        _user = UserModel.fromJson(firestoreData);
+        debugPrint('[ROLE SYNC] ProfileProvider: built user from Firestore. role=${_user!.role}');
+      } else if (_user!.role != firestoreRole) {
+        // REST API returned a different role — override with Firestore truth
+        debugPrint('[ROLE SYNC] ProfileProvider: REST role=${_user!.role} '
+            'overridden by Firestore role=$firestoreRole');
+        _user = UserModel(
+          id: _user!.id,
+          name: _user!.name,
+          email: _user!.email,
+          role: firestoreRole,
+          phone: _user!.phone,
+          phoneVerified: _user!.phoneVerified,
+          address: _user!.address,
+          profileImage: _user!.profileImage,
+          organizationName: _user!.organizationName,
+          registrationNumber: _user!.registrationNumber,
+          contactPerson: _user!.contactPerson,
+          equipmentPreference: _user!.equipmentPreference,
+          verificationStatus: _user!.verificationStatus,
+          createdAt: _user!.createdAt,
+        );
+      } else {
+        debugPrint('[ROLE SYNC] ProfileProvider: role=${_user!.role} matches Firestore. ✓');
+      }
+    } catch (e) {
+      debugPrint('[ROLE SYNC] ProfileProvider: _applyFirestoreRole failed: $e');
+      // Non-fatal — continue with whatever role we already have
     }
   }
 
@@ -150,26 +211,35 @@ class ProfileProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final payload = {'oldPassword': oldPassword, 'newPassword': newPassword};
-
-      final response = await _dio.put(
-        '${ApiEndpoints.profile}/change-password',
-        data: payload,
-      );
-      if (response.data != null && response.data['success'] == true) {
-        return true;
-      } else {
-        _errorMessage =
-            response.data?['message'] ?? 'Failed to change password.';
-        return false;
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null || user.email == null) {
+         _errorMessage = 'User not logged in or email unavailable.';
+         return false;
       }
-    } on DioException catch (e) {
-      _errorMessage = DioClient.handleError(e);
-      return false;
-    } catch (_) {
-      // Simulate password change success if backend mock endpoint
-      await Future.delayed(const Duration(milliseconds: 600));
+      
+      final cred = EmailAuthProvider.credential(
+        email: user.email!,
+        password: oldPassword,
+      );
+      
+      await user.reauthenticateWithCredential(cred);
+      await user.updatePassword(newPassword);
+
       return true;
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
+         _errorMessage = 'Incorrect current password.';
+      } else if (e.code == 'weak-password') {
+         _errorMessage = 'The new password is too weak.';
+      } else if (e.code == 'requires-recent-login') {
+         _errorMessage = 'Please log in again before changing password.';
+      } else {
+         _errorMessage = e.message ?? 'Authentication failed.';
+      }
+      return false;
+    } catch (e) {
+      _errorMessage = 'An unexpected error occurred: $e';
+      return false;
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -194,5 +264,15 @@ class ProfileProvider extends ChangeNotifier {
     _isLoading = false;
     notifyListeners();
     return true;
+  }
+  // ── Clear State on Logout ───────────────────────────────────────────
+  void clear() {
+    _user = null;
+    _equipmentCount = 0;
+    _donationsCount = 0;
+    _requestsCount = 0;
+    _hospitalsCount = 0;
+    _errorMessage = '';
+    notifyListeners();
   }
 }

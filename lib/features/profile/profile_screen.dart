@@ -20,6 +20,19 @@ import '../rental/my_rentals_screen.dart';
 import '../requests/request_screen.dart';
 import '../equipment/equipment_list_screen.dart';
 import '../../core/theme/app_page_transitions.dart';
+import '../../providers/equipment_provider.dart';
+import '../../providers/donation_provider.dart';
+import '../../providers/request_provider.dart';
+import '../../providers/hospital_provider.dart';
+import '../../providers/notification_provider.dart';
+import '../../providers/menu_chatbot_provider.dart';
+import '../../providers/chatbot_provider.dart';
+import '../../providers/global_search_provider.dart';
+import '../../providers/rental_provider.dart';
+import '../../providers/tracking_provider.dart';
+import '../../providers/chat_provider.dart';
+import '../../providers/emergency_alert_provider.dart';
+import '../../providers/dashboard_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -61,8 +74,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () async {
               final authProvider = context.read<AuthProvider>();
+              final profileProvider = context.read<ProfileProvider>();
+              final equipmentProvider = context.read<EquipmentProvider>();
+              final donationProvider = context.read<DonationProvider>();
+              final requestProvider = context.read<RequestProvider>();
+              final hospitalProvider = context.read<HospitalProvider>();
+              final notificationProvider = context.read<NotificationProvider>();
+              final menuChatbotProvider = context.read<MenuChatbotProvider>();
+              final chatbotProvider = context.read<ChatbotProvider>();
+              final globalSearchProvider = context.read<GlobalSearchProvider>();
+              final rentalProvider = context.read<RentalProvider>();
+              final trackingProvider = context.read<TrackingProvider>();
+              final chatProvider = context.read<ChatProvider>();
+              final emergencyAlertProvider = context.read<EmergencyAlertProvider>();
+              final dashboardProvider = context.read<DashboardProvider>();
+
               final navigator = Navigator.of(context);
               Navigator.pop(ctx);
+
+              // ── Clear All State ─────────────────────────────────────────────
+              profileProvider.clear();
+              equipmentProvider.clear();
+              donationProvider.clear();
+              requestProvider.clear();
+              hospitalProvider.clear();
+              notificationProvider.clear();
+              menuChatbotProvider.clear();
+              chatbotProvider.clear();
+              globalSearchProvider.clear();
+              rentalProvider.clear();
+              trackingProvider.clear();
+              chatProvider.clear();
+              emergencyAlertProvider.clear();
+              dashboardProvider.clear();
 
               await authProvider.logout();
               navigator.pushAndRemoveUntil(
@@ -125,6 +169,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
               final navigator = Navigator.of(context);
               final messenger = ScaffoldMessenger.of(context);
 
+              final equipmentProvider = context.read<EquipmentProvider>();
+              final donationProvider = context.read<DonationProvider>();
+              final requestProvider = context.read<RequestProvider>();
+              final hospitalProvider = context.read<HospitalProvider>();
+              final notificationProvider = context.read<NotificationProvider>();
+              final menuChatbotProvider = context.read<MenuChatbotProvider>();
+              final chatbotProvider = context.read<ChatbotProvider>();
+              final globalSearchProvider = context.read<GlobalSearchProvider>();
+              final rentalProvider = context.read<RentalProvider>();
+              final trackingProvider = context.read<TrackingProvider>();
+              final chatProvider = context.read<ChatProvider>();
+              final emergencyAlertProvider = context.read<EmergencyAlertProvider>();
+              final dashboardProvider = context.read<DashboardProvider>();
+
               if (passwordCtrl.text.isEmpty) {
                 messenger.showSnackBar(
                   const SnackBar(
@@ -141,6 +199,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
               if (mounted) {
                 if (success) {
+                  // ── Clear All State ─────────────────────────────────────────────
+                  profileProvider.clear();
+                  equipmentProvider.clear();
+                  donationProvider.clear();
+                  requestProvider.clear();
+                  hospitalProvider.clear();
+                  notificationProvider.clear();
+                  menuChatbotProvider.clear();
+                  chatbotProvider.clear();
+                  globalSearchProvider.clear();
+                  rentalProvider.clear();
+                  trackingProvider.clear();
+                  chatProvider.clear();
+                  emergencyAlertProvider.clear();
+                  dashboardProvider.clear();
+
                   await authProvider.logout();
                   navigator.pushAndRemoveUntil(
                     AppPageTransitions.slideRight(const LoginScreen()),
@@ -449,7 +523,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildProfileHeader(BuildContext context, UserModel? user) {
-    final role = user?.role ?? 'DONOR';
+    final role = (user?.role ?? 'UNKNOWN').toUpperCase();
     final roleColor = switch (role) {
       'ADMIN' => Colors.purple,
       'DONOR' => Colors.green,
@@ -876,7 +950,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildRoleSpecificSection(BuildContext context, UserModel? user) {
-    final role = user?.role ?? 'DONOR';
+    final role = (user?.role ?? 'UNKNOWN').toUpperCase();
 
     String title;
     List<Widget> items = [];

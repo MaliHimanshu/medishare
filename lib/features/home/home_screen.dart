@@ -5,6 +5,18 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/dashboard_provider.dart';
 import '../../providers/notification_provider.dart';
+import '../../providers/profile_provider.dart';
+import '../../providers/equipment_provider.dart';
+import '../../providers/donation_provider.dart';
+import '../../providers/request_provider.dart';
+import '../../providers/hospital_provider.dart';
+import '../../providers/menu_chatbot_provider.dart';
+import '../../providers/chatbot_provider.dart';
+import '../../providers/global_search_provider.dart';
+import '../../providers/rental_provider.dart';
+import '../../providers/tracking_provider.dart';
+import '../../providers/chat_provider.dart';
+import '../../providers/emergency_alert_provider.dart';
 
 // Models
 import '../../models/user_model.dart';
@@ -428,6 +440,9 @@ class _HomeScreenState extends State<HomeScreen>
         return RecipientDashboard(user: user);
       case 'ADMIN':
         return AdminDashboard(user: user);
+      case 'UNKNOWN':
+        // Role is still being resolved from Firestore — show loader
+        return const Center(child: CircularProgressIndicator());
       default:
         return DonorDashboard(user: user);
     }
@@ -493,7 +508,7 @@ class _HomeScreenState extends State<HomeScreen>
     UserModel? user,
     AuthProvider auth,
   ) {
-    final role = user?.role.toUpperCase() ?? 'DONOR';
+    final role = user?.role.toUpperCase() ?? 'UNKNOWN';
 
     return Drawer(
       backgroundColor: context.surfaceBg,
@@ -816,6 +831,24 @@ class _HomeScreenState extends State<HomeScreen>
                   onTap: () async {
                     final navigator = Navigator.of(context);
                     Navigator.pop(context);
+                    // ── Clear ALL provider state before logout ────────────
+                    // Prevents stale role/data from showing after account switch.
+                    if (mounted) {
+                      context.read<ProfileProvider>().clear();
+                      context.read<EquipmentProvider>().clear();
+                      context.read<DonationProvider>().clear();
+                      context.read<RequestProvider>().clear();
+                      context.read<HospitalProvider>().clear();
+                      context.read<NotificationProvider>().clear();
+                      context.read<MenuChatbotProvider>().clear();
+                      context.read<ChatbotProvider>().clear();
+                      context.read<GlobalSearchProvider>().clear();
+                      context.read<RentalProvider>().clear();
+                      context.read<TrackingProvider>().clear();
+                      context.read<ChatProvider>().clear();
+                      context.read<EmergencyAlertProvider>().clear();
+                      context.read<DashboardProvider>().clear();
+                    }
                     await auth.logout();
                     if (mounted) {
                       navigator.pushAndRemoveUntil(
@@ -838,7 +871,7 @@ class _HomeScreenState extends State<HomeScreen>
     final auth = context.watch<AuthProvider>();
     final dash = context.watch<DashboardProvider>();
     final user = auth.user;
-    final role = user?.role ?? 'DONOR';
+    final role = user?.role.toUpperCase() ?? 'UNKNOWN';
 
     final notifProv = context.watch<NotificationProvider>();
     final unreadCount = notifProv.notifications.isNotEmpty
