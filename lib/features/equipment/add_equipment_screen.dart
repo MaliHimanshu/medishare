@@ -124,12 +124,12 @@ class _AddEquipmentScreenState extends State<AddEquipmentScreen> {
                 ),
               ),
               const SizedBox(height: 18),
-              const Text(
+              Text(
                 "Upload Equipment Image",
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
-                  color: AppColors.textPrimary,
+                  color: context.textPrimaryColor,
                 ),
               ),
               const SizedBox(height: 12),
@@ -197,6 +197,7 @@ class _AddEquipmentScreenState extends State<AddEquipmentScreen> {
     });
 
     try {
+      debugPrint('[ADD_EQUIPMENT] SAVE START');
       String uploadedImageUrl = '';
       if (_imageFile != null) {
         setState(() => _isUploadingImage = true);
@@ -215,11 +216,9 @@ class _AddEquipmentScreenState extends State<AddEquipmentScreen> {
           debugPrint('[AddEquipment] Image uploaded successfully. URL: $uploadedImageUrl');
         } catch (e) {
           debugPrint('[AddEquipment] Upload failed: $e');
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) {
-              MSSnackBars.showError(context, e.toString().replaceAll('Exception: ', ''));
-            }
-          });
+          if (mounted) {
+             MSSnackBars.showError(context, e.toString().replaceAll('Exception: ', ''));
+          }
           return;
         } finally {
           if (mounted) {
@@ -228,7 +227,7 @@ class _AddEquipmentScreenState extends State<AddEquipmentScreen> {
         }
       }
 
-      debugPrint('[AddEquipment] Starting listing save...');
+      debugPrint('[ADD_EQUIPMENT] Calling addEquipment');
       final success = await provider.addEquipment(
         name: _nameController.text.trim(),
         category: selectedCategory,
@@ -246,27 +245,34 @@ class _AddEquipmentScreenState extends State<AddEquipmentScreen> {
             ? double.tryParse(_securityDepositController.text.trim())
             : null,
       );
-      debugPrint('[AddEquipment] Listing save completed. Success: $success');
+      debugPrint('[ADD_EQUIPMENT] addEquipment returned. Success: $success');
 
       if (mounted) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            if (success) {
-              MSSnackBars.showSuccess(context, "Equipment listed successfully");
-              navigator.pop(true);
-            } else {
-              final err = provider.errorMessage;
-              MSSnackBars.showError(context, err.isNotEmpty ? err : "Failed to create listing.");
-            }
-          }
-        });
+        if (success) {
+          debugPrint('[ADD_EQUIPMENT] Save SUCCESS');
+          MSSnackBars.showSuccess(context, "Equipment listed successfully");
+          debugPrint('[ADD_EQUIPMENT] Popping navigator');
+          navigator.pop(true);
+        } else {
+          final err = provider.errorMessage;
+          debugPrint('[ADD_EQUIPMENT] Save FAILURE: $err');
+          MSSnackBars.showError(context, err.isNotEmpty ? err : "Failed to create listing.");
+        }
+      }
+    } catch (e, stackTrace) {
+      debugPrint('[ADD_EQUIPMENT] SAVE ERROR: $e');
+      debugPrint('$stackTrace');
+      if (mounted) {
+        MSSnackBars.showError(context, "An unexpected error occurred.");
       }
     } finally {
+      debugPrint('[ADD_EQUIPMENT] Setting _isSaving = false');
       if (mounted) {
         setState(() {
           _isSaving = false;
         });
       }
+      debugPrint('[ADD_EQUIPMENT] Closing loading overlay');
     }
   }
 
