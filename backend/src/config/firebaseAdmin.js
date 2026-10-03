@@ -21,8 +21,10 @@ try {
       });
       console.log("🔥 Firebase Admin initialized successfully from FIREBASE_SERVICE_ACCOUNT");
     } else {
-      app = initializeApp();
-      console.log("🔥 Firebase Admin initialized successfully using default credentials");
+      app = initializeApp({
+        projectId: process.env.FIREBASE_PROJECT_ID || "medishare-e6b5c",
+      });
+      console.log("🔥 Firebase Admin initialized successfully with project ID medishare-e6b5c");
     }
   } else {
     app = getApps()[0];

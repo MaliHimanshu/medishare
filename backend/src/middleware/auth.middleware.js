@@ -56,30 +56,32 @@ const protect = async (req, res, next) => {
       });
     }
 
-    // 3. Create user if they only exist in Firebase
-    if (!user) {
-      let role = "RECIPIENT";
-      if (getFirestore) {
-        try {
-          const userDoc = await getFirestore().collection("users").doc(decodedToken.uid).get();
-          if (userDoc.exists) {
-            const data = userDoc.data();
-            if (data.role) {
-              role = data.role;
-            }
+    // 3. Resolve role from Firestore if available
+    let firestoreRole = null;
+    if (getFirestore) {
+      try {
+        const userDoc = await getFirestore().collection("users").doc(decodedToken.uid).get();
+        if (userDoc.exists) {
+          const data = userDoc.data();
+          if (data.role && data.role !== "UNKNOWN") {
+            firestoreRole = data.role;
           }
-        } catch (err) {
-          console.warn("[AuthMiddleware] Could not fetch role from Firestore:", err.message);
         }
+      } catch (err) {
+        console.warn("[AuthMiddleware] Could not fetch role from Firestore:", err.message);
       }
+    }
 
+    // 4. Create or update user in PostgreSQL
+    if (!user) {
+      const roleToAssign = firestoreRole || "DONOR";
       user = await prisma.user.create({
         data: {
           id: decodedToken.uid, // Map Firebase UID exactly
           email: decodedToken.email || `${decodedToken.uid}@firebase.local`,
           name: decodedToken.name || "MediShare User",
           password: "firebase_authenticated", // Placeholder
-          role: role,
+          role: roleToAssign,
           phone: decodedToken.phone_number || null,
         },
         select: {
@@ -87,7 +89,19 @@ const protect = async (req, res, next) => {
           address: true, profileImage: true, role: true, organizationName: true,
           registrationNumber: true, contactPerson: true, equipmentPreference: true,
           verificationStatus: true, createdAt: true,
-        }
+        },
+      });
+    } else if (firestoreRole && user.role !== firestoreRole) {
+      console.log(`[AuthMiddleware] Syncing role for user ${user.id} (${user.email}): ${user.role} -> ${firestoreRole}`);
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { role: firestoreRole },
+        select: {
+          id: true, name: true, email: true, phone: true, phoneVerified: true,
+          address: true, profileImage: true, role: true, organizationName: true,
+          registrationNumber: true, contactPerson: true, equipmentPreference: true,
+          verificationStatus: true, createdAt: true,
+        },
       });
     }
 
