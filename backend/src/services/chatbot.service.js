@@ -7,162 +7,75 @@ const groq = new Groq({
 
 const askAI = async (message, user) => {
   try {
-    const question = message.toLowerCase();
+    // Gather system-wide context
+    const totalEquip = await prisma.equipment.count();
+    const availableEquip = await prisma.equipment.count({ where: { status: "AVAILABLE" } });
+    const totalHospitals = await prisma.hospital.count();
+    const totalDonations = await prisma.donation.count();
 
-    // ==========================
-    // DATABASE RESPONSES
-    // ==========================
+    // Gather user-specific context
+    const myItems = await prisma.equipment.findMany({
+      where: { ownerId: user.id },
+      select: { name: true, status: true, mode: true },
+    });
+    const myItemsStr = myItems.length > 0 
+      ? myItems.map(e => `${e.name} (${e.mode}) - ${e.status}`).join("; ") 
+      : "None";
 
-    // Total Equipment
-    if (
-      question.includes("total equipment") ||
-      question.includes("how many equipment")
-    ) {
-      const total = await prisma.equipment.count();
+    const myRentalRequests = await prisma.rental.findMany({
+      where: { equipment: { ownerId: user.id } },
+      include: { equipment: true, renter: true },
+    });
+    const myRentalRequestsStr = myRentalRequests.length > 0 
+      ? myRentalRequests.map(r => `${r.equipment.name} requested by ${r.renter.name} (Status: ${r.status})`).join("; ") 
+      : "None";
 
-      return `There are ${total} equipment items registered in MediShare.`;
-    }
+    const myRentals = await prisma.rental.findMany({
+      where: { renterId: user.id },
+      include: { equipment: true },
+    });
+    const myRentalsStr = myRentals.length > 0 
+      ? myRentals.map(r => `${r.equipment.name} (Status: ${r.status})`).join("; ") 
+      : "None";
 
-    // Available Equipment
-    if (
-      question.includes("available equipment") ||
-      question.includes("equipment available")
-    ) {
-      const total = await prisma.equipment.count({
-        where: {
-          status: "AVAILABLE",
-        },
-      });
+    const myRequests = await prisma.request.findMany({
+      where: { requesterId: user.id },
+      include: { equipment: true },
+    });
+    const myRequestsStr = myRequests.length > 0 
+      ? myRequests.map(r => `${r.equipment.name} (Status: ${r.status})`).join("; ") 
+      : "None";
 
-      return `Currently ${total} equipment items are available.`;
-    }
+    const systemPrompt = `
+You are the MediShare AI Assistant.
+MediShare is a Medical Equipment Donation and Redistribution Platform.
+The user you are speaking to is named ${user.name || "User"} and their role is ${user.role || "User"}.
 
-    // Total Hospitals
-    if (
-      question.includes("hospital") &&
-      question.includes("how many")
-    ) {
-      const total = await prisma.hospital.count();
+Here is the LIVE context from the MediShare Database:
+- Total Equipment in system: ${totalEquip}
+- Available Equipment: ${availableEquip}
+- Total Registered Hospitals: ${totalHospitals}
+- Total Donations: ${totalDonations}
 
-      return `There are ${total} registered hospitals.`;
-    }
+User's Personal Data Context:
+- User's listed equipment: ${myItemsStr}
+- Rental requests for user's equipment: ${myRentalRequestsStr}
+- User's active/past rentals: ${myRentalsStr}
+- User's equipment requests: ${myRequestsStr}
 
-    // Total Donations
-    if (
-      question.includes("donation") &&
-      question.includes("how many")
-    ) {
-      const total = await prisma.donation.count();
-
-      return `There are ${total} donations in the system.`;
-    }
-
-    // My Equipment (for Donor / Hospital)
-    if (
-      question.includes("my equipment") ||
-      question.includes("show my equipment")
-    ) {
-      const items = await prisma.equipment.findMany({
-        where: { ownerId: user.id },
-        select: { name: true, status: true, mode: true },
-      });
-
-      if (items.length === 0) {
-        return "You have not listed any equipment yet.";
-      }
-
-      return `Your equipment listings (${items.length}):\n` +
-        items.map((e) => `• ${e.name} (${e.mode}) - ${e.status}`).join("\n");
-    }
-
-    // Rental Requests (for Donor / Hospital)
-    if (
-      question.includes("rental request") ||
-      question.includes("rental requests")
-    ) {
-      const rentals = await prisma.rental.findMany({
-        where: { equipment: { ownerId: user.id } },
-        include: { equipment: true, renter: true },
-      });
-
-      if (rentals.length === 0) {
-        return "You have no rental requests for your equipment.";
-      }
-
-      return `Rental requests for your equipment (${rentals.length}):\n` +
-        rentals
-          .map(
-            (r) =>
-              `• ${r.equipment.name} requested by ${r.renter.name} - ${r.status}`
-          )
-          .join("\n");
-    }
-
-    // My Rentals (for Recipient / Hospital)
-    if (
-      question.includes("my rental") ||
-      question.includes("my rentals")
-    ) {
-      const rentals = await prisma.rental.findMany({
-        where: { renterId: user.id },
-        include: { equipment: true },
-      });
-
-      if (rentals.length === 0) {
-        return "You have no active or previous rentals.";
-      }
-
-      return `Your rentals (${rentals.length}):\n` +
-        rentals
-          .map((r) => `• ${r.equipment.name} - Status: ${r.status}`)
-          .join("\n");
-    }
-
-    // My Requests
-    if (
-      question.includes("my request") ||
-      question.includes("show my requests")
-    ) {
-      const requests = await prisma.request.findMany({
-        where: {
-          requesterId: user.id,
-        },
-        include: {
-          equipment: true,
-        },
-      });
-
-      if (requests.length === 0) {
-        return "You have no equipment requests.";
-      }
-
-      return requests
-        .map(
-          (r) =>
-            `• ${r.equipment.name} - ${r.status}`
-        )
-        .join("\n");
-    }
-
-    // ==========================
-    // GROQ FALLBACK
-    // ==========================
+INSTRUCTIONS:
+1. Answer the user's question naturally using this data if it is relevant.
+2. If the user greets you, greet them back and ask how you can help.
+3. Be professional and concise.
+4. DO NOT mention that you have access to a database, backend, or context prompt. Act like you just know this information seamlessly.
+`;
 
     const completion = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       messages: [
         {
           role: "system",
-          content: `
-You are MediShare AI Assistant.
-
-MediShare is a Medical Equipment Donation and Redistribution Platform.
-
-Answer professionally and clearly.
-
-If the question is not about live MediShare database data,
-answer it normally.
-          `,
+          content: systemPrompt,
         },
         {
           role: "user",

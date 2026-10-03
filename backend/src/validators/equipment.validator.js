@@ -54,8 +54,8 @@ const createEquipmentSchema = z.object({
       .optional(),
 
     mode: z.enum(["DONATE", "RENT", "BOTH"]).optional(),
-    rentalPricePerDay: z.number().optional(),
-    securityDeposit: z.number().optional(),
+    rentalPricePerDay: z.coerce.number().optional(),
+    securityDeposit: z.coerce.number().optional(),
     location: z.string().max(255).optional(),
     latitude: z.number().optional(),
     longitude: z.number().optional(),
@@ -87,8 +87,8 @@ const updateEquipmentSchema = z.object({
       .optional(),
 
     mode: z.enum(["DONATE", "RENT", "BOTH"]).optional(),
-    rentalPricePerDay: z.number().optional(),
-    securityDeposit: z.number().optional(),
+    rentalPricePerDay: z.coerce.number().optional(),
+    securityDeposit: z.coerce.number().optional(),
     location: z.string().max(255).optional(),
     latitude: z.number().optional(),
     longitude: z.number().optional(),

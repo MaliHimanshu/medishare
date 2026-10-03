@@ -79,7 +79,16 @@ const sendMessage = async (req, res) => {
     // Get the socket.io instance from req.app (set in server.js)
     const io = req.app.get("io");
     if (io) {
+      // Emit to specific conversation room
       io.to(`conversation_${conversationId}`).emit("message:new", message);
+      
+      // Also emit to all participants' personal rooms so the chat list updates
+      const conversation = await chatService.getConversationById(conversationId, senderId);
+      if (conversation && conversation.participants) {
+        conversation.participants.forEach(p => {
+          io.to(`user_${p.userId}`).emit("message:new", message);
+        });
+      }
     }
 
     return res.status(201).json({ success: true, data: message });

@@ -52,6 +52,11 @@ const createRental = async (userId, data) => {
     throw new Error("This equipment is available for donation only and cannot be rented.");
   }
 
+  // Equipment must have a positive rental price
+  if (!equipment.rentalPricePerDay || Number(equipment.rentalPricePerDay) <= 0) {
+    throw new Error("This equipment does not have a valid rental price configured.");
+  }
+
   // Prevent owner from renting own equipment
   if (equipment.ownerId === userId) {
     throw new Error("You cannot rent your own equipment.");
@@ -439,31 +444,29 @@ const createRazorpayOrder = async (rentalId, userId) => {
   const amountInPaise = Math.round(totalAmount * 100);
 
   let orderId = "";
-  const keyId = process.env.RAZORPAY_KEY_ID || "";
-  const keySecret = process.env.RAZORPAY_KEY_SECRET || "";
+  const keyId = process.env.RAZORPAY_KEY_ID;
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
-  // If Razorpay keys are configured, create order via Razorpay API
-  if (keyId && keySecret && !keyId.includes("dummy") && !keyId.includes("placeholder")) {
-    try {
-      const razorpay = getRazorpayInstance();
-      const order = await razorpay.orders.create({
-        amount: amountInPaise,
-        currency: "INR",
-        receipt: `rental_${rental.id.slice(-10)}`,
-        notes: {
-          rentalId: rental.id,
-          equipmentId: rental.equipmentId,
-          renterId: rental.renterId,
-        },
-      });
-      orderId = order.id;
-    } catch (err) {
-      console.error("Razorpay order creation error:", err);
-      throw new Error(`Failed to create Razorpay order: ${err.message}`);
-    }
-  } else {
-    // Generate standard test order ID for simulation / testing when keys are not set
-    orderId = `order_test_${Date.now()}_${rental.id.slice(-6)}`;
+  if (!keyId || !keySecret || keyId.includes("dummy") || keyId.includes("placeholder")) {
+    throw new Error("Razorpay credentials are not configured on the server.");
+  }
+
+  try {
+    const razorpay = getRazorpayInstance();
+    const order = await razorpay.orders.create({
+      amount: amountInPaise,
+      currency: "INR",
+      receipt: `rental_${rental.id.slice(-10)}`,
+      notes: {
+        rentalId: rental.id,
+        equipmentId: rental.equipmentId,
+        renterId: rental.renterId,
+      },
+    });
+    orderId = order.id;
+  } catch (err) {
+    console.error("Razorpay order creation error:", err);
+    throw new Error(`Failed to create Razorpay order: ${err.message}`);
   }
 
   // Save order ID on rental record
@@ -478,7 +481,7 @@ const createRazorpayOrder = async (rentalId, userId) => {
     orderId,
     amount: amountInPaise,
     currency: "INR",
-    keyId: keyId || "rzp_test_placeholder",
+    keyId,
     rentalId: rental.id,
     totalAmount: rental.totalAmount,
     equipmentName: rental.equipment.name,
@@ -508,7 +511,11 @@ const verifyRazorpayPayment = async (rentalId, userId, paymentData) => {
     throw new Error("You are not authorized to verify this payment.");
   }
 
-  const keySecret = process.env.RAZORPAY_KEY_SECRET || "dummy_secret";
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+  
+  if (!keySecret) {
+    throw new Error("Razorpay secret not configured on the server.");
+  }
 
   // Official Razorpay HMAC-SHA256 signature verification
   const body = razorpayOrderId + "|" + razorpayPaymentId;

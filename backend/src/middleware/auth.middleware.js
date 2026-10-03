@@ -1,4 +1,4 @@
-const { getAuth } = require("../config/firebaseAdmin");
+const { getAuth, getFirestore } = require("../config/firebaseAdmin");
 const prisma = require("../config/prisma");
 
 const protect = async (req, res, next) => {
@@ -58,13 +58,28 @@ const protect = async (req, res, next) => {
 
     // 3. Create user if they only exist in Firebase
     if (!user) {
+      let role = "RECIPIENT";
+      if (getFirestore) {
+        try {
+          const userDoc = await getFirestore().collection("users").doc(decodedToken.uid).get();
+          if (userDoc.exists) {
+            const data = userDoc.data();
+            if (data.role) {
+              role = data.role;
+            }
+          }
+        } catch (err) {
+          console.warn("[AuthMiddleware] Could not fetch role from Firestore:", err.message);
+        }
+      }
+
       user = await prisma.user.create({
         data: {
           id: decodedToken.uid, // Map Firebase UID exactly
           email: decodedToken.email || `${decodedToken.uid}@firebase.local`,
           name: decodedToken.name || "MediShare User",
           password: "firebase_authenticated", // Placeholder
-          role: "RECIPIENT",
+          role: role,
           phone: decodedToken.phone_number || null,
         },
         select: {

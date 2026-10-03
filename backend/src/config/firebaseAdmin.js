@@ -1,6 +1,7 @@
 const { initializeApp, cert, getApps } = require("firebase-admin/app");
 const { getAuth } = require("firebase-admin/auth");
 const { getMessaging } = require("firebase-admin/messaging");
+const { getFirestore } = require("firebase-admin/firestore");
 
 let app = null;
 
@@ -34,4 +35,5 @@ module.exports = {
   app,
   getAuth: app ? getAuth : null,
   getMessaging: app ? getMessaging : null,
+  getFirestore: app ? getFirestore : null,
 };

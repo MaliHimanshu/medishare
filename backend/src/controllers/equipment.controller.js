@@ -11,6 +11,15 @@ const {
   updateEquipmentSchema,
 } = require("../validators/equipment.validator");
 
+const mapEquipmentPrices = (eq) => {
+  if (!eq) return eq;
+  return {
+    ...eq,
+    rentalPricePerDay: eq.rentalPricePerDay != null ? Number(eq.rentalPricePerDay) : null,
+    securityDeposit: eq.securityDeposit != null ? Number(eq.securityDeposit) : null,
+  };
+};
+
 /**
  * POST /api/equipment
  */
@@ -35,7 +44,7 @@ const create = async (req, res, next) => {
     return res.status(201).json({
       success: true,
       message: "Equipment created successfully.",
-      data: equipment,
+      data: mapEquipmentPrices(equipment),
     });
   } catch (error) {
     next(error);
@@ -52,7 +61,7 @@ const getAll = async (req, res, next) => {
     return res.status(200).json({
       success: true,
       count: equipment.length,
-      data: equipment,
+      data: equipment.map(mapEquipmentPrices),
     });
   } catch (error) {
     next(error);
@@ -75,7 +84,7 @@ const getById = async (req, res, next) => {
 
     return res.status(200).json({
       success: true,
-      data: equipment,
+      data: mapEquipmentPrices(equipment),
     });
   } catch (error) {
     next(error);
@@ -114,7 +123,7 @@ const update = async (req, res, next) => {
     return res.status(200).json({
       success: true,
       message: "Equipment updated successfully.",
-      data: equipment,
+      data: mapEquipmentPrices(equipment),
     });
   } catch (error) {
     next(error);
