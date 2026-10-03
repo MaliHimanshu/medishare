@@ -45,7 +45,7 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
 
   void _showStatusDialog() {
     final rentalProvider = context.read<RentalProvider>();
-    String selectedStatus = _currentRental.status.toUpperCase();
+    String selectedStatus = _currentRental.status.name.toUpperCase();
 
     showModalBottomSheet(
       context: context,
@@ -127,7 +127,10 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
                           if (success) {
                             setState(() {
                               _currentRental = _currentRental.copyWith(
-                                status: selectedStatus,
+                                status: RentalStatus.values.firstWhere(
+                                  (e) => e.name == selectedStatus,
+                                  orElse: () => RentalStatus.REQUESTED,
+                                ),
                               );
                             });
                             messenger.showSnackBar(
@@ -231,14 +234,14 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final equip = _currentRental.equipment;
-    final statusColor = _getStatusColor(_currentRental.status);
+    final statusColor = _getStatusColor(_currentRental.status.name);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         title: const Text('Rental Details'),
         centerTitle: true,
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.surfaceBg,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
       ),
@@ -298,7 +301,7 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
                     border: Border.all(color: statusColor.withAlpha(100)),
                   ),
                   child: Text(
-                    _currentRental.status.toUpperCase(),
+                    _currentRental.status.name.toUpperCase(),
                     style: TextStyle(
                       color: statusColor,
                       fontWeight: FontWeight.bold,
@@ -426,7 +429,7 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
                             (r) => r.id == _currentRental.id,
                             orElse: () => _currentRental.copyWith(
                               paymentStatus: 'PAID',
-                              status: 'APPROVED',
+                              status: RentalStatus.APPROVED,
                             ),
                           );
                         });
@@ -605,7 +608,7 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
               ),
             ),
 
-            if (_currentRental.status.toUpperCase() == 'ACTIVE') ...[
+            if (_currentRental.status.name.toUpperCase() == 'ACTIVE') ...[
               const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,

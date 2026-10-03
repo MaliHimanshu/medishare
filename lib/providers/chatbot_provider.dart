@@ -139,4 +139,9 @@ class ChatbotProvider extends ChangeNotifier {
     _initWelcomeMessage(lang);
     notifyListeners();
   }
+
+  // ── Clear State on Logout ───────────────────────────────────────────
+  void clear() {
+    clearChat();
+  }
 }

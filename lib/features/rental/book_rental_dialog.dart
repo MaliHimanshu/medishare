@@ -18,6 +18,18 @@ class _BookRentalDialogState extends State<BookRentalDialog> {
   DateTime _startDate = DateTime.now().add(const Duration(days: 1));
   DateTime _endDate = DateTime.now().add(const Duration(days: 4));
   bool _isSubmitting = false;
+  bool _agreementAccepted = false;
+  final _addressController = TextEditingController();
+  final _reasonController = TextEditingController();
+  final _noteController = TextEditingController();
+
+  @override
+  void dispose() {
+    _addressController.dispose();
+    _reasonController.dispose();
+    _noteController.dispose();
+    super.dispose();
+  }
 
   int get _numberOfDays {
     final diff = _endDate.difference(_startDate).inDays;
@@ -64,6 +76,19 @@ class _BookRentalDialogState extends State<BookRentalDialog> {
   }
 
   Future<void> _submitBooking() async {
+    if (!_agreementAccepted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please accept the rental agreement terms.'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+    if (_addressController.text.isEmpty || _reasonController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill all required fields.'), backgroundColor: Colors.red),
+      );
+      return;
+    }
+
     setState(() => _isSubmitting = true);
     final provider = context.read<RentalProvider>();
     final messenger = ScaffoldMessenger.of(context);

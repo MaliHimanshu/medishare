@@ -229,7 +229,7 @@ class AuthService {
             .get();
       }
 
-      if (doc != null && doc!.exists) {
+      if (doc.exists) {
         final data = doc.data()!;
         data['id'] = fUser.uid;
         final user = UserModel.fromJson(data);
@@ -259,11 +259,21 @@ class AuthService {
 
   Future<void> clearAuth() async {
     try {
-      await FirebaseAuth.instance.signOut();
-      await _storage.delete(key: _tokenKey);
-      await _storage.delete(key: 'medishare_token');
-      await _storage.delete(key: _userKey);
-    } catch (_) {}
+      debugPrint('[LOGOUT] Firebase signOut started');
+      await FirebaseAuth.instance.signOut().timeout(const Duration(seconds: 2));
+      debugPrint('[LOGOUT] Firebase signOut completed');
+    } catch (e) {
+      debugPrint('[LOGOUT] Firebase signOut error/timeout: $e');
+    }
+    try {
+      debugPrint('[LOGOUT] SecureStorage cleanup started');
+      await _storage.delete(key: _tokenKey).timeout(const Duration(seconds: 1));
+      await _storage.delete(key: 'medishare_token').timeout(const Duration(seconds: 1));
+      await _storage.delete(key: _userKey).timeout(const Duration(seconds: 1));
+      debugPrint('[LOGOUT] SecureStorage cleanup completed');
+    } catch (e) {
+      debugPrint('[LOGOUT] SecureStorage cleanup error/timeout: $e');
+    }
   }
 
   Future<bool> hasToken() async {

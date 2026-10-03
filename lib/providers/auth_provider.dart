@@ -313,10 +313,16 @@ class AuthProvider extends ChangeNotifier {
 
   // ── Logout ────────────────────────────────────────────
   Future<void> logout() async {
+    debugPrint('[LOGOUT] Provider cleanup started');
     _setStatus(AuthStatus.loading);
-    await _authService.clearAuth();
+    try {
+      await _authService.clearAuth();
+    } catch (e) {
+      debugPrint('[LOGOUT] Error in clearAuth: $e');
+    }
     _user = null;
     _setStatus(AuthStatus.unauthenticated);
+    debugPrint('[LOGOUT] Navigation to login ready');
   }
 
   // ── Clear Error ───────────────────────────────────────

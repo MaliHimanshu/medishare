@@ -7,6 +7,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/profile_provider.dart';
 import '../../shared/widgets/ms_skeleton.dart';
 import '../../shared/widgets/ms_image.dart';
+import '../../core/utils/logout_helper.dart';
 import '../auth/login_screen.dart';
 import '../settings/settings_screen.dart';
 import '../settings/help_support_screen.dart';
@@ -73,46 +74,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           FilledButton(
             style: FilledButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () async {
-              final authProvider = context.read<AuthProvider>();
-              final profileProvider = context.read<ProfileProvider>();
-              final equipmentProvider = context.read<EquipmentProvider>();
-              final donationProvider = context.read<DonationProvider>();
-              final requestProvider = context.read<RequestProvider>();
-              final hospitalProvider = context.read<HospitalProvider>();
-              final notificationProvider = context.read<NotificationProvider>();
-              final menuChatbotProvider = context.read<MenuChatbotProvider>();
-              final chatbotProvider = context.read<ChatbotProvider>();
-              final globalSearchProvider = context.read<GlobalSearchProvider>();
-              final rentalProvider = context.read<RentalProvider>();
-              final trackingProvider = context.read<TrackingProvider>();
-              final chatProvider = context.read<ChatProvider>();
-              final emergencyAlertProvider = context.read<EmergencyAlertProvider>();
-              final dashboardProvider = context.read<DashboardProvider>();
-
-              final navigator = Navigator.of(context);
+              debugPrint('[LOGOUT] Logout button pressed in ProfileScreen');
               Navigator.pop(ctx);
-
-              // ── Clear All State ─────────────────────────────────────────────
-              profileProvider.clear();
-              equipmentProvider.clear();
-              donationProvider.clear();
-              requestProvider.clear();
-              hospitalProvider.clear();
-              notificationProvider.clear();
-              menuChatbotProvider.clear();
-              chatbotProvider.clear();
-              globalSearchProvider.clear();
-              rentalProvider.clear();
-              trackingProvider.clear();
-              chatProvider.clear();
-              emergencyAlertProvider.clear();
-              dashboardProvider.clear();
-
-              await authProvider.logout();
-              navigator.pushAndRemoveUntil(
-                AppPageTransitions.slideRight(const LoginScreen()),
-                (route) => false,
-              );
+              await LogoutHelper.performLogout(context);
             },
             child: const Text('Logout'),
           ),
@@ -258,22 +222,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
-      body: profileProvider.isLoading
-          ? ListView(
-              padding: const EdgeInsets.all(20),
-              children: const [
-                MsSkeleton(height: 180),
-                SizedBox(height: 16),
-                MsSkeleton(height: 120),
-                SizedBox(height: 16),
-                MsSkeleton(height: 240),
-              ],
-            )
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                   // ── Profile Header ────────────────────────────────
                   _buildProfileHeader(context, user),
 
@@ -519,6 +474,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
             ),
+          if (profileProvider.isLoading)
+            const Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: LinearProgressIndicator(),
+            ),
+        ],
+      ),
     );
   }
 

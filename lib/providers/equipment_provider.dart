@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 import '../core/network/dio_client.dart';
 import '../core/network/api_endpoints.dart';
@@ -146,28 +149,31 @@ class EquipmentProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _dio.get(ApiEndpoints.equipment);
-      if (response.data is List) {
-        final listData = response.data as List<dynamic>;
-        _equipment = listData
-            .map(
-              (item) => EquipmentModel.fromJson(item as Map<String, dynamic>),
-            )
-            .toList();
-      } else if (response.data is Map && response.data['data'] is List) {
-        final listData = response.data['data'] as List<dynamic>;
-        _equipment = listData
-            .map(
-              (item) => EquipmentModel.fromJson(item as Map<String, dynamic>),
-            )
-            .toList();
-      } else {
-        _errorMessage =
-            (response.data is Map ? response.data['message'] : null) ??
-            'Failed to load equipment catalog.';
-      }
-    } on DioException catch (e) {
-      _errorMessage = DioClient.handleError(e);
+      final db = FirebaseFirestore.instance;
+      final snapshot = await db.collection('equipment').get();
+      _equipment = snapshot.docs.map((doc) {
+        final data = doc.data();
+        return EquipmentModel(
+          id: data['id'] ?? doc.id,
+          ownerId: data['ownerId'] ?? '',
+          name: data['name'] ?? 'Unknown',
+          category: data['category'] ?? 'Other',
+          condition: data['condition'] ?? 'Good',
+          status: data['status'] ?? 'AVAILABLE',
+          quantity: data['quantity'] ?? 1,
+          mode: data['mode'] ?? 'DONATE',
+          createdAt: data['createdAt'] ?? DateTime.now().toIso8601String(),
+          updatedAt: data['updatedAt'] ?? DateTime.now().toIso8601String(),
+          donor: data['donor'] ?? '',
+          location: data['location'] ?? '',
+          latitude: data['latitude'],
+          longitude: data['longitude'],
+          image: data['image'] ?? '',
+          images: List<String>.from(data['images'] ?? []),
+          manufacturer: data['manufacturer'] ?? '',
+          description: data['description'] ?? '',
+        );
+      }).toList();
     } catch (e) {
       _errorMessage = 'An unexpected error occurred: $e';
     } finally {
@@ -176,7 +182,6 @@ class EquipmentProvider extends ChangeNotifier {
     }
   }
 
-  // ── Add Equipment Listing (POST /api/equipment) ────────────────────
   Future<bool> addEquipment({
     required String name,
     required String category,
@@ -195,41 +200,123 @@ class EquipmentProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final payload = {
-        'name': name,
-        'category': category,
-        'condition': condition.toUpperCase(),
-        'quantity': quantity,
-        'mode': mode.toUpperCase(),
-        if (mode.toUpperCase() != 'DONATE' && rentalPricePerDay != null)
-          'rentalPricePerDay': rentalPricePerDay,
-        if (mode.toUpperCase() != 'DONATE' && securityDeposit != null)
-          'securityDeposit': securityDeposit,
-        if (manufacturer != null && manufacturer.isNotEmpty)
-          'manufacturer': manufacturer,
-        if (description != null && description.isNotEmpty)
-          'description': description,
-        if (location != null && location.isNotEmpty) 'location': location,
-        if (image != null && image.isNotEmpty) 'image': image,
-      };
-
-      final response = await _dio.post(ApiEndpoints.equipment, data: payload);
-      if (response.data != null && response.data['success'] == true) {
-        final newEquip = EquipmentModel.fromJson(
-          response.data['data'] as Map<String, dynamic>,
-        );
-        _equipment.insert(0, newEquip);
-        return true;
-      } else {
-        _errorMessage =
-            response.data?['message'] ?? 'Failed to list equipment.';
+      debugPrint('[SAVE_DEBUG] 05 provider.addEquipment ENTERED');
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) {
+        _errorMessage = 'Please log in to continue.';
         return false;
       }
-    } on DioException catch (e) {
-      _errorMessage = DioClient.handleError(e);
+      
+      final db = FirebaseFirestore.instance;
+      final newDoc = db.collection('equipment').doc();
+      final newEquip = EquipmentModel(
+        id: newDoc.id,
+        ownerId: user.uid,
+        name: name,
+        category: category,
+        condition: condition.toUpperCase(),
+        status: 'AVAILABLE',
+        quantity: quantity,
+        mode: mode,
+        createdAt: DateTime.now().toIso8601String(),
+        updatedAt: DateTime.now().toIso8601String(),
+        donor: user.displayName ?? '',
+        location: location ?? '',
+        latitude: null, // Depending on geocoding
+        longitude: null,
+        image: image ?? '',
+        images: [],
+        manufacturer: manufacturer ?? '',
+        description: description ?? '',
+      );
+      
+      debugPrint('[SAVE_DEBUG] Firebase UID: ${user.uid}');
+      debugPrint('[FIRESTORE_DEBUG] WRITE START');
+      debugPrint('[FIRESTORE_DEBUG] Project ID: ${Firebase.app().options.projectId}');
+      debugPrint('[FIRESTORE_DEBUG] Firebase UID: ${user.uid}');
+      debugPrint('[FIRESTORE_DEBUG] currentUser exists: true');
+      debugPrint('[FIRESTORE_DEBUG] email verified: ${user.emailVerified}');
+      
+      final equipmentData = {
+        'id': newEquip.id,
+        'ownerId': newEquip.ownerId,
+        'name': newEquip.name,
+        'category': newEquip.category,
+        'condition': newEquip.condition,
+        'status': newEquip.status,
+        'quantity': newEquip.quantity,
+        'mode': newEquip.mode,
+        'createdAt': newEquip.createdAt,
+        'updatedAt': newEquip.updatedAt,
+        'donor': newEquip.donor,
+        'location': newEquip.location,
+        'image': newEquip.image,
+        'images': newEquip.images,
+        'manufacturer': newEquip.manufacturer,
+        'description': newEquip.description,
+      };
+
+      debugPrint('[FIRESTORE_DEBUG] field id type: ${equipmentData['id'].runtimeType}');
+      debugPrint('[FIRESTORE_DEBUG] field quantity type: ${equipmentData['quantity'].runtimeType}');
+      debugPrint('[FIRESTORE_DEBUG] field ownerId type: ${equipmentData['ownerId'].runtimeType}');
+      debugPrint('[FIRESTORE_DEBUG] field image type: ${equipmentData['image'].runtimeType}');
+
+      try {
+        final stopwatch = Stopwatch()..start();
+
+        await db
+            .collection('equipment')
+            .doc(newDoc.id)
+            .set(equipmentData)
+            .timeout(const Duration(seconds: 30));
+
+        stopwatch.stop();
+
+        debugPrint(
+          '[FIRESTORE_DEBUG] WRITE SUCCESS after ${stopwatch.elapsedMilliseconds} ms',
+        );
+      } on FirebaseException catch (e, stackTrace) {
+        debugPrint('[FIRESTORE_DEBUG] FIREBASE EXCEPTION');
+        debugPrint('[FIRESTORE_DEBUG] code: ${e.code}');
+        debugPrint('[FIRESTORE_DEBUG] message: ${e.message}');
+        debugPrint('[FIRESTORE_DEBUG] plugin: ${e.plugin}');
+        debugPrint('[FIRESTORE_DEBUG] stack: $stackTrace');
+        rethrow;
+      } catch (e, stackTrace) {
+        if (e.toString().contains('TimeoutException')) {
+          debugPrint('[FIRESTORE_DEBUG] TIMEOUT EXCEPTION');
+          debugPrint('[FIRESTORE_DEBUG] timeout: $e');
+          debugPrint('[FIRESTORE_DEBUG] stack: $stackTrace');
+          rethrow;
+        } else {
+          debugPrint('[FIRESTORE_DEBUG] UNKNOWN EXCEPTION: $e');
+          debugPrint('[FIRESTORE_DEBUG] stack: $stackTrace');
+          rethrow;
+        }
+      }
+
+      debugPrint('[SAVE_DEBUG] 07 Firestore/API request RETURNED');
+      debugPrint('[SAVE_DEBUG] 08 equipment ID RECEIVED: ${newDoc.id}');
+      
+      _equipment.insert(0, newEquip);
+      debugPrint('[SAVE_DEBUG] 09 provider state UPDATED');
+      
+      return true;
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        _errorMessage = "Firestore error: permission-denied. You don't have permission to create this listing.";
+      } else if (e.code == 'unavailable' || e.code == 'network-request-failed') {
+        _errorMessage = "Firestore error: ${e.code}. Unable to connect.";
+      } else {
+        _errorMessage = "Firestore error: ${e.code}. ${e.message}";
+      }
       return false;
     } catch (e) {
-      _errorMessage = 'An unexpected error occurred: $e';
+      if (e.toString().contains('TimeoutException')) {
+        _errorMessage = "Request timed out. Please check your internet connection and try again.";
+      } else {
+        _errorMessage = "Something went wrong: $e";
+      }
       return false;
     } finally {
       _isLoading = false;
@@ -261,51 +348,58 @@ class EquipmentProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final payload = {
+      final db = FirebaseFirestore.instance;
+      await db.collection('equipment').doc(id).update({
         'name': name,
         'category': category,
         'condition': condition.toUpperCase(),
-        'quantity': quantity,
         'status': status.toUpperCase(),
-        'mode': mode.toUpperCase(),
-        if (mode.toUpperCase() != 'DONATE' && rentalPricePerDay != null)
-          'rentalPricePerDay': rentalPricePerDay,
-        if (mode.toUpperCase() != 'DONATE' && securityDeposit != null)
-          'securityDeposit': securityDeposit,
-        'latitude': ?latitude,
-        'longitude': ?longitude,
-        if (address != null && address.isNotEmpty) 'address': address,
-        if (manufacturer != null && manufacturer.isNotEmpty)
-          'manufacturer': manufacturer,
-        if (description != null && description.isNotEmpty)
-          'description': description,
-        if (location != null && location.isNotEmpty) 'location': location,
+        'location': location ?? '',
+        'description': description ?? '',
+        'manufacturer': manufacturer ?? '',
+        if (latitude != null) 'latitude': latitude,
+        if (longitude != null) 'longitude': longitude,
         if (image != null && image.isNotEmpty) 'image': image,
-      };
+        'updatedAt': DateTime.now().toIso8601String(),
+      });
 
-      final response = await _dio.put(
-        '${ApiEndpoints.equipment}/$id',
-        data: payload,
-      );
-      if (response.data != null && response.data['success'] == true) {
-        final updated = EquipmentModel.fromJson(
-          response.data['data'] as Map<String, dynamic>,
+      final idx = _equipment.indexWhere((item) => item.id == id);
+      if (idx != -1) {
+        final old = _equipment[idx];
+        _equipment[idx] = EquipmentModel(
+          id: old.id,
+          ownerId: old.ownerId,
+          name: name,
+          category: category,
+          description: description ?? old.description,
+          location: location ?? old.location,
+          address: old.address,
+          latitude: latitude ?? old.latitude,
+          longitude: longitude ?? old.longitude,
+          quantity: old.quantity,
+          status: status.toUpperCase(),
+          mode: old.mode,
+          donor: old.donor,
+          condition: condition.toUpperCase(),
+          manufacturer: manufacturer ?? old.manufacturer,
+          image: (image != null && image.isNotEmpty) ? image : old.image,
+          images: old.images,
+          createdAt: old.createdAt,
+          updatedAt: DateTime.now().toIso8601String(),
         );
-        final idx = _equipment.indexWhere((item) => item.id == id);
-        if (idx != -1) {
-          _equipment[idx] = updated;
-        }
-        return true;
-      } else {
-        _errorMessage =
-            response.data?['message'] ?? 'Failed to update equipment listing.';
-        return false;
       }
-    } on DioException catch (e) {
-      _errorMessage = DioClient.handleError(e);
+      return true;
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        _errorMessage = "You don't have permission to update this listing.";
+      } else if (e.code == 'unavailable' || e.code == 'network-request-failed') {
+        _errorMessage = "Unable to connect. Please check your internet connection.";
+      } else {
+        _errorMessage = "Something went wrong. Please try again.";
+      }
       return false;
     } catch (e) {
-      _errorMessage = 'An unexpected error occurred: $e';
+      _errorMessage = "Something went wrong. Please try again.";
       return false;
     } finally {
       _isLoading = false;
@@ -320,20 +414,21 @@ class EquipmentProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final response = await _dio.delete('${ApiEndpoints.equipment}/$id');
-      if (response.data != null && response.data['success'] == true) {
-        _equipment.removeWhere((item) => item.id == id);
-        return true;
+      final db = FirebaseFirestore.instance;
+      await db.collection('equipment').doc(id).delete();
+      _equipment.removeWhere((item) => item.id == id);
+      return true;
+    } on FirebaseException catch (e) {
+      if (e.code == 'permission-denied') {
+        _errorMessage = "You don't have permission to delete this listing.";
+      } else if (e.code == 'unavailable' || e.code == 'network-request-failed') {
+        _errorMessage = "Unable to connect. Please check your internet connection.";
       } else {
-        _errorMessage =
-            response.data?['message'] ?? 'Failed to delete equipment listing.';
-        return false;
+        _errorMessage = "Something went wrong. Please try again.";
       }
-    } on DioException catch (e) {
-      _errorMessage = DioClient.handleError(e);
       return false;
     } catch (e) {
-      _errorMessage = 'An unexpected error occurred: $e';
+      _errorMessage = "Something went wrong. Please try again.";
       return false;
     } finally {
       _isLoading = false;
@@ -389,43 +484,56 @@ class EquipmentProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final queryParams = <String, dynamic>{
-        'latitude': latitude,
-        'longitude': longitude,
+      final db = FirebaseFirestore.instance;
+      // Note: for nearby equipment, we ideally need GeoFire or distance queries.
+      // We will do a generic query for now and fetch everything to filter manually if needed, 
+      // or simply rely on fetchEquipment style if radius isn't strictly necessary.
+      // But we just grab 'AVAILABLE' stuff.
+      final snapshot = await db.collection('equipment').where('status', isEqualTo: 'AVAILABLE').get();
+      _nearbyEquipment = snapshot.docs.map((doc) {
+        final data = doc.data();
+        return EquipmentModel(
+          id: data['id'] ?? doc.id,
+          ownerId: data['ownerId'] ?? '',
+          name: data['name'] ?? 'Unknown',
+          category: data['category'] ?? 'Other',
+          condition: data['condition'] ?? 'Good',
+          status: data['status'] ?? 'AVAILABLE',
+          quantity: data['quantity'] ?? 1,
+          mode: data['mode'] ?? 'DONATE',
+          createdAt: data['createdAt'] ?? DateTime.now().toIso8601String(),
+          updatedAt: data['updatedAt'] ?? DateTime.now().toIso8601String(),
+          donor: data['donor'] ?? '',
+          location: data['location'] ?? '',
+          latitude: data['latitude'],
+          longitude: data['longitude'],
+          image: data['image'] ?? '',
+          images: List<String>.from(data['images'] ?? []),
+          manufacturer: data['manufacturer'] ?? '',
+          description: data['description'] ?? '',
+        );
+      }).toList();
+      _nearbyMeta = {
+        'count': _nearbyEquipment.length,
+        'location': 'Current Location',
         'radius': radius,
-        if (category != null && category != 'All') 'category': category,
-        if (mode != null && mode != 'All') 'mode': mode,
+        'radiusUnit': 'km',
       };
-
-      final response = await _dio.get(
-        ApiEndpoints.nearbyEquipment,
-        queryParameters: queryParams,
-      );
-
-      if (response.data != null && response.data['success'] == true) {
-        final listData = response.data['equipment'] as List<dynamic>? ?? [];
-        _nearbyEquipment = listData
-            .map(
-              (item) => EquipmentModel.fromJson(item as Map<String, dynamic>),
-            )
-            .toList();
-        _nearbyMeta = {
-          'count': response.data['count'] ?? _nearbyEquipment.length,
-          'location': response.data['location'],
-          'radius': response.data['radius'] ?? radius,
-          'radiusUnit': response.data['radiusUnit'] ?? 'km',
-        };
-      } else {
-        _nearbyError =
-            response.data?['message'] ?? 'Failed to load nearby equipment.';
-      }
-    } on DioException catch (e) {
-      _nearbyError = DioClient.handleError(e);
     } catch (e) {
       _nearbyError = 'An unexpected error occurred: $e';
     } finally {
       _isLoadingNearby = false;
       notifyListeners();
     }
+  }
+  // ── Clear State on Logout ───────────────────────────────────────────
+  void clear() {
+    _equipment = [];
+    _nearbyEquipment = [];
+    _nearbyMeta = null;
+    _errorMessage = '';
+    _nearbyError = '';
+    _searchQuery = '';
+    notifyListeners();
   }
 }

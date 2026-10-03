@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 
 import 'package:socket_io_client/socket_io_client.dart' as io;
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../core/network/dio_client.dart';
 import '../core/network/api_endpoints.dart';
@@ -17,7 +17,6 @@ import '../models/emergency_alert_model.dart';
 
 class EmergencyAlertProvider extends ChangeNotifier {
   final Dio _dio = DioClient.instance;
-  final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   io.Socket? _socket;
 
@@ -64,8 +63,10 @@ class EmergencyAlertProvider extends ChangeNotifier {
   Future<void> initSocket() async {
     if (_socket != null) return;
 
-    String? token = await _storage.read(key: 'auth_token');
-    token ??= await _storage.read(key: 'medishare_token');
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    
+    final token = await user.getIdToken();
     if (token == null) return;
 
     final serverUrl = ApiEndpoints.baseUrl.replaceAll('/api', '');
@@ -444,5 +445,17 @@ class EmergencyAlertProvider extends ChangeNotifier {
       _isActionLoading = false;
       notifyListeners();
     }
+  }
+  // ── Clear State on Logout ──────────────────────────────
+  void clear() {
+    _socket?.disconnect();
+    _socket = null;
+    _hospitalAlerts = [];
+    _activeNgoAlerts = [];
+    _selectedAlert = null;
+    _liveIncomingAlert = null;
+    _errorMessage = null;
+    EmergencyAudioUtil.stopEmergencyAlertTone();
+    notifyListeners();
   }
 }

@@ -287,4 +287,11 @@ class RequestProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+  // ── Clear State on Logout ───────────────────────────────────────────
+  void clear() {
+    _requests = [];
+    _errorMessage = '';
+    _searchQuery = '';
+    notifyListeners();
+  }
 }

@@ -23,6 +23,11 @@ class EquipmentModel {
   // Nearby search extras
   final double? distance; // kilometres from search origin
   final String? distanceUnit; // always "km"
+  
+  // Rental specific
+  final bool isRentable;
+  final bool rentalAvailable;
+  final String? rentalTerms;
 
   EquipmentModel({
     required this.id,
@@ -48,6 +53,9 @@ class EquipmentModel {
     required this.updatedAt,
     this.distance,
     this.distanceUnit,
+    this.isRentable = false,
+    this.rentalAvailable = false,
+    this.rentalTerms,
   });
 
   static double? _parseDouble(dynamic val) {
@@ -100,6 +108,9 @@ class EquipmentModel {
       updatedAt: json['updatedAt']?.toString() ?? '',
       distance: _parseDouble(json['distance']),
       distanceUnit: json['distanceUnit']?.toString(),
+      isRentable: json['isRentable'] == true || json['isRentable'] == 'true',
+      rentalAvailable: json['rentalAvailable'] == true || json['rentalAvailable'] == 'true',
+      rentalTerms: json['rentalTerms']?.toString(),
     );
   }
 
@@ -128,6 +139,9 @@ class EquipmentModel {
       'updatedAt': updatedAt,
       if (distance != null) 'distance': distance,
       if (distanceUnit != null) 'distanceUnit': distanceUnit,
+      'isRentable': isRentable,
+      'rentalAvailable': rentalAvailable,
+      if (rentalTerms != null) 'rentalTerms': rentalTerms,
     };
   }
 }

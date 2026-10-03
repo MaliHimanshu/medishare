@@ -34,37 +34,17 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
   void initState() {
     super.initState();
     final trackingProv = context.read<TrackingProvider>();
-    final authProv = context.read<AuthProvider>();
-    final currentUserId = authProv.user?.id;
-    final isRenter = currentUserId == widget.rental.renterId;
-
-    // Start background activity depending on role
+    
+    // Viewer mode: start polling Firestore for the latest delivery position
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (isRenter) {
-        // Renters start by fetching the latest status
-        trackingProv.fetchLatestTracking(widget.rental.id).then((_) {
-          // If already marked as active tracking in backend, auto-enable local publishing
-          if (trackingProv.currentSession?.isTrackingActive == true) {
-            trackingProv.startLocationPublishing(widget.rental.id);
-          }
-        });
-      } else {
-        // Owners/Admins start polling
-        trackingProv.startPolling(widget.rental.id);
-      }
+      trackingProv.startPolling(widget.rental.id);
     });
   }
 
   @override
   void dispose() {
     final trackingProv = context.read<TrackingProvider>();
-    final authProv = context.read<AuthProvider>();
-    final currentUserId = authProv.user?.id;
-    final isRenter = currentUserId == widget.rental.renterId;
-
-    if (!isRenter) {
-      trackingProv.stopPolling();
-    }
+    trackingProv.stopPolling();
     super.dispose();
   }
 
@@ -132,7 +112,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
             },
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: context.cardBg,
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
@@ -205,7 +185,7 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
-                  isRenter ? 'You' : 'Renter',
+                  isRenter ? 'Partner' : 'Partner',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 8,
@@ -228,18 +208,13 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
       appBar: AppBar(
         title: Text('Live Tracking'),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        foregroundColor: Colors.black,
+        foregroundColor: context.textPrimaryColor,
         elevation: 0.5,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh, color: AppColors.primary),
             onPressed: () {
-              if (isRenter) {
-                trackingProv.fetchLatestTracking(widget.rental.id);
-                trackingProv.fetchTrackingHistory(widget.rental.id);
-              } else {
-                trackingProv.startPolling(widget.rental.id);
-              }
+              trackingProv.startPolling(widget.rental.id);
             },
             tooltip: 'Refresh Location',
           ),
@@ -284,8 +259,8 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                 _buildMapActionButton(
                   icon: _autoCenter ? Icons.gps_fixed : Icons.gps_not_fixed,
                   tooltip: 'Auto-center on tracker',
-                  color: _autoCenter ? AppColors.primary : Colors.white,
-                  iconColor: _autoCenter ? Colors.white : Colors.black87,
+                  color: _autoCenter ? AppColors.primary : context.cardBg,
+                  iconColor: _autoCenter ? Colors.white : context.textPrimaryColor,
                   onPressed: () => setState(() => _autoCenter = !_autoCenter),
                 ),
                 const SizedBox(height: 10),
@@ -294,10 +269,10 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                       ? Icons.home_work
                       : Icons.home_work_outlined,
                   tooltip: 'Toggle Base Location Pin',
-                  color: Colors.white,
+                  color: context.cardBg,
                   iconColor: _showBaseLocation
                       ? Colors.teal.shade700
-                      : Colors.black54,
+                      : context.textSecondaryColor,
                   onPressed: () =>
                       setState(() => _showBaseLocation = !_showBaseLocation),
                 ),
@@ -305,8 +280,8 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                 _buildMapActionButton(
                   icon: _showTrail ? Icons.gesture : Icons.gesture_outlined,
                   tooltip: 'Toggle Trail History',
-                  color: Colors.white,
-                  iconColor: _showTrail ? AppColors.primary : Colors.black54,
+                  color: context.cardBg,
+                  iconColor: _showTrail ? AppColors.primary : context.textSecondaryColor,
                   onPressed: () => setState(() => _showTrail = !_showTrail),
                 ),
               ],
@@ -506,98 +481,34 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                 ),
               ],
             ),
-            const Divider(height: 24),
-
-            // Renter specific sharing controls
-            if (isRenter) ...[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Share My Location',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                          ),
-                        ),
-                        SizedBox(height: 2),
-                        Text(
-                          'Publishes foreground GPS to the owner',
-                          style: TextStyle(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurface.withValues(alpha: 0.6),
-                            fontSize: 11,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Switch.adaptive(
-                    value: trackingProv.isPublishing,
-                    activeThumbColor: AppColors.primary,
-                    onChanged: (val) async {
-                      if (val) {
-                        final success = await trackingProv
-                            .startLocationPublishing(widget.rental.id);
-                        if (success && mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Location sharing started!'),
-                              backgroundColor: AppColors.success,
-                            ),
-                          );
-                        }
-                      } else {
-                        await trackingProv.stopLocationPublishing(
-                          widget.rental.id,
-                        );
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Location sharing stopped.'),
-                              backgroundColor: Colors.black87,
-                            ),
-                          );
-                        }
-                      }
-                    },
-                  ),
-                ],
-              ),
-            ] else ...[
-              // Owner/Viewer metadata metrics
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildMetricCell(
-                    icon: Icons.speed,
-                    title: 'Speed',
-                    value: latestPing?.speed != null
-                        ? '${(latestPing!.speed! * 3.6).toStringAsFixed(1)} km/h'
-                        : '--',
-                  ),
-                  _buildMetricCell(
-                    icon: Icons.radar,
-                    title: 'Accuracy',
-                    value: latestPing?.accuracy != null
-                        ? '${latestPing!.accuracy!.toStringAsFixed(0)} m'
-                        : '--',
-                  ),
-                  _buildMetricCell(
-                    icon: Icons.timer_outlined,
-                    title: 'Updated',
-                    value: latestPing != null
-                        ? _formatRecordedTime(latestPing.recordedAt)
-                        : '--',
-                  ),
-                ],
-              ),
-            ],
+            // Removed Renter location sharing toggle as Delivery Partner shares location.
+            // Viewer metadata metrics
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildMetricCell(
+                  icon: Icons.speed,
+                  title: 'Speed',
+                  value: latestPing?.speed != null && latestPing!.speed! > 0
+                      ? '${(latestPing.speed! * 3.6).toStringAsFixed(1)} km/h'
+                      : '--',
+                ),
+                _buildMetricCell(
+                  icon: Icons.radar,
+                  title: 'Accuracy',
+                  value: latestPing?.accuracy != null && latestPing!.accuracy! > 0
+                      ? '${latestPing.accuracy!.toStringAsFixed(0)} m'
+                      : '--',
+                ),
+                _buildMetricCell(
+                  icon: Icons.timer_outlined,
+                  title: 'Updated',
+                  value: latestPing != null
+                      ? _formatRecordedTime(latestPing.recordedAt)
+                      : '--',
+                ),
+              ],
+            ),
           ],
         ),
       ),

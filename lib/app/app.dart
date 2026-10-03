@@ -38,16 +38,7 @@ class _MediShareAppState extends State<MediShareApp> {
   void initState() {
     super.initState();
     DioClient.onUnauthorized = () {
-      final context = MediShareApp.navigatorKey.currentContext;
-      if (context != null) {
-        try {
-          Provider.of<AuthProvider>(context, listen: false).logout();
-        } catch (_) {}
-      }
-      MediShareApp.navigatorKey.currentState?.pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-        (route) => false,
-      );
+      debugPrint('[App] API returned 401 Unauthorized. Not logging out (using Firebase as source of truth).');
     };
   }
 

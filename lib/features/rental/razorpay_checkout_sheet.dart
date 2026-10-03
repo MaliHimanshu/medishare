@@ -7,6 +7,8 @@ import '../../core/constants/app_colors.dart';
 import '../../models/rental_model.dart';
 import '../../providers/rental_provider.dart';
 
+import 'package:razorpay_flutter/razorpay_flutter.dart';
+
 class RazorpayCheckoutSheet extends StatefulWidget {
   final RentalModel rental;
 
@@ -17,10 +19,78 @@ class RazorpayCheckoutSheet extends StatefulWidget {
 }
 
 class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
-  String _selectedPaymentMethod = 'UPI'; // UPI, Card, NetBanking
+  late Razorpay _razorpay;
+  String? _currentOrderId;
   bool _isProcessing = false;
   String? _errorMessage;
   bool _isSuccess = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _razorpay = Razorpay();
+    _razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, _handlePaymentSuccess);
+    _razorpay.on(Razorpay.EVENT_PAYMENT_ERROR, _handlePaymentError);
+    _razorpay.on(Razorpay.EVENT_EXTERNAL_WALLET, _handleExternalWallet);
+  }
+
+  @override
+  void dispose() {
+    _razorpay.clear();
+    super.dispose();
+  }
+
+  void _handlePaymentSuccess(PaymentSuccessResponse response) async {
+    debugPrint('[PAYMENT] Payment success callback received');
+    final rentalProvider = context.read<RentalProvider>();
+
+    debugPrint('[PAYMENT] Verifying payment on server...');
+    setState(() {
+      _isProcessing = true;
+      _errorMessage = null;
+    });
+
+    final isVerified = await rentalProvider.verifyPayment(
+      rentalId: widget.rental.id,
+      razorpayOrderId: response.orderId ?? _currentOrderId ?? '',
+      razorpayPaymentId: response.paymentId ?? '',
+      razorpaySignature: response.signature ?? '',
+    );
+
+    if (isVerified) {
+      debugPrint('[PAYMENT] Verification successful');
+      debugPrint('[PAYMENT] Rental marked PAID');
+      setState(() {
+        _isProcessing = false;
+        _isSuccess = true;
+      });
+      await Future.delayed(const Duration(milliseconds: 1200));
+      if (mounted) Navigator.pop(context, true);
+    } else {
+      debugPrint('[PAYMENT] Verification failed');
+      await rentalProvider.recordPaymentFailure(widget.rental.id);
+      setState(() {
+        _isProcessing = false;
+        _errorMessage = rentalProvider.errorMessage.isNotEmpty
+            ? rentalProvider.errorMessage
+            : 'Server-side payment verification failed.';
+      });
+    }
+  }
+
+  void _handlePaymentError(PaymentFailureResponse response) async {
+    debugPrint('[PAYMENT] Payment error/cancelled: ${response.message}');
+    final rentalProvider = context.read<RentalProvider>();
+    await rentalProvider.recordPaymentFailure(widget.rental.id);
+    setState(() {
+      _isProcessing = false;
+      _errorMessage = 'Payment failed or cancelled: ${response.message ?? ""}';
+    });
+  }
+
+  void _handleExternalWallet(ExternalWalletResponse response) {
+    debugPrint('[PAYMENT] External wallet selected: ${response.walletName}');
+  }
 
   Future<void> _processPayment() async {
     setState(() {
@@ -31,7 +101,7 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
     final rentalProvider = context.read<RentalProvider>();
 
     try {
-      // Step 1: Create Razorpay Order on Backend
+      debugPrint('[PAYMENT] Creating order for rental ${widget.rental.id}');
       final orderData = await rentalProvider.createPaymentOrder(
         widget.rental.id,
       );
@@ -47,43 +117,33 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
       }
 
       final orderId = orderData['orderId']?.toString() ?? '';
+      _currentOrderId = orderId;
+      debugPrint('[PAYMENT] Order created: $orderId');
 
-      // Step 2: Simulate test payment processing (Sandbox/Test Mode)
-      // In production: open Razorpay SDK with keyId and orderId
-      await Future.delayed(const Duration(milliseconds: 1500));
-      final paymentId = 'pay_test_${DateTime.now().millisecondsSinceEpoch}';
+      final amount = orderData['amount'];
+      final keyId = orderData['keyId'];
+      final equipmentName = orderData['equipmentName'] ?? "Medical Equipment";
+      final renterPhone = orderData['renterPhone'] ?? "";
+      final renterEmail = orderData['renterEmail'] ?? "";
 
-      // Step 3: Generate HMAC-SHA256 signature using same dummy_secret as backend
-      // Backend uses: process.env.RAZORPAY_KEY_SECRET || "dummy_secret"
-      const keySecretForTest = 'dummy_secret';
-      final hmac = Hmac(sha256, utf8.encode(keySecretForTest));
-      final digest = hmac.convert(utf8.encode('$orderId|$paymentId'));
-      final signature = digest.toString();
+      var options = {
+        'key': keyId,
+        'amount': amount, // in paise
+        'name': 'MediShare',
+        'order_id': orderId,
+        'description': 'Rental for $equipmentName',
+        'timeout': 300, // 5 minutes
+        'prefill': {
+          'contact': renterPhone,
+          'email': renterEmail,
+        },
+        'theme': {
+          'color': '#0C2340'
+        }
+      };
 
-      // Step 4: Submit to backend for strict server-side HMAC verification
-      final isVerified = await rentalProvider.verifyPayment(
-        rentalId: widget.rental.id,
-        razorpayOrderId: orderId,
-        razorpayPaymentId: paymentId,
-        razorpaySignature: signature,
-      );
-
-      if (isVerified) {
-        setState(() {
-          _isProcessing = false;
-          _isSuccess = true;
-        });
-        await Future.delayed(const Duration(milliseconds: 1200));
-        if (mounted) Navigator.pop(context, true);
-      } else {
-        await rentalProvider.recordPaymentFailure(widget.rental.id);
-        setState(() {
-          _isProcessing = false;
-          _errorMessage = rentalProvider.errorMessage.isNotEmpty
-              ? rentalProvider.errorMessage
-              : 'Server-side payment verification failed.';
-        });
-      }
+      debugPrint('[PAYMENT] Checkout opened');
+      _razorpay.open(options);
     } catch (e) {
       await rentalProvider.recordPaymentFailure(widget.rental.id);
       setState(() {
@@ -271,40 +331,6 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
               ),
             ),
 
-            const SizedBox(height: 20),
-
-            Text(
-              "Select Payment Method",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // Payment Options
-            _buildPaymentOption(
-              id: 'UPI',
-              title: "UPI / Google Pay / PhonePe",
-              subtitle: "Instant payment via any UPI App",
-              icon: Icons.qr_code_2,
-            ),
-            const SizedBox(height: 10),
-            _buildPaymentOption(
-              id: 'Card',
-              title: "Credit / Debit Card",
-              subtitle: "Visa, MasterCard, RuPay & more",
-              icon: Icons.credit_card,
-            ),
-            const SizedBox(height: 10),
-            _buildPaymentOption(
-              id: 'NetBanking',
-              title: "Net Banking",
-              subtitle: "All major Indian banks supported",
-              icon: Icons.account_balance,
-            ),
-
             if (_errorMessage != null) ...[
               const SizedBox(height: 14),
               Container(
@@ -365,7 +391,7 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
                           ),
                           SizedBox(width: 12),
                           Text(
-                            "Verifying Payment...",
+                            "Initializing Payment...",
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ],
@@ -393,92 +419,6 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
                         ),
                       ),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPaymentOption({
-    required String id,
-    required String title,
-    required String subtitle,
-    required IconData icon,
-  }) {
-    final isSelected = _selectedPaymentMethod == id;
-
-    return InkWell(
-      onTap: () => setState(() => _selectedPaymentMethod = id),
-      borderRadius: BorderRadius.circular(14),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.blue.withAlpha(40) : context.surfaceBg,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: isSelected ? Colors.blueAccent : context.borderColor,
-            width: isSelected ? 1.8 : 1.0,
-          ),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? Colors.blueAccent.withAlpha(25)
-                    : context.borderColor.withAlpha(100),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(
-                icon,
-                color: isSelected
-                    ? Colors.blueAccent
-                    : context.textSecondaryColor,
-                size: 22,
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontWeight: isSelected
-                          ? FontWeight.bold
-                          : FontWeight.w600,
-                      fontSize: 13,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: context.textSecondaryColor,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              width: 22,
-              height: 22,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: isSelected ? Colors.blueAccent : context.borderColor,
-                  width: 2,
-                ),
-                color: isSelected ? Colors.blueAccent : Colors.transparent,
-              ),
-              child: isSelected
-                  ? const Icon(Icons.check, size: 14, color: Colors.white)
-                  : null,
             ),
           ],
         ),

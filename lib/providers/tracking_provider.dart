@@ -1,14 +1,14 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:dio/dio.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:geolocator/geolocator.dart';
 
-import '../core/network/dio_client.dart';
-import '../core/network/api_endpoints.dart';
 import '../models/tracking_model.dart';
+import '../services/location_service.dart';
 
 class TrackingProvider extends ChangeNotifier {
-  final Dio _dio = DioClient.instance;
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final LocationService _locationService = LocationService();
 
   LiveTrackingSessionModel? _currentSession;
   List<TrackingPingModel> _history = [];
@@ -16,8 +16,9 @@ class TrackingProvider extends ChangeNotifier {
   bool _isPublishing = false;
   String _errorMessage = '';
 
-  Timer? _pollTimer;
-  StreamSubscription<Position>? _positionSubscription;
+  StreamSubscription<DocumentSnapshot>? _deliverySubscription;
+  StreamSubscription<QuerySnapshot>? _historySubscription;
+  String? _activeDeliveryId;
 
   // Getters
   LiveTrackingSessionModel? get currentSession => _currentSession;
@@ -26,210 +27,102 @@ class TrackingProvider extends ChangeNotifier {
   bool get isPublishing => _isPublishing;
   String get errorMessage => _errorMessage;
 
-  // ── Fetch Current Session Info ───────────────────────────
-  Future<void> fetchLatestTracking(String rentalId) async {
+  Future<String?> _getDeliveryIdForRental(String rentalId) async {
     try {
-      final response = await _dio.get('${ApiEndpoints.tracking}/$rentalId');
-      if (response.data != null && response.data['success'] == true) {
-        _currentSession = LiveTrackingSessionModel.fromJson(
-          response.data['data'] as Map<String, dynamic>,
-        );
-        _errorMessage = '';
-      } else {
-        _errorMessage =
-            response.data?['message'] ?? 'Failed to get latest location.';
+
+      final snapshot = await _db.collection('deliveries')
+          .where('rentalId', isEqualTo: rentalId)
+          .where('status', isEqualTo: 'IN_TRANSIT')
+          .limit(1)
+          .get();
+      if (snapshot.docs.isNotEmpty) {
+        return snapshot.docs.first.id;
       }
-    } on DioException catch (e) {
-      _errorMessage = DioClient.handleError(e);
+      
+      // Fallback: any delivery for this rental
+      final anySnapshot = await _db.collection('deliveries')
+          .where('rentalId', isEqualTo: rentalId)
+          .limit(1)
+          .get();
+      if (anySnapshot.docs.isNotEmpty) {
+        return anySnapshot.docs.first.id;
+      }
     } catch (e) {
-      _errorMessage = 'An unexpected error occurred: $e';
-    } finally {
-      notifyListeners();
+      _errorMessage = 'Error finding delivery: $e';
     }
+    return null;
   }
 
-  // ── Fetch Ping History Trail ─────────────────────────────
-  Future<void> fetchTrackingHistory(String rentalId) async {
-    try {
-      final response = await _dio.get(
-        '${ApiEndpoints.tracking}/$rentalId/history?limit=100',
-      );
-      if (response.data != null && response.data['success'] == true) {
-        final listData = response.data['data']['pings'] as List<dynamic>;
-        _history = listData
-            .map(
-              (item) =>
-                  TrackingPingModel.fromJson(item as Map<String, dynamic>),
-            )
-            .toList();
-        _errorMessage = '';
-      } else {
-        _errorMessage =
-            response.data?['message'] ?? 'Failed to get location history.';
-      }
-    } on DioException catch (e) {
-      _errorMessage = DioClient.handleError(e);
-    } catch (e) {
-      _errorMessage = 'An unexpected error occurred: $e';
-    } finally {
-      notifyListeners();
-    }
-  }
-
-  // ── Start Tracking Session API ───────────────────────────
-  Future<bool> startTracking(String rentalId) async {
+  // ── Polling Loop (For Viewer/Recipient) ────────────────────────────
+  void startPolling(String rentalId) async {
     _isLoading = true;
-    _errorMessage = '';
     notifyListeners();
 
-    try {
-      final response = await _dio.post(
-        '${ApiEndpoints.tracking}/$rentalId/start',
-      );
-      if (response.data != null && response.data['success'] == true) {
-        await fetchLatestTracking(rentalId);
-        return true;
-      } else {
-        _errorMessage =
-            response.data?['message'] ?? 'Failed to start tracking session.';
-        return false;
-      }
-    } on DioException catch (e) {
-      _errorMessage = DioClient.handleError(e);
-      return false;
-    } catch (e) {
-      _errorMessage = 'An unexpected error occurred: $e';
-      return false;
-    } finally {
+    _activeDeliveryId = await _getDeliveryIdForRental(rentalId);
+    if (_activeDeliveryId == null) {
+      _errorMessage = 'No active delivery found for this rental.';
       _isLoading = false;
       notifyListeners();
+      return;
     }
-  }
 
-  // ── Stop Tracking Session API ────────────────────────────
-  Future<bool> stopTracking(String rentalId) async {
-    _isLoading = true;
-    _errorMessage = '';
-    notifyListeners();
-
-    try {
-      final response = await _dio.post(
-        '${ApiEndpoints.tracking}/$rentalId/stop',
-      );
-      if (response.data != null && response.data['success'] == true) {
-        if (_currentSession != null && _currentSession!.rentalId == rentalId) {
-          _currentSession = LiveTrackingSessionModel(
-            rentalId: _currentSession!.rentalId,
-            status: _currentSession!.status,
-            isTrackingActive: false,
-            equipmentId: _currentSession!.equipmentId,
-            equipmentName: _currentSession!.equipmentName,
-            equipmentCategory: _currentSession!.equipmentCategory,
-            equipmentLatitude: _currentSession!.equipmentLatitude,
-            equipmentLongitude: _currentSession!.equipmentLongitude,
-            equipmentAddress: _currentSession!.equipmentAddress,
-            renterId: _currentSession!.renterId,
-            renterName: _currentSession!.renterName,
-            renterPhone: _currentSession!.renterPhone,
-            ownerId: _currentSession!.ownerId,
-            ownerName: _currentSession!.ownerName,
-            ownerPhone: _currentSession!.ownerPhone,
-            latestPing: _currentSession!.latestPing,
+    _deliverySubscription?.cancel();
+    _deliverySubscription = _db.collection('deliveries').doc(_activeDeliveryId).snapshots().listen((doc) {
+      if (doc.exists && doc.data() != null) {
+        final data = doc.data()!;
+        if (data['currentLatitude'] != null && data['currentLongitude'] != null) {
+          final ping = TrackingPingModel(
+            id: 'latest',
+            latitude: data['currentLatitude'],
+            longitude: data['currentLongitude'],
+            accuracy: 10.0,
+            speed: 0.0,
+            heading: 0.0,
+            recordedAt: DateTime.tryParse(data['lastLocationUpdate'] ?? '') ?? DateTime.now(),
           );
-        }
-        return true;
-      } else {
-        _errorMessage =
-            response.data?['message'] ?? 'Failed to stop tracking session.';
-        return false;
-      }
-    } on DioException catch (e) {
-      _errorMessage = DioClient.handleError(e);
-      return false;
-    } catch (e) {
-      _errorMessage = 'An unexpected error occurred: $e';
-      return false;
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
 
-  // ── Publish GPS Ping API ─────────────────────────────────
-  Future<void> publishPing(
-    String rentalId, {
-    required double latitude,
-    required double longitude,
-    double? accuracy,
-    double? speed,
-    double? heading,
-  }) async {
-    try {
-      final payload = <String, dynamic>{
-        'latitude': latitude,
-        'longitude': longitude,
-        'accuracy': accuracy,
-        'speed': speed,
-        'heading': heading,
-      }..removeWhere((_, v) => v == null);
-
-      final response = await _dio.post(
-        '${ApiEndpoints.tracking}/$rentalId/ping',
-        data: payload,
-      );
-
-      if (response.data != null && response.data['success'] == true) {
-        final newPing = TrackingPingModel.fromJson(
-          response.data['data'] as Map<String, dynamic>,
-        );
-        _history.add(newPing);
-        if (_currentSession != null) {
           _currentSession = LiveTrackingSessionModel(
-            rentalId: _currentSession!.rentalId,
-            status: _currentSession!.status,
-            isTrackingActive: _currentSession!.isTrackingActive,
-            equipmentId: _currentSession!.equipmentId,
-            equipmentName: _currentSession!.equipmentName,
-            equipmentCategory: _currentSession!.equipmentCategory,
-            equipmentLatitude: _currentSession!.equipmentLatitude,
-            equipmentLongitude: _currentSession!.equipmentLongitude,
-            equipmentAddress: _currentSession!.equipmentAddress,
-            renterId: _currentSession!.renterId,
-            renterName: _currentSession!.renterName,
-            renterPhone: _currentSession!.renterPhone,
-            ownerId: _currentSession!.ownerId,
-            ownerName: _currentSession!.ownerName,
-            ownerPhone: _currentSession!.ownerPhone,
-            latestPing: newPing,
+            rentalId: rentalId,
+            status: data['status'] ?? 'UNKNOWN',
+            isTrackingActive: data['status'] == 'IN_TRANSIT',
+            equipmentId: '',
+            equipmentName: '',
+            equipmentCategory: '',
+            equipmentLatitude: 0,
+            equipmentLongitude: 0,
+            equipmentAddress: '',
+            renterId: '',
+            renterName: '',
+            renterPhone: '',
+            ownerId: '',
+            ownerName: '',
+            ownerPhone: '',
+            latestPing: ping,
           );
+          
+          // Basic history
+          if (_history.isEmpty || _history.last.recordedAt != ping.recordedAt) {
+             _history.add(ping);
+          }
+          
+          _errorMessage = '';
+          _isLoading = false;
+          notifyListeners();
         }
       }
-    } catch (_) {
-      // Fail silently for pings to avoid user interruption
-    } finally {
+    }, onError: (e) {
+      _errorMessage = 'Live location temporarily unavailable: $e';
       notifyListeners();
-    }
-  }
-
-  // ── Polling Loop (For Viewer) ────────────────────────────
-  void startPolling(String rentalId) {
-    _pollTimer?.cancel();
-    fetchLatestTracking(rentalId);
-    fetchTrackingHistory(rentalId);
-
-    _pollTimer = Timer.periodic(const Duration(seconds: 10), (timer) async {
-      await fetchLatestTracking(rentalId);
-      await fetchTrackingHistory(rentalId);
     });
   }
 
   void stopPolling() {
-    _pollTimer?.cancel();
-    _pollTimer = null;
+    _deliverySubscription?.cancel();
+    _deliverySubscription = null;
   }
 
-  // ── Foreground GPS Publishing Stream (For Renter) ────────
-  Future<bool> startLocationPublishing(String rentalId) async {
+  // ── Foreground GPS Publishing Stream (For Delivery Partner) ────────
+  Future<bool> startLocationPublishing(String deliveryId) async {
     if (_isPublishing) return true;
 
     try {
@@ -245,57 +138,20 @@ class TrackingProvider extends ChangeNotifier {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.denied) {
-          _errorMessage = 'Location permissions are denied.';
+          _errorMessage = 'Location permission is required.';
           notifyListeners();
           return false;
         }
       }
 
       if (permission == LocationPermission.deniedForever) {
-        _errorMessage =
-            'Location permissions are permanently denied. Please enable in settings.';
+        _errorMessage = 'Location permissions are permanently denied.';
         notifyListeners();
         return false;
       }
 
-      // 2. Start tracking session via API
-      final success = await startTracking(rentalId);
-      if (!success) return false;
-
-      // 3. Obtain initial position & ping
-      final initPos = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-        ),
-      );
-      await publishPing(
-        rentalId,
-        latitude: initPos.latitude,
-        longitude: initPos.longitude,
-        accuracy: initPos.accuracy,
-        speed: initPos.speed,
-        heading: initPos.heading,
-      );
-
-      // 4. Setup periodic position subscription
-      const locationSettings = LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 10, // trigger update only when moved 10 meters
-      );
-
-      _positionSubscription =
-          Geolocator.getPositionStream(
-            locationSettings: locationSettings,
-          ).listen((Position position) {
-            publishPing(
-              rentalId,
-              latitude: position.latitude,
-              longitude: position.longitude,
-              accuracy: position.accuracy,
-              speed: position.speed,
-              heading: position.heading,
-            );
-          });
+      // 2. Start tracking service
+      await _locationService.startTracking(deliveryId);
 
       _isPublishing = true;
       _errorMessage = '';
@@ -308,13 +164,10 @@ class TrackingProvider extends ChangeNotifier {
     }
   }
 
-  Future<void> stopLocationPublishing(String rentalId) async {
+  Future<void> stopLocationPublishing(String deliveryId) async {
     if (!_isPublishing) return;
-
     try {
-      await _positionSubscription?.cancel();
-      _positionSubscription = null;
-      await stopTracking(rentalId);
+      _locationService.stopTracking();
     } catch (_) {
     } finally {
       _isPublishing = false;
@@ -322,10 +175,26 @@ class TrackingProvider extends ChangeNotifier {
     }
   }
 
+  // Backward compatible stubs for live_tracking_screen
+  Future<void> fetchLatestTracking(String rentalId) async {}
+  Future<void> fetchTrackingHistory(String rentalId) async {}
+
+  // ── Clear State on Logout ───────────────────────────────────────────
+  void clear() {
+    stopPolling();
+    _locationService.stopTracking();
+    _currentSession = null;
+    _history = [];
+    _errorMessage = '';
+    _activeDeliveryId = null;
+    _isPublishing = false;
+    notifyListeners();
+  }
+
   @override
   void dispose() {
     stopPolling();
-    _positionSubscription?.cancel();
+    _locationService.stopTracking();
     super.dispose();
   }
 }

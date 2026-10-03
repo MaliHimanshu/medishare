@@ -293,4 +293,11 @@ class HospitalProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+  // ── Clear State on Logout ───────────────────────────────────────────
+  void clear() {
+    _hospitals = [];
+    _errorMessage = '';
+    _searchQuery = '';
+    notifyListeners();
+  }
 }

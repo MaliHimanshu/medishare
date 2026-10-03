@@ -249,11 +249,11 @@ class _DonationDetailScreenState extends State<DonationDetailScreen> {
     final statusColor = _getStatusColor(_currentDonation.status);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         title: const Text('Donation Details'),
         centerTitle: true,
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.surfaceBg,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
       ),

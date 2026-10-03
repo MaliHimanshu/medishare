@@ -67,7 +67,7 @@ class _HospitalDashboardState extends State<HospitalDashboard> {
         .length;
     final equipmentRequestsCount = reqProv.requests.length;
     final activeRentalsCount = rentalProv.rentals
-        .where((r) => r.status.toUpperCase() == 'ACTIVE')
+        .where((r) => r.status.name.toUpperCase() == 'ACTIVE')
         .length;
     final availableEquipmentCount = equipProv.equipment
         .where((e) => e.status == 'AVAILABLE')

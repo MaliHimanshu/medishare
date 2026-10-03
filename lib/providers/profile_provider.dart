@@ -30,69 +30,120 @@ class ProfileProvider extends ChangeNotifier {
 
   // ── Fetch Profile (GET /api/profile or GET /api/auth/me) ───────────
   Future<void> fetchProfile() async {
+    final fUser = FirebaseAuth.instance.currentUser;
+    debugPrint('[PROFILE] Screen opened. Firebase UID: ${fUser?.uid}');
+    if (fUser == null) {
+      clear();
+      return;
+    }
+
     _isLoading = true;
     _errorMessage = '';
     notifyListeners();
 
     try {
-      final response = await _dio.get(ApiEndpoints.profile);
+      debugPrint('[PROFILE] Firestore fetch started');
+      await _applyFirestoreRole(fUser.uid);
+      debugPrint('[PROFILE] Firestore fetch completed');
+      
+      // Update UI with Firestore user data before doing slow REST call
+      notifyListeners();
+
+      debugPrint('[PROFILE] REST profile fetch started');
+      final response = await _dio.get(ApiEndpoints.profile).timeout(const Duration(seconds: 7));
       if (response.data != null && response.data['success'] == true) {
         final userData = response.data['data'] as Map<String, dynamic>;
-        _user = UserModel.fromJson(userData);
+        // Create user from REST but RETAIN Firestore role
+        final restUser = UserModel.fromJson(userData);
+        if (_user != null) {
+          _user = UserModel(
+            id: restUser.id,
+            name: restUser.name,
+            email: restUser.email,
+            role: _user!.role, // Keep Firestore role!
+            phone: restUser.phone,
+            phoneVerified: restUser.phoneVerified,
+            address: restUser.address,
+            profileImage: restUser.profileImage,
+            organizationName: restUser.organizationName,
+            registrationNumber: restUser.registrationNumber,
+            contactPerson: restUser.contactPerson,
+            equipmentPreference: restUser.equipmentPreference,
+            verificationStatus: restUser.verificationStatus,
+            createdAt: restUser.createdAt,
+          );
+        } else {
+          _user = restUser;
+        }
       }
-    } catch (_) {
+      debugPrint('[PROFILE] REST profile fetch completed');
+    } catch (e) {
+      debugPrint('[PROFILE] REST failed: $e');
       try {
-        final fallbackRes = await _dio.get(ApiEndpoints.me);
+        final fallbackRes = await _dio.get(ApiEndpoints.me).timeout(const Duration(seconds: 5));
         if (fallbackRes.data != null && fallbackRes.data['success'] == true) {
           final userData = fallbackRes.data['data'] as Map<String, dynamic>;
-          _user = UserModel.fromJson(userData);
+          final restUser = UserModel.fromJson(userData);
+          if (_user != null) {
+            _user = UserModel(
+              id: restUser.id,
+              name: restUser.name,
+              email: restUser.email,
+              role: _user!.role, // Keep Firestore role!
+              phone: restUser.phone,
+              phoneVerified: restUser.phoneVerified,
+              address: restUser.address,
+              profileImage: restUser.profileImage,
+              organizationName: restUser.organizationName,
+              registrationNumber: restUser.registrationNumber,
+              contactPerson: restUser.contactPerson,
+              equipmentPreference: restUser.equipmentPreference,
+              verificationStatus: restUser.verificationStatus,
+              createdAt: restUser.createdAt,
+            );
+          } else {
+            _user = restUser;
+          }
         }
-      } on DioException catch (e) {
-        _errorMessage = DioClient.handleError(e);
-      } catch (e) {
-        _errorMessage = 'Failed to load profile: $e';
+      } catch (innerE) {
+        debugPrint('[PROFILE] Fallback REST failed: $innerE');
+        // Do not overwrite errorMessage if we already have Firestore user
       }
     } finally {
-      // ── ROLE SYNC: Always apply authoritative role from Firestore ──────
-      // This ensures ProfileProvider ALWAYS shows the same role as Firestore,
-      // regardless of what the REST API returns or whether it timed out.
-      await _applyFirestoreRole();
       await fetchStats();
       _isLoading = false;
+      debugPrint('[PROFILE] Loading finished');
       notifyListeners();
     }
   }
 
   // ── Apply Firestore Role as Single Source of Truth ─────────────────
-  /// Reads users/{uid} from Firestore and overrides the role on the current
-  /// user model. This prevents ProfileProvider from ever showing a stale role
-  /// that was cached or returned by the REST backend.
-  Future<void> _applyFirestoreRole() async {
+  Future<void> _applyFirestoreRole(String uid) async {
     try {
-      final fUser = FirebaseAuth.instance.currentUser;
-      if (fUser == null) return;
-
       final doc = await FirebaseFirestore.instance
           .collection('users')
-          .doc(fUser.uid)
+          .doc(uid)
           .get()
-          .timeout(const Duration(seconds: 10));
+          .timeout(const Duration(seconds: 5));
 
       if (!doc.exists) return;
 
       final firestoreData = doc.data()!;
       final firestoreRole = firestoreData['role']?.toString();
-      if (firestoreRole == null || firestoreRole.isEmpty) return;
+      
+      if (firestoreRole == null || firestoreRole.isEmpty) {
+        debugPrint('[PROFILE] Firestore role is missing or empty.');
+        return;
+      }
+
+      debugPrint('[PROFILE] Firestore role: $firestoreRole');
 
       if (_user == null) {
-        // REST API call failed entirely — build user from Firestore directly
-        firestoreData['id'] = fUser.uid;
+        firestoreData['id'] = uid;
         _user = UserModel.fromJson(firestoreData);
         debugPrint('[ROLE SYNC] ProfileProvider: built user from Firestore. role=${_user!.role}');
       } else if (_user!.role != firestoreRole) {
-        // REST API returned a different role — override with Firestore truth
-        debugPrint('[ROLE SYNC] ProfileProvider: REST role=${_user!.role} '
-            'overridden by Firestore role=$firestoreRole');
+        debugPrint('[ROLE SYNC] ProfileProvider: updating role to $firestoreRole');
         _user = UserModel(
           id: _user!.id,
           name: _user!.name,
@@ -109,12 +160,9 @@ class ProfileProvider extends ChangeNotifier {
           verificationStatus: _user!.verificationStatus,
           createdAt: _user!.createdAt,
         );
-      } else {
-        debugPrint('[ROLE SYNC] ProfileProvider: role=${_user!.role} matches Firestore. ✓');
       }
     } catch (e) {
       debugPrint('[ROLE SYNC] ProfileProvider: _applyFirestoreRole failed: $e');
-      // Non-fatal — continue with whatever role we already have
     }
   }
 
@@ -171,13 +219,18 @@ class ProfileProvider extends ChangeNotifier {
         if (profileImage != null && profileImage.isNotEmpty)
           'profileImage': profileImage,
       };
-      if (organizationName != null)
+      if (organizationName != null) {
         payload['organizationName'] = organizationName;
-      if (registrationNumber != null)
+      }
+      if (registrationNumber != null) {
         payload['registrationNumber'] = registrationNumber;
-      if (contactPerson != null) payload['contactPerson'] = contactPerson;
-      if (equipmentPreference != null)
+      }
+      if (contactPerson != null) {
+        payload['contactPerson'] = contactPerson;
+      }
+      if (equipmentPreference != null) {
         payload['equipmentPreference'] = equipmentPreference;
+      }
 
       final response = await _dio.put(ApiEndpoints.profile, data: payload);
       if (response.data != null && response.data['success'] == true) {

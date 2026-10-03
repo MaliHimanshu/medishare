@@ -139,11 +139,11 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
     final h = _currentHospital;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         title: Text('Hospital Details'),
         centerTitle: true,
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.surfaceBg,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
         actions: [

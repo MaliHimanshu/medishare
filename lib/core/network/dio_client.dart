@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../constants/app_strings.dart';
 import 'api_endpoints.dart';
 
@@ -41,22 +42,42 @@ class DioClient {
       InterceptorsWrapper(
         onRequest: (options, handler) async {
           try {
-            String? token = await _storage.read(key: 'auth_token');
-            token ??= await _storage.read(key: 'medishare_token');
-            if (token != null && token.isNotEmpty) {
-              options.headers['Authorization'] = 'Bearer $token';
+            final user = FirebaseAuth.instance.currentUser;
+            if (user != null) {
+              final idToken = await user.getIdToken();
+              if (idToken != null) {
+                debugLog('[GLOBAL SEARCH]\nToken acquired');
+                options.headers['Authorization'] = 'Bearer $idToken';
+              }
             }
           } catch (_) {}
           return handler.next(options);
         },
         onError: (error, handler) async {
-          // Handle 401 globally
           if (error.response?.statusCode == 401) {
+            final isRetry = error.requestOptions.extra['isRetry'] == true;
+            if (isRetry) {
+              onUnauthorized?.call();
+              return handler.next(error);
+            }
+
             try {
-              await _storage.delete(key: 'auth_token');
-              await _storage.delete(key: 'medishare_token');
-              await _storage.delete(key: 'medishare_user');
-            } catch (_) {}
+              final user = FirebaseAuth.instance.currentUser;
+              if (user != null) {
+                final newToken = await user.getIdToken(true);
+                if (newToken != null) {
+                  final options = error.requestOptions;
+                  options.extra['isRetry'] = true;
+                  options.headers['Authorization'] = 'Bearer $newToken';
+                  final response = await instance.fetch(options);
+                  return handler.resolve(response);
+                }
+              }
+            } catch (_) {
+              onUnauthorized?.call();
+              return handler.next(error);
+            }
+            
             onUnauthorized?.call();
           }
           return handler.next(error);

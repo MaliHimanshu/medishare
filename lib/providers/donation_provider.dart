@@ -281,4 +281,11 @@ class DonationProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+  // ── Clear State on Logout ───────────────────────────────────────────
+  void clear() {
+    _donations = [];
+    _errorMessage = '';
+    _searchQuery = '';
+    notifyListeners();
+  }
 }

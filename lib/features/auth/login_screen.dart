@@ -160,14 +160,14 @@ class _LoginScreenState extends State<LoginScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 48),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.05),
 
                 // ── Logo (animated fade) ────────────────────
                 FadeTransition(
                   opacity: _logoFade,
                   child: const Center(child: MsLogo(height: 44)),
                 ),
-                const SizedBox(height: 40),
+                SizedBox(height: MediaQuery.of(context).size.height * 0.04),
 
                 // ── Header + Form (animated slide+fade) ────
                 SlideTransition(

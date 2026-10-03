@@ -330,7 +330,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 20),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.02),
 
               // ── Header ────────────────────────────────
               Text(
@@ -679,9 +679,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
               Center(
                 child: Text(
                   'By registering, you agree to our Terms & Privacy Policy',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 11,
-                    color: AppColors.textSecondary,
+                    color: context.textSecondaryColor,
                   ),
                   textAlign: TextAlign.center,
                 ),

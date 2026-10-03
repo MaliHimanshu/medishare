@@ -49,9 +49,7 @@ class GlobalSearchProvider extends ChangeNotifier {
   Future<void> _loadRecentSearches() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      _recentSearches =
-          prefs.getStringList(_recentPrefKey) ??
-          ['Wheelchair', 'Hospital Bed', 'Oxygen', 'Civil Hospital'];
+      _recentSearches = prefs.getStringList(_recentPrefKey) ?? [];
       notifyListeners();
     } catch (_) {}
   }
@@ -119,6 +117,9 @@ class GlobalSearchProvider extends ChangeNotifier {
 
     final queryLower = trimmed.toLowerCase();
 
+    debugPrint('[GLOBAL SEARCH]\nQuery: $trimmed');
+    debugPrint('[GLOBAL SEARCH]\nRequest started');
+
     try {
       // Execute multi-module requests concurrently
       final futures = await Future.wait([
@@ -126,7 +127,10 @@ class GlobalSearchProvider extends ChangeNotifier {
         _dio.get(ApiEndpoints.donation),
         _dio.get(ApiEndpoints.request),
         _dio.get(ApiEndpoints.hospital),
+        _dio.get(ApiEndpoints.rental), // Add rental
       ]);
+      
+      debugPrint('[GLOBAL SEARCH]\nResponse: 200');
 
       // 1. Equipment Results
       if (futures[0].data != null && futures[0].data['success'] == true) {
@@ -190,10 +194,22 @@ class GlobalSearchProvider extends ChangeNotifier {
       // Save to search history
       addRecentSearch(trimmed);
     } catch (e) {
+      debugPrint('[GLOBAL SEARCH]\nResponse Error: $e');
       _errorMessage = 'Error performing global search: $e';
     } finally {
       _isSearching = false;
       notifyListeners();
     }
+  }
+  // ── Clear State on Logout ───────────────────────────────────────────
+  void clear() {
+    _query = '';
+    _selectedFilter = 'All';
+    _equipmentResults = [];
+    _donationResults = [];
+    _requestResults = [];
+    _hospitalResults = [];
+    _errorMessage = '';
+    notifyListeners();
   }
 }

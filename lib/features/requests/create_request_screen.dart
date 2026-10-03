@@ -180,29 +180,29 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                     child: LinearProgressIndicator(),
                   )
                 else if (availableItems.isEmpty)
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.amber.withAlpha(20),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.amber.withAlpha(50)),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.info_outline, color: Colors.amber),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            'No available equipment currently listed.',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Colors.amber.shade800,
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.withAlpha(context.isDarkMode ? 40 : 20),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.amber.withAlpha(50)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.info_outline, color: Colors.amber),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              'No available equipment currently listed.',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: context.isDarkMode ? Colors.amber.shade200 : Colors.amber.shade900,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  )
+                        ],
+                      ),
+                    )
                 else
                   DropdownButtonFormField<EquipmentModel>(
                     initialValue: _selectedEquipment,
@@ -317,7 +317,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                       borderRadius: BorderRadius.circular(14),
                     ),
                     filled: true,
-                    fillColor: AppColors.surface,
+                    fillColor: context.inputBg,
                   ),
                   validator: (val) {
                     if (val == null || val.trim().isEmpty) {
@@ -358,7 +358,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                       borderRadius: BorderRadius.circular(14),
                     ),
                     filled: true,
-                    fillColor: AppColors.surface,
+                    fillColor: context.inputBg,
                   ),
                   validator: (val) {
                     if (val == null || val.trim().isEmpty) {
@@ -393,7 +393,7 @@ class _CreateRequestScreenState extends State<CreateRequestScreen> {
                       borderRadius: BorderRadius.circular(14),
                     ),
                     filled: true,
-                    fillColor: AppColors.surface,
+                    fillColor: context.inputBg,
                   ),
                 ),
 

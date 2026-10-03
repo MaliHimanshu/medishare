@@ -184,8 +184,11 @@ class _AddEquipmentScreenState extends State<AddEquipmentScreen> {
   // Submit Flow
   // ─────────────────────────────────────────────
   Future<void> submitEquipment() async {
+    debugPrint('[SAVE_DEBUG] 01 submitEquipment START');
     if (!_formKey.currentState!.validate()) return;
     if (_isSaving) return;
+
+    debugPrint('[SAVE_DEBUG] 02 validation COMPLETE');
 
     final provider = context.read<EquipmentProvider>();
     final messenger = ScaffoldMessenger.of(context);
@@ -197,12 +200,10 @@ class _AddEquipmentScreenState extends State<AddEquipmentScreen> {
     });
 
     try {
-      debugPrint('[ADD_EQUIPMENT] SAVE START');
       String uploadedImageUrl = '';
       if (_imageFile != null) {
         setState(() => _isUploadingImage = true);
         try {
-          debugPrint('[AddEquipment] Starting image upload...');
           uploadedImageUrl = await ImageUploadService.instance.uploadImage(
             _imageFile!,
             onProgress: (sent, total) {
@@ -213,9 +214,7 @@ class _AddEquipmentScreenState extends State<AddEquipmentScreen> {
               }
             },
           );
-          debugPrint('[AddEquipment] Image uploaded successfully. URL: $uploadedImageUrl');
         } catch (e) {
-          debugPrint('[AddEquipment] Upload failed: $e');
           if (mounted) {
              MSSnackBars.showError(context, e.toString().replaceAll('Exception: ', ''));
           }
@@ -227,7 +226,9 @@ class _AddEquipmentScreenState extends State<AddEquipmentScreen> {
         }
       }
 
-      debugPrint('[ADD_EQUIPMENT] Calling addEquipment');
+      debugPrint('[SAVE_DEBUG] 03 image URL READY');
+      debugPrint('[SAVE_DEBUG] 04 calling provider.addEquipment');
+
       final success = await provider.addEquipment(
         name: _nameController.text.trim(),
         category: selectedCategory,
@@ -245,34 +246,31 @@ class _AddEquipmentScreenState extends State<AddEquipmentScreen> {
             ? double.tryParse(_securityDepositController.text.trim())
             : null,
       );
-      debugPrint('[ADD_EQUIPMENT] addEquipment returned. Success: $success');
+
+      debugPrint('[SAVE_DEBUG] 10 submitEquipment SUCCESS');
 
       if (mounted) {
         if (success) {
-          debugPrint('[ADD_EQUIPMENT] Save SUCCESS');
           MSSnackBars.showSuccess(context, "Equipment listed successfully");
-          debugPrint('[ADD_EQUIPMENT] Popping navigator');
           navigator.pop(true);
         } else {
           final err = provider.errorMessage;
-          debugPrint('[ADD_EQUIPMENT] Save FAILURE: $err');
           MSSnackBars.showError(context, err.isNotEmpty ? err : "Failed to create listing.");
         }
       }
     } catch (e, stackTrace) {
-      debugPrint('[ADD_EQUIPMENT] SAVE ERROR: $e');
+      debugPrint('[SAVE_DEBUG] ERROR: $e');
       debugPrint('$stackTrace');
       if (mounted) {
         MSSnackBars.showError(context, "An unexpected error occurred.");
       }
     } finally {
-      debugPrint('[ADD_EQUIPMENT] Setting _isSaving = false');
       if (mounted) {
         setState(() {
           _isSaving = false;
         });
       }
-      debugPrint('[ADD_EQUIPMENT] Closing loading overlay');
+      debugPrint('[SAVE_DEBUG] 11 loading state RESET');
     }
   }
 

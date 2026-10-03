@@ -1,5 +1,5 @@
 const { Server } = require("socket.io");
-const jwt = require("jsonwebtoken");
+const admin = require("firebase-admin");
 const prisma = require("./config/prisma");
 
 let io;
@@ -20,10 +20,28 @@ const initSocket = (server, app) => {
       const token = socket.handshake.auth.token;
       if (!token) return next(new Error("Authentication error"));
 
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decodedToken = await admin.auth().verifyIdToken(token);
+      let user = null;
+      if (decodedToken.email) {
+        user = await prisma.user.findUnique({ where: { email: decodedToken.email } });
+      }
       
-      const user = await prisma.user.findUnique({ where: { id: decoded.id } });
-      if (!user) return next(new Error("User not found"));
+      if (!user) {
+        user = await prisma.user.findUnique({ where: { id: decodedToken.uid } });
+      }
+
+      if (!user) {
+        user = await prisma.user.create({
+          data: {
+            id: decodedToken.uid,
+            email: decodedToken.email || `${decodedToken.uid}@firebase.local`,
+            name: decodedToken.name || "MediShare User",
+            password: "firebase_authenticated",
+            role: "RECIPIENT",
+            phone: decodedToken.phone_number || null,
+          }
+        });
+      }
 
       socket.user = user;
       next();

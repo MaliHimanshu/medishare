@@ -3,17 +3,44 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'app/app.dart';
 
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
+import 'firebase_options.dart';
+
+import 'services/crashlytics_service.dart';
+import 'services/analytics_service.dart';
+import 'services/remote_config_service.dart';
+import 'core/services/fcm_service.dart';
+
 void main() {
   runZonedGuarded(
     () async {
       WidgetsFlutterBinding.ensureInitialized();
 
-      // Catch Flutter framework errors gracefully
-      FlutterError.onError = (FlutterErrorDetails details) {
-        FlutterError.presentError(details);
-      };
+      // 1. Initialize Firebase
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+      debugPrint('[Firebase] Initialized: ${DefaultFirebaseOptions.currentPlatform.projectId}');
 
-      // Portrait-only orientation
+      // 2. Initialize Crashlytics (captures all errors after this point)
+      await CrashlyticsService.instance.init();
+
+      // 3. Firebase App Check (debug provider in debug, Play Integrity in release)
+      await FirebaseAppCheck.instance.activate(
+        androidProvider: AndroidProvider.debug,
+      );
+
+      // 4. Initialize Analytics
+      await AnalyticsService.instance.init();
+
+      // 5. Remote Config
+      await RemoteConfigService.instance.init();
+
+      // 6. FCM
+      await FcmService().init();
+
+      // 7. Portrait-only orientation
       await SystemChrome.setPreferredOrientations([
         DeviceOrientation.portraitUp,
         DeviceOrientation.portraitDown,
@@ -22,9 +49,8 @@ void main() {
       runApp(const MediShareApp());
     },
     (error, stackTrace) {
-      // Catch all unhandled async exceptions globally
-      debugPrint('Unhandled error: $error');
-      debugPrint('$stackTrace');
+      debugPrint('[main] Unhandled error: $error');
+      CrashlyticsService.instance.logError(error, stackTrace, fatal: true);
     },
   );
 }

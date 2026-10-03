@@ -474,6 +474,28 @@ class MenuChatbotProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> _sendToAIBackend(String text) async {
+    try {
+      debugPrint('[CHATBOT]\nRequest: $text');
+      debugPrint('[CHATBOT]\nAI provider: Gemini/Groq');
+      
+      final payload = {'message': text};
+      final response = await _dio.post(ApiEndpoints.chatbot, data: payload);
+      
+      if (response.data != null && response.data['success'] == true) {
+        final aiReplyText = response.data['response']?.toString() ?? "Thank you for your message!";
+        debugPrint('[CHATBOT]\nResponse: $aiReplyText');
+        _addBotMessage(aiReplyText, showMainMenuButton: true);
+      } else {
+        _addBotMessage("⚠️ ${response.data?['message'] ?? 'Failed to receive AI response.'}", isError: true, showMainMenuButton: true);
+      }
+    } on DioException catch (e) {
+      _addBotMessage("⚠️ ${DioClient.handleError(e)}", isError: true, showMainMenuButton: true);
+    } catch (e) {
+      _addBotMessage("⚠️ Unable to connect to AI server: $e", isError: true, showMainMenuButton: true);
+    }
+  }
+
   void _showMainMenu() {
     String greeting;
     List<String> options;
@@ -1254,6 +1276,11 @@ class MenuChatbotProvider extends ChangeNotifier {
   // ── Delete a single message from state ──────────────────────────────
   void deleteMessage(String messageId) {
     _messages.removeWhere((m) => m.id == messageId);
+    notifyListeners();
+  }
+
+  void clear() {
+    _messages.clear();
     notifyListeners();
   }
 }

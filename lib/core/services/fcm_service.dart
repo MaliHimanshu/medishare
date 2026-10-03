@@ -1,9 +1,12 @@
+import 'dart:io';
+import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/material.dart';
-import '../network/dio_client.dart';
-import '../network/api_endpoints.dart';
+import '../../app/app.dart';
 
 // Top-level background message handler
 @pragma('vm:entry-point')
@@ -21,6 +24,8 @@ class FcmService {
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin _localNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   static const AndroidNotificationChannel _channel = AndroidNotificationChannel(
     'medishare_alerts_v2', // id
@@ -35,7 +40,17 @@ class FcmService {
 
     await _requestPermission();
     await _initLocalNotifications();
-    await registerDeviceToken();
+
+    // Listen for Auth changes to update token
+    _auth.authStateChanges().listen((user) async {
+      if (user != null) {
+        await registerDeviceToken(user.uid);
+        
+        _messaging.onTokenRefresh.listen((newToken) {
+          _saveTokenToFirestore(newToken, user.uid);
+        });
+      }
+    });
 
     FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
     FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
@@ -72,34 +87,44 @@ class FcmService {
     await _localNotificationsPlugin.initialize(
       settings: initializationSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) {
-        debugPrint('[FCM] Local notification tapped');
+        if (response.payload != null) {
+          final data = jsonDecode(response.payload!);
+          _routeNotificationTap(data);
+        }
       },
     );
 
-    await _localNotificationsPlugin
+    final platformPlugin = _localNotificationsPlugin
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
-        >()
-        ?.createNotificationChannel(_channel);
+        >();
+    if (platformPlugin != null) {
+      await platformPlugin.createNotificationChannel(_channel);
+    }
   }
 
-  Future<void> registerDeviceToken() async {
+  Future<void> registerDeviceToken(String uid) async {
     try {
       String? token = await _messaging.getToken();
       debugPrint('[FCM] Device Token: $token');
       if (token != null) {
-        try {
-          await DioClient.instance.post(
-            ApiEndpoints.emergencyAlertDeviceToken,
-            data: {'token': token},
-          );
-          debugPrint('[FCM] Token updated on backend successfully');
-        } catch (e) {
-          debugPrint('[FCM] Error updating token on backend: $e');
-        }
+        await _saveTokenToFirestore(token, uid);
       }
     } catch (e) {
       debugPrint('[FCM] Error getting token: $e');
+    }
+  }
+
+  Future<void> _saveTokenToFirestore(String token, String uid) async {
+    try {
+      await _db.collection('users').doc(uid).collection('notificationTokens').doc(token).set({
+        'token': token,
+        'createdAt': FieldValue.serverTimestamp(),
+        'platform': Platform.isAndroid ? 'android' : 'ios',
+      });
+      debugPrint('[FCM] Token updated on Firestore successfully');
+    } catch (e) {
+      debugPrint('[FCM] Error updating token on Firestore: $e');
     }
   }
 
@@ -126,6 +151,7 @@ class FcmService {
             playSound: true,
           ),
         ),
+        payload: jsonEncode(message.data),
       );
     }
   }
@@ -134,5 +160,26 @@ class FcmService {
     debugPrint(
       '[FCM] Notification tapped (onMessageOpenedApp): ${message.messageId}',
     );
+    _routeNotificationTap(message.data);
+  }
+
+  void _routeNotificationTap(Map<String, dynamic> data) {
+    final type = data['type'];
+    final rentalId = data['rentalId'];
+    final deliveryId = data['deliveryId'];
+    
+    // Use the global navigator key
+    final navigator = MediShareApp.navigatorKey.currentState;
+    if (navigator == null) return;
+    
+    // Just a placeholder routing logic, actual screens may differ.
+    // In production, we'd load the model and navigate to specific detailed screens.
+    if (type == 'rental' && rentalId != null) {
+      debugPrint('[FCM] Navigate to rental: $rentalId');
+      // navigator.pushNamed('/rental_detail', arguments: rentalId);
+    } else if (type == 'delivery' && deliveryId != null) {
+      debugPrint('[FCM] Navigate to delivery: $deliveryId');
+      // navigator.pushNamed('/delivery_detail', arguments: deliveryId);
+    }
   }
 }

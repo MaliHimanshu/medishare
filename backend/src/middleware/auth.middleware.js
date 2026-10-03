@@ -28,43 +28,56 @@ const protect = async (req, res, next) => {
 
     const decodedToken = await getAuth().verifyIdToken(token);
 
-    if (!decodedToken.email) {
-      return res.status(401).json({
-        success: false,
-        message: "Firebase token does not contain an email.",
+    let user = null;
+    
+    // 1. Try finding by email (legacy mapping)
+    if (decodedToken.email) {
+      user = await prisma.user.findUnique({
+        where: { email: decodedToken.email },
+        select: {
+          id: true, name: true, email: true, phone: true, phoneVerified: true,
+          address: true, profileImage: true, role: true, organizationName: true,
+          registrationNumber: true, contactPerson: true, equipmentPreference: true,
+          verificationStatus: true, createdAt: true,
+        },
       });
     }
 
-    const user = await prisma.user.findUnique({
-      where: {
-        email: decodedToken.email,
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        phoneVerified: true,
-        address: true,
-        profileImage: true,
-        role: true,
-        organizationName: true,
-        registrationNumber: true,
-        contactPerson: true,
-        equipmentPreference: true,
-        verificationStatus: true,
-        createdAt: true,
-      },
-    });
-
+    // 2. Try finding by ID if email didn't match or didn't exist
     if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "User not found.",
+      user = await prisma.user.findUnique({
+        where: { id: decodedToken.uid },
+        select: {
+          id: true, name: true, email: true, phone: true, phoneVerified: true,
+          address: true, profileImage: true, role: true, organizationName: true,
+          registrationNumber: true, contactPerson: true, equipmentPreference: true,
+          verificationStatus: true, createdAt: true,
+        },
+      });
+    }
+
+    // 3. Create user if they only exist in Firebase
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          id: decodedToken.uid, // Map Firebase UID exactly
+          email: decodedToken.email || `${decodedToken.uid}@firebase.local`,
+          name: decodedToken.name || "MediShare User",
+          password: "firebase_authenticated", // Placeholder
+          role: "RECIPIENT",
+          phone: decodedToken.phone_number || null,
+        },
+        select: {
+          id: true, name: true, email: true, phone: true, phoneVerified: true,
+          address: true, profileImage: true, role: true, organizationName: true,
+          registrationNumber: true, contactPerson: true, equipmentPreference: true,
+          verificationStatus: true, createdAt: true,
+        }
       });
     }
 
     req.user = user;
+    req.firebaseUid = decodedToken.uid;
 
     next();
   } catch (error) {

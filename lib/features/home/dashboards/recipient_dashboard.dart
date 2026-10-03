@@ -70,7 +70,7 @@ class _RecipientDashboardState extends State<RecipientDashboard> {
         .where((e) => e.status == 'AVAILABLE')
         .length;
     final activeRentalsCount = rentalProv.rentals
-        .where((r) => r.status.toUpperCase() == 'ACTIVE')
+        .where((r) => r.status.name.toUpperCase() == 'ACTIVE')
         .length;
     final myRequestsCount = reqProv.requests.length;
 
@@ -576,7 +576,7 @@ class _RecipientDashboardState extends State<RecipientDashboard> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
-                      rental.status.toUpperCase(),
+                      rental.status.name.toUpperCase(),
                       style: const TextStyle(
                         color: Colors.green,
                         fontWeight: FontWeight.bold,

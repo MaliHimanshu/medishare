@@ -222,7 +222,7 @@ class _NearbyEquipmentScreenState extends State<NearbyEquipmentScreen> {
   Widget build(BuildContext context) {
     final equipProv = context.watch<EquipmentProvider>();
     final nearbyList = equipProv.nearbyEquipment;
-    final displayList = nearbyList.isEmpty ? _getDummyList() : nearbyList;
+    final displayList = nearbyList;
 
     return Scaffold(
       backgroundColor: context.scaffoldBg,
@@ -651,125 +651,6 @@ class _NearbyEquipmentScreenState extends State<NearbyEquipmentScreen> {
     );
   }
 
-  List<EquipmentModel> _getDummyList() {
-    return [
-      EquipmentModel(
-        id: 'dummy-1',
-        ownerId: 'donor-1',
-        name: 'Oxygen Cylinder (10L)',
-        category: 'Respirators',
-        condition: 'GOOD',
-        quantity: 2,
-        mode: 'RENT',
-        status: 'AVAILABLE',
-        rentalPricePerDay: 250.0,
-        securityDeposit: 1000.0,
-        createdAt: DateTime.now().toIso8601String(),
-        updatedAt: DateTime.now().toIso8601String(),
-        donor: 'City Hospital',
-        location: 'City Hospital, 4th Block',
-        latitude: 37.4225,
-        longitude: -122.0830,
-        image:
-            'https://images.unsplash.com/photo-1584982751601-97dcc096659c?q=80&w=200&auto=format&fit=crop',
-        images: [],
-        manufacturer: 'OxyLife',
-        description: 'High capacity oxygen cylinder in good condition.',
-      ),
-      EquipmentModel(
-        id: 'dummy-2',
-        ownerId: 'donor-2',
-        name: 'Standard Wheelchair',
-        category: 'Mobility Aids',
-        condition: 'LIKE_NEW',
-        quantity: 1,
-        mode: 'DONATE',
-        status: 'AVAILABLE',
-        rentalPricePerDay: 0.0,
-        securityDeposit: 0.0,
-        createdAt: DateTime.now().toIso8601String(),
-        updatedAt: DateTime.now().toIso8601String(),
-        donor: 'John Doe',
-        location: 'MG Road, Indiranagar',
-        latitude: 37.4240,
-        longitude: -122.0810,
-        image:
-            'https://images.unsplash.com/photo-1596704017254-9b121068fb31?q=80&w=200&auto=format&fit=crop',
-        images: [],
-        manufacturer: 'Karma',
-        description: 'Foldable standard wheelchair. Very lightly used.',
-      ),
-      EquipmentModel(
-        id: 'dummy-3',
-        ownerId: 'donor-3',
-        name: 'Digital BP Monitor',
-        category: 'Diagnostic Equipment',
-        condition: 'EXCELLENT',
-        quantity: 3,
-        mode: 'RENT',
-        status: 'AVAILABLE',
-        rentalPricePerDay: 50.0,
-        securityDeposit: 500.0,
-        createdAt: DateTime.now().toIso8601String(),
-        updatedAt: DateTime.now().toIso8601String(),
-        donor: 'Apollo Medical Center',
-        location: 'Apollo Medical Center',
-        latitude: 37.4205,
-        longitude: -122.0850,
-        image:
-            'https://images.unsplash.com/photo-1631549916768-4119b2e5f926?q=80&w=200&auto=format&fit=crop',
-        images: [],
-        manufacturer: 'Omron',
-        description: 'Digital BP monitor in excellent condition.',
-      ),
-      EquipmentModel(
-        id: 'dummy-4',
-        ownerId: 'donor-4',
-        name: 'Patient Walker',
-        category: 'Mobility Aids',
-        condition: 'GOOD',
-        quantity: 2,
-        mode: 'DONATE',
-        status: 'AVAILABLE',
-        rentalPricePerDay: 0.0,
-        securityDeposit: 0.0,
-        createdAt: DateTime.now().toIso8601String(),
-        updatedAt: DateTime.now().toIso8601String(),
-        donor: 'Community Health Center',
-        location: 'Community Health Center',
-        latitude: 37.4260,
-        longitude: -122.0870,
-        image:
-            'https://images.unsplash.com/photo-1590749629168-15f532ec7e5f?q=80&w=200&auto=format&fit=crop',
-        images: [],
-        manufacturer: 'Standard',
-        description: 'Sturdy patient walker.',
-      ),
-      EquipmentModel(
-        id: 'dummy-5',
-        ownerId: 'donor-5',
-        name: 'Nebulizer Machine',
-        category: 'Respiratory Care',
-        condition: 'LIKE_NEW',
-        quantity: 1,
-        mode: 'RENT',
-        status: 'AVAILABLE',
-        rentalPricePerDay: 100.0,
-        securityDeposit: 800.0,
-        createdAt: DateTime.now().toIso8601String(),
-        updatedAt: DateTime.now().toIso8601String(),
-        donor: 'MediCare Clinic',
-        location: 'MediCare Clinic',
-        latitude: 37.4190,
-        longitude: -122.0800,
-        image:
-            'https://images.unsplash.com/photo-1615461066841-6116e61058f4?q=80&w=200&auto=format&fit=crop',
-        images: [],
-        manufacturer: 'Philips',
-        description: 'Nebulizer machine.',
-      ),
-    ];
-  }
 
   // ── Body ───────────────────────────────────────────────────────────────────
 

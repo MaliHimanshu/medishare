@@ -227,4 +227,14 @@ class DashboardProvider extends ChangeNotifier {
       DioClient.debugLog('deleteNotification error: $e');
     }
   }
+  // ── Clear State on Logout ───────────────────────────────
+  void clear() {
+    _summary = null;
+    _recentRequests = [];
+    _recentDonations = [];
+    _notifications = [];
+    _hospitals = [];
+    _equipmentList = [];
+    notifyListeners();
+  }
 }

@@ -114,11 +114,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     final profileProvider = context.watch<ProfileProvider>();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         title: const Text('Change Password'),
         centerTitle: true,
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.surfaceBg,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
       ),
@@ -173,7 +173,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     borderRadius: BorderRadius.circular(14),
                   ),
                   filled: true,
-                  fillColor: AppColors.surface,
+                  fillColor: context.inputBg,
                 ),
                 validator: (val) => val == null || val.isEmpty
                     ? 'Current password is required'
@@ -199,7 +199,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     borderRadius: BorderRadius.circular(14),
                   ),
                   filled: true,
-                  fillColor: AppColors.surface,
+                  fillColor: context.inputBg,
                 ),
                 validator: _validatePassword,
               ),
@@ -224,7 +224,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     borderRadius: BorderRadius.circular(14),
                   ),
                   filled: true,
-                  fillColor: AppColors.surface,
+                  fillColor: context.inputBg,
                 ),
                 validator: (val) {
                   if (val == null || val.isEmpty)

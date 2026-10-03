@@ -1,115 +1,136 @@
 import 'equipment_model.dart';
 
+enum RentalStatus {
+  REQUESTED,
+  APPROVED,
+  REJECTED,
+  PARTNER_ASSIGNED,
+  OUT_FOR_PICKUP,
+  PICKED_UP,
+  DELIVERED,
+  ACTIVE,
+  RETURN_REQUESTED,
+  RETURN_ASSIGNED,
+  RETURN_PICKUP,
+  RETURNED,
+  UNDER_INSPECTION,
+  COMPLETED,
+  CANCELLED,
+  DISPUTED,
+}
+
+RentalStatus _parseRentalStatus(String? statusStr) {
+  if (statusStr == null) return RentalStatus.REQUESTED;
+  try {
+    return RentalStatus.values.firstWhere(
+        (e) => e.name == statusStr.toUpperCase());
+  } catch (_) {
+    return RentalStatus.REQUESTED;
+  }
+}
+
 class RentalModel {
   final String id;
   final String equipmentId;
   final String renterId;
+  final String ownerId;
+  final String ngoId;
   final String startDate;
+  final String expectedReturnDate;
+  final String? actualReturnDate;
+  final RentalStatus status;
+  final bool agreementAccepted;
+  final String createdAt;
+  final String updatedAt;
+  final EquipmentModel? equipment; // kept for convenience
+
+  // Backward compatible fields for UI
   final String endDate;
   final int numberOfDays;
   final double rentalAmount;
   final double securityDeposit;
   final double totalAmount;
-  final String status;
   final String paymentStatus;
-  final String? razorpayOrderId;
-  final String? razorpayPaymentId;
-  final String createdAt;
-  final String updatedAt;
+  final String razorpayOrderId;
+  final String razorpayPaymentId;
   final String renterName;
   final String renterEmail;
   final String renterPhone;
-  final EquipmentModel? equipment;
 
   const RentalModel({
     required this.id,
     required this.equipmentId,
     required this.renterId,
+    required this.ownerId,
+    required this.ngoId,
     required this.startDate,
-    required this.endDate,
-    required this.numberOfDays,
-    required this.rentalAmount,
-    required this.securityDeposit,
-    required this.totalAmount,
+    required this.expectedReturnDate,
+    this.actualReturnDate,
     required this.status,
-    required this.paymentStatus,
-    this.razorpayOrderId,
-    this.razorpayPaymentId,
+    required this.agreementAccepted,
     required this.createdAt,
     required this.updatedAt,
-    required this.renterName,
-    required this.renterEmail,
-    required this.renterPhone,
     this.equipment,
+    // Backward compatibility
+    this.endDate = '',
+    this.numberOfDays = 1,
+    this.rentalAmount = 0.0,
+    this.securityDeposit = 0.0,
+    this.totalAmount = 0.0,
+    this.paymentStatus = 'PENDING',
+    this.razorpayOrderId = '',
+    this.razorpayPaymentId = '',
+    this.renterName = 'Anonymous',
+    this.renterEmail = '',
+    this.renterPhone = '',
   });
-
-  static double _parseDouble(dynamic val) {
-    if (val == null) return 0.0;
-    if (val is num) return val.toDouble();
-    if (val is String) return double.tryParse(val) ?? 0.0;
-    return 0.0;
-  }
 
   factory RentalModel.fromJson(Map<String, dynamic> json) {
     try {
-      final renter = json['renter'] is Map
-          ? json['renter'] as Map<String, dynamic>
-          : null;
       final equipJson = json['equipment'] is Map
           ? json['equipment'] as Map<String, dynamic>
           : null;
-      final equip = equipJson != null
-          ? EquipmentModel.fromJson(equipJson)
-          : null;
-
-      int parsedDays = 1;
-      if (json['numberOfDays'] != null) {
-        parsedDays = int.tryParse(json['numberOfDays'].toString()) ?? 1;
-      }
+      final equip = equipJson != null ? EquipmentModel.fromJson(equipJson) : null;
 
       return RentalModel(
         id: json['id']?.toString() ?? '',
-        equipmentId:
-            json['equipmentId']?.toString() ??
-            equipJson?['id']?.toString() ??
-            '',
-        renterId:
-            json['renterId']?.toString() ?? renter?['id']?.toString() ?? '',
+        equipmentId: json['equipmentId']?.toString() ?? '',
+        renterId: json['renterId']?.toString() ?? '',
+        ownerId: json['ownerId']?.toString() ?? '',
+        ngoId: json['ngoId']?.toString() ?? '',
         startDate: json['startDate']?.toString() ?? '',
-        endDate: json['endDate']?.toString() ?? '',
-        numberOfDays: parsedDays,
-        rentalAmount: _parseDouble(json['rentalAmount']),
-        securityDeposit: _parseDouble(json['securityDeposit']),
-        totalAmount: _parseDouble(json['totalAmount']),
-        status: json['status']?.toString() ?? 'PENDING',
-        paymentStatus: json['paymentStatus']?.toString() ?? 'PENDING',
-        razorpayOrderId: json['razorpayOrderId']?.toString(),
-        razorpayPaymentId: json['razorpayPaymentId']?.toString(),
+        expectedReturnDate: json['expectedReturnDate']?.toString() ?? '',
+        actualReturnDate: json['actualReturnDate']?.toString(),
+        status: _parseRentalStatus(json['status']?.toString()),
+        agreementAccepted: json['agreementAccepted'] == true || json['agreementAccepted'] == 'true',
         createdAt: json['createdAt']?.toString() ?? '',
         updatedAt: json['updatedAt']?.toString() ?? '',
-        renterName: renter?['name']?.toString() ?? 'Anonymous Renter',
-        renterEmail: renter?['email']?.toString() ?? '',
-        renterPhone: renter?['phone']?.toString() ?? '',
         equipment: equip,
+        endDate: json['endDate']?.toString() ?? json['expectedReturnDate']?.toString() ?? '',
+        numberOfDays: int.tryParse(json['numberOfDays']?.toString() ?? '1') ?? 1,
+        rentalAmount: double.tryParse(json['rentalAmount']?.toString() ?? '0') ?? 0.0,
+        securityDeposit: double.tryParse(json['securityDeposit']?.toString() ?? '0') ?? 0.0,
+        totalAmount: double.tryParse(json['totalAmount']?.toString() ?? '0') ?? 0.0,
+        paymentStatus: json['paymentStatus']?.toString() ?? 'PENDING',
+        razorpayOrderId: json['razorpayOrderId']?.toString() ?? '',
+        razorpayPaymentId: json['razorpayPaymentId']?.toString() ?? '',
+        renterName: json['renterName']?.toString() ?? 'Anonymous',
+        renterEmail: json['renterEmail']?.toString() ?? '',
+        renterPhone: json['renterPhone']?.toString() ?? '',
       );
     } catch (_) {
       return RentalModel(
-        id: json['id']?.toString() ?? 'unknown',
-        equipmentId: json['equipmentId']?.toString() ?? '',
-        renterId: json['renterId']?.toString() ?? '',
-        startDate: json['startDate']?.toString() ?? '',
-        endDate: json['endDate']?.toString() ?? '',
-        numberOfDays: 1,
-        rentalAmount: 0.0,
-        securityDeposit: 0.0,
-        totalAmount: 0.0,
-        status: 'PENDING',
-        paymentStatus: 'PENDING',
+        id: 'unknown',
+        equipmentId: '',
+        renterId: '',
+        ownerId: '',
+        ngoId: '',
+        startDate: '',
+        expectedReturnDate: '',
+        status: RentalStatus.REQUESTED,
+        agreementAccepted: false,
         createdAt: '',
         updatedAt: '',
-        renterName: 'Anonymous Renter',
-        renterEmail: '',
-        renterPhone: '',
         equipment: null,
       );
     }
@@ -120,22 +141,27 @@ class RentalModel {
       "id": id,
       "equipmentId": equipmentId,
       "renterId": renterId,
+      "ownerId": ownerId,
+      "ngoId": ngoId,
       "startDate": startDate,
+      "expectedReturnDate": expectedReturnDate,
+      "actualReturnDate": actualReturnDate,
+      "status": status.name,
+      "agreementAccepted": agreementAccepted,
+      "createdAt": createdAt,
+      "updatedAt": updatedAt,
+      "equipment": equipment?.toJson(),
       "endDate": endDate,
       "numberOfDays": numberOfDays,
       "rentalAmount": rentalAmount,
       "securityDeposit": securityDeposit,
       "totalAmount": totalAmount,
-      "status": status,
       "paymentStatus": paymentStatus,
       "razorpayOrderId": razorpayOrderId,
       "razorpayPaymentId": razorpayPaymentId,
-      "createdAt": createdAt,
-      "updatedAt": updatedAt,
       "renterName": renterName,
       "renterEmail": renterEmail,
       "renterPhone": renterPhone,
-      "equipment": equipment?.toJson(),
     };
   }
 
@@ -143,43 +169,53 @@ class RentalModel {
     String? id,
     String? equipmentId,
     String? renterId,
+    String? ownerId,
+    String? ngoId,
     String? startDate,
+    String? expectedReturnDate,
+    String? actualReturnDate,
+    RentalStatus? status,
+    bool? agreementAccepted,
+    String? createdAt,
+    String? updatedAt,
+    EquipmentModel? equipment,
     String? endDate,
     int? numberOfDays,
     double? rentalAmount,
     double? securityDeposit,
     double? totalAmount,
-    String? status,
     String? paymentStatus,
     String? razorpayOrderId,
     String? razorpayPaymentId,
-    String? createdAt,
-    String? updatedAt,
     String? renterName,
     String? renterEmail,
     String? renterPhone,
-    EquipmentModel? equipment,
   }) {
     return RentalModel(
       id: id ?? this.id,
       equipmentId: equipmentId ?? this.equipmentId,
       renterId: renterId ?? this.renterId,
+      ownerId: ownerId ?? this.ownerId,
+      ngoId: ngoId ?? this.ngoId,
       startDate: startDate ?? this.startDate,
+      expectedReturnDate: expectedReturnDate ?? this.expectedReturnDate,
+      actualReturnDate: actualReturnDate ?? this.actualReturnDate,
+      status: status ?? this.status,
+      agreementAccepted: agreementAccepted ?? this.agreementAccepted,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      equipment: equipment ?? this.equipment,
       endDate: endDate ?? this.endDate,
       numberOfDays: numberOfDays ?? this.numberOfDays,
       rentalAmount: rentalAmount ?? this.rentalAmount,
       securityDeposit: securityDeposit ?? this.securityDeposit,
       totalAmount: totalAmount ?? this.totalAmount,
-      status: status ?? this.status,
       paymentStatus: paymentStatus ?? this.paymentStatus,
       razorpayOrderId: razorpayOrderId ?? this.razorpayOrderId,
       razorpayPaymentId: razorpayPaymentId ?? this.razorpayPaymentId,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
       renterName: renterName ?? this.renterName,
       renterEmail: renterEmail ?? this.renterEmail,
       renterPhone: renterPhone ?? this.renterPhone,
-      equipment: equipment ?? this.equipment,
     );
   }
 }

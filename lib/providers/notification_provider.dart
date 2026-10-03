@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 
 import '../core/network/dio_client.dart';
 import '../core/network/api_endpoints.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/notification_model.dart';
 
 class NotificationProvider extends ChangeNotifier {
@@ -83,6 +84,10 @@ class NotificationProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      final user = FirebaseAuth.instance.currentUser;
+      debugPrint('[NOTIFICATION]\nCurrent UID: ${user?.uid}');
+      debugPrint('[NOTIFICATION]\nFetch started');
+
       final response = await _dio.get(ApiEndpoints.notifications);
       if (response.data != null && response.data['success'] == true) {
         final listData =
@@ -95,6 +100,7 @@ class NotificationProvider extends ChangeNotifier {
                     NotificationModel.fromJson(item as Map<String, dynamic>),
               )
               .toList();
+          debugPrint('[NOTIFICATION]\nFetch completed: ${_notifications.length} notifications');
         }
       } else {
         _errorMessage =
@@ -151,5 +157,12 @@ class NotificationProvider extends ChangeNotifier {
       return false;
     }
     return true;
+  }
+  // ── Clear State on Logout ───────────────────────────────────────────
+  void clear() {
+    _notifications = [];
+    _errorMessage = '';
+    _searchQuery = '';
+    notifyListeners();
   }
 }

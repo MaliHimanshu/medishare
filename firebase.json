@@ -1,1 +1,47 @@
-{"flutter":{"platforms":{"android":{"default":{"projectId":"medishare-e6b5c","appId":"1:1070100510061:android:bcbeb691c11bcd475a5664","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"medishare-e6b5c","configurations":{"android":"1:1070100510061:android:bcbeb691c11bcd475a5664","ios":"1:1070100510061:ios:340a11e2c5d3a34e5a5664","macos":"1:1070100510061:ios:340a11e2c5d3a34e5a5664","web":"1:1070100510061:web:f8576334ab04d6865a5664","windows":"1:1070100510061:web:04427c9cc27201675a5664"}}}}}}
+{
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "predeploy": [
+        "npm --prefix \"$RESOURCE_DIR\" run lint"
+      ]
+    }
+  ],
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "medishare-e6b5c",
+          "appId": "1:1070100510061:android:bcbeb691c11bcd475a5664",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "medishare-e6b5c",
+          "configurations": {
+            "android": "1:1070100510061:android:bcbeb691c11bcd475a5664",
+            "ios": "1:1070100510061:ios:340a11e2c5d3a34e5a5664",
+            "macos": "1:1070100510061:ios:340a11e2c5d3a34e5a5664",
+            "web": "1:1070100510061:web:f8576334ab04d6865a5664",
+            "windows": "1:1070100510061:web:04427c9cc27201675a5664"
+          }
+        }
+      }
+    }
+  }
+}

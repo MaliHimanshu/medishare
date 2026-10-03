@@ -1,0 +1,76 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function getUserRole() {
+      // Assumes custom claims or a users collection read
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isNGO(ngoId) {
+      return isAuthenticated() && getUserRole() == 'NGO' && request.auth.uid == ngoId;
+    }
+
+    function isDeliveryPartner() {
+      return isAuthenticated() && getUserRole() == 'DELIVERY_PARTNER';
+    }
+    
+    function isRecipient() {
+      return isAuthenticated() && getUserRole() == 'RECIPIENT';
+    }
+
+    // Rentals Collection
+    match /rentals/{rentalId} {
+      allow read: if isUser(resource.data.renterId) || isNGO(resource.data.ngoId) || isUser(resource.data.ownerId);
+      allow create: if isRecipient() && request.resource.data.renterId == request.auth.uid && request.resource.data.status == 'REQUESTED';
+      
+      // Update restrictions based on role
+      allow update: if (isNGO(resource.data.ngoId) && 
+                         (request.resource.data.status in ['APPROVED', 'REJECTED', 'PARTNER_ASSIGNED', 'COMPLETED', 'DISPUTED'])) ||
+                       (isUser(resource.data.renterId) && 
+                         (request.resource.data.status in ['ACTIVE', 'RETURN_REQUESTED'])) ||
+                       (isDeliveryPartner() && 
+                         (request.resource.data.status in ['OUT_FOR_PICKUP', 'PICKED_UP', 'DELIVERED', 'RETURN_PICKUP', 'RETURNED', 'ACTIVE']));
+      allow delete: if false; // Soft deletes only
+    }
+
+    // Deliveries Collection
+    match /deliveries/{deliveryId} {
+      allow read: if isUser(resource.data.deliveryPartnerId) || isNGO(resource.data.ngoId) || 
+                  (isRecipient() && get(/databases/$(database)/documents/rentals/$(resource.data.rentalId)).data.renterId == request.auth.uid);
+      allow create: if isNGO(request.resource.data.ngoId);
+      allow update: if isUser(resource.data.deliveryPartnerId) || isNGO(resource.data.ngoId);
+      allow delete: if false;
+    }
+
+    // Equipment Collection
+    match /equipment/{equipmentId} {
+      allow read: if true; // Public catalog
+      allow create: if (request.resource.data.keys().hasAny(['ngoId']) && isNGO(request.resource.data.ngoId)) || isUser(request.resource.data.ownerId);
+      allow update: if (resource.data.keys().hasAny(['ngoId']) && isNGO(resource.data.ngoId)) || isUser(resource.data.ownerId);
+      allow delete: if false;
+    }
+
+    // Delivery Partners
+    match /deliveryPartners/{partnerId} {
+      allow read: if isUser(partnerId) || isNGO(resource.data.ngoId);
+      allow update: if isUser(partnerId) || isNGO(resource.data.ngoId);
+      allow create, delete: if false;
+    }
+
+    // Users Collection
+    match /users/{userId} {
+      allow read: if isUser(userId) || getUserRole() == 'NGO';
+      allow write: if isUser(userId);
+    }
+  }
+}

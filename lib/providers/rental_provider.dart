@@ -328,4 +328,11 @@ class RentalProvider extends ChangeNotifier {
       }
     } catch (_) {}
   }
+  // ── Clear State on Logout ───────────────────────────────────────────
+  void clear() {
+    _rentals = [];
+    _errorMessage = '';
+    _searchQuery = '';
+    notifyListeners();
+  }
 }

@@ -61,13 +61,13 @@ class _DonorDashboardState extends State<DonorDashboard> {
     final rentalRequestsCount = sum?['rentalRequests'] != null
         ? sum!['rentalRequests'].toString()
         : rentalProv.rentals
-              .where((r) => r.status.toUpperCase() == 'PENDING')
+              .where((r) => r.status.name.toUpperCase() == 'PENDING')
               .length
               .toString();
     final activeRentalsCount = sum?['activeRentals'] != null
         ? sum!['activeRentals'].toString()
         : rentalProv.rentals
-              .where((r) => r.status.toUpperCase() == 'ACTIVE')
+              .where((r) => r.status.name.toUpperCase() == 'ACTIVE')
               .length
               .toString();
     final donationsCount =
@@ -80,7 +80,7 @@ class _DonorDashboardState extends State<DonorDashboard> {
         .take(5)
         .toList();
     final pendingRentals = rentalProv.rentals
-        .where((r) => r.status.toUpperCase() == 'PENDING')
+        .where((r) => r.status.name.toUpperCase() == 'PENDING')
         .take(5)
         .toList();
 
@@ -453,7 +453,7 @@ class _DonorDashboardState extends State<DonorDashboard> {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
-                        rental.status.toUpperCase(),
+                        rental.status.name.toUpperCase(),
                         style: const TextStyle(
                           color: Colors.orange,
                           fontWeight: FontWeight.bold,

@@ -95,11 +95,11 @@ class _CreateDonationScreenState extends State<CreateDonationScreen> {
         .toList();
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         title: const Text('Donate Equipment'),
         centerTitle: true,
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.surfaceBg,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
       ),
@@ -208,7 +208,7 @@ class _CreateDonationScreenState extends State<CreateDonationScreen> {
                       borderRadius: BorderRadius.circular(14),
                     ),
                     filled: true,
-                    fillColor: AppColors.surface,
+                    fillColor: context.inputBg,
                   ),
                   items: availableItems.map((item) {
                     return DropdownMenuItem<EquipmentModel>(
@@ -311,7 +311,7 @@ class _CreateDonationScreenState extends State<CreateDonationScreen> {
                     borderRadius: BorderRadius.circular(14),
                   ),
                   filled: true,
-                  fillColor: AppColors.surface,
+                  fillColor: context.inputBg,
                 ),
                 validator: (val) {
                   if (val == null || val.trim().isEmpty) {
@@ -351,7 +351,7 @@ class _CreateDonationScreenState extends State<CreateDonationScreen> {
                     borderRadius: BorderRadius.circular(14),
                   ),
                   filled: true,
-                  fillColor: AppColors.surface,
+                  fillColor: context.inputBg,
                 ),
               ),
 

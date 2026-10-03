@@ -217,7 +217,7 @@ class _MyRentalsScreenState extends State<MyRentalsScreen> {
       itemBuilder: (context, index) {
         final item = filtered[index];
         final equip = item.equipment;
-        final statusColor = _getStatusColor(item.status);
+        final statusColor = _getStatusColor(item.status.name);
 
         return AnimatedListItem(
           index: index,
@@ -393,7 +393,7 @@ class _MyRentalsScreenState extends State<MyRentalsScreen> {
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
-                                    item.status.toUpperCase(),
+                                    item.status.name.toUpperCase(),
                                     style: TextStyle(
                                       color: statusColor,
                                       fontSize: 9,

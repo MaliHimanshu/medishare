@@ -24,6 +24,7 @@ import '../../models/user_model.dart';
 // Shared Widgets
 import '../../shared/widgets/ms_logo.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/utils/logout_helper.dart';
 
 // Feature Screens
 import '../equipment/equipment_list_screen.dart';
@@ -829,33 +830,9 @@ class _HomeScreenState extends State<HomeScreen>
                   iconColor: AppColors.error,
                   textColor: AppColors.error,
                   onTap: () async {
-                    final navigator = Navigator.of(context);
+                    debugPrint('[LOGOUT] Logout button pressed in Drawer');
                     Navigator.pop(context);
-                    // ── Clear ALL provider state before logout ────────────
-                    // Prevents stale role/data from showing after account switch.
-                    if (mounted) {
-                      context.read<ProfileProvider>().clear();
-                      context.read<EquipmentProvider>().clear();
-                      context.read<DonationProvider>().clear();
-                      context.read<RequestProvider>().clear();
-                      context.read<HospitalProvider>().clear();
-                      context.read<NotificationProvider>().clear();
-                      context.read<MenuChatbotProvider>().clear();
-                      context.read<ChatbotProvider>().clear();
-                      context.read<GlobalSearchProvider>().clear();
-                      context.read<RentalProvider>().clear();
-                      context.read<TrackingProvider>().clear();
-                      context.read<ChatProvider>().clear();
-                      context.read<EmergencyAlertProvider>().clear();
-                      context.read<DashboardProvider>().clear();
-                    }
-                    await auth.logout();
-                    if (mounted) {
-                      navigator.pushAndRemoveUntil(
-                        AppPageTransitions.slideRight(const LoginScreen()),
-                        (route) => false,
-                      );
-                    }
+                    await LogoutHelper.performLogout(context);
                   },
                 ),
               ],

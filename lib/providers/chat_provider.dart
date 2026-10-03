@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../services/chat_service.dart';
 import '../models/conversation_model.dart';
 import '../models/message_model.dart';
@@ -8,7 +8,6 @@ import '../core/network/api_endpoints.dart';
 
 class ChatProvider with ChangeNotifier {
   final ChatService _chatService = ChatService();
-  final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   io.Socket? _socket;
 
@@ -39,8 +38,10 @@ class ChatProvider with ChangeNotifier {
   }
 
   Future<void> _initSocket() async {
-    String? token = await _storage.read(key: 'auth_token');
-    token ??= await _storage.read(key: 'medishare_token');
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    
+    final token = await user.getIdToken();
     if (token == null) return;
 
     // Connect to WebSocket server using the base URL
@@ -183,6 +184,18 @@ class ChatProvider with ChangeNotifier {
     }
 
     return conv;
+  }
+
+  // ── Clear State on Logout ───────────────────────────────────────────
+  void clear() {
+    _socket?.disconnect();
+    _socket = null;
+    _conversations = [];
+    _activeChatMessages.clear();
+    _typingStatus.clear();
+    currentUserId = null;
+    _error = null;
+    notifyListeners();
   }
 
   @override
