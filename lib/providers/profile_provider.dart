@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../core/network/dio_client.dart';
 import '../core/network/api_endpoints.dart';
@@ -31,7 +30,7 @@ class ProfileProvider extends ChangeNotifier {
   // ── Fetch Profile (GET /api/profile or GET /api/auth/me) ───────────
   Future<void> fetchProfile() async {
     final fUser = FirebaseAuth.instance.currentUser;
-    debugPrint('[PROFILE] Screen opened. Firebase UID: ${fUser?.uid}');
+    debugPrint('[PROFILE] fetchProfile started. Firebase UID: ${fUser?.uid}');
     if (fUser == null) {
       clear();
       return;
@@ -42,39 +41,12 @@ class ProfileProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      debugPrint('[PROFILE] Firestore fetch started');
-      await _applyFirestoreRole(fUser.uid);
-      debugPrint('[PROFILE] Firestore fetch completed');
-      
-      // Update UI with Firestore user data before doing slow REST call
-      notifyListeners();
-
       debugPrint('[PROFILE] REST profile fetch started');
       final response = await _dio.get(ApiEndpoints.profile).timeout(const Duration(seconds: 7));
       if (response.data != null && response.data['success'] == true) {
         final userData = response.data['data'] as Map<String, dynamic>;
-        // Create user from REST but RETAIN Firestore role
-        final restUser = UserModel.fromJson(userData);
-        if (_user != null) {
-          _user = UserModel(
-            id: restUser.id,
-            name: restUser.name,
-            email: restUser.email,
-            role: _user!.role, // Keep Firestore role!
-            phone: restUser.phone,
-            phoneVerified: restUser.phoneVerified,
-            address: restUser.address,
-            profileImage: restUser.profileImage,
-            organizationName: restUser.organizationName,
-            registrationNumber: restUser.registrationNumber,
-            contactPerson: restUser.contactPerson,
-            equipmentPreference: restUser.equipmentPreference,
-            verificationStatus: restUser.verificationStatus,
-            createdAt: restUser.createdAt,
-          );
-        } else {
-          _user = restUser;
-        }
+        _user = UserModel.fromJson(userData);
+        debugPrint('[SAFE DEBUG LOG] ProfileProvider.fetchProfile(): email=${_user?.email}, parsed_role=${_user?.role}');
       }
       debugPrint('[PROFILE] REST profile fetch completed');
     } catch (e) {
@@ -83,86 +55,17 @@ class ProfileProvider extends ChangeNotifier {
         final fallbackRes = await _dio.get(ApiEndpoints.me).timeout(const Duration(seconds: 5));
         if (fallbackRes.data != null && fallbackRes.data['success'] == true) {
           final userData = fallbackRes.data['data'] as Map<String, dynamic>;
-          final restUser = UserModel.fromJson(userData);
-          if (_user != null) {
-            _user = UserModel(
-              id: restUser.id,
-              name: restUser.name,
-              email: restUser.email,
-              role: _user!.role, // Keep Firestore role!
-              phone: restUser.phone,
-              phoneVerified: restUser.phoneVerified,
-              address: restUser.address,
-              profileImage: restUser.profileImage,
-              organizationName: restUser.organizationName,
-              registrationNumber: restUser.registrationNumber,
-              contactPerson: restUser.contactPerson,
-              equipmentPreference: restUser.equipmentPreference,
-              verificationStatus: restUser.verificationStatus,
-              createdAt: restUser.createdAt,
-            );
-          } else {
-            _user = restUser;
-          }
+          _user = UserModel.fromJson(userData);
+          debugPrint('[SAFE DEBUG LOG] ProfileProvider.fetchProfile() fallback: email=${_user?.email}, parsed_role=${_user?.role}');
         }
       } catch (innerE) {
         debugPrint('[PROFILE] Fallback REST failed: $innerE');
-        // Do not overwrite errorMessage if we already have Firestore user
       }
     } finally {
       await fetchStats();
       _isLoading = false;
       debugPrint('[PROFILE] Loading finished');
       notifyListeners();
-    }
-  }
-
-  // ── Apply Firestore Role as Single Source of Truth ─────────────────
-  Future<void> _applyFirestoreRole(String uid) async {
-    try {
-      final doc = await FirebaseFirestore.instance
-          .collection('users')
-          .doc(uid)
-          .get()
-          .timeout(const Duration(seconds: 5));
-
-      if (!doc.exists) return;
-
-      final firestoreData = doc.data()!;
-      final firestoreRole = firestoreData['role']?.toString();
-      
-      if (firestoreRole == null || firestoreRole.isEmpty) {
-        debugPrint('[PROFILE] Firestore role is missing or empty.');
-        return;
-      }
-
-      debugPrint('[PROFILE] Firestore role: $firestoreRole');
-
-      if (_user == null) {
-        firestoreData['id'] = uid;
-        _user = UserModel.fromJson(firestoreData);
-        debugPrint('[ROLE SYNC] ProfileProvider: built user from Firestore. role=${_user!.role}');
-      } else if (_user!.role != firestoreRole) {
-        debugPrint('[ROLE SYNC] ProfileProvider: updating role to $firestoreRole');
-        _user = UserModel(
-          id: _user!.id,
-          name: _user!.name,
-          email: _user!.email,
-          role: firestoreRole,
-          phone: _user!.phone,
-          phoneVerified: _user!.phoneVerified,
-          address: _user!.address,
-          profileImage: _user!.profileImage,
-          organizationName: _user!.organizationName,
-          registrationNumber: _user!.registrationNumber,
-          contactPerson: _user!.contactPerson,
-          equipmentPreference: _user!.equipmentPreference,
-          verificationStatus: _user!.verificationStatus,
-          createdAt: _user!.createdAt,
-        );
-      }
-    } catch (e) {
-      debugPrint('[ROLE SYNC] ProfileProvider: _applyFirestoreRole failed: $e');
     }
   }
 

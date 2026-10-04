@@ -65,6 +65,8 @@ const login = async (req, res) => {
       data.password
     );
 
+    console.log(`[SAFE DEBUG LOG] POST /api/auth/login response: email=${result.user.email}, database_role=${result.user.role}, login_response_role=${result.user.role}`);
+
     return res.status(200).json({
       success: true,
       message: "Login successful",

@@ -430,7 +430,9 @@ class _HomeScreenState extends State<HomeScreen>
     if (user == null) {
       return const Center(child: CircularProgressIndicator());
     }
-    switch (user.role.toUpperCase()) {
+    final role = user.role.trim().toUpperCase();
+    debugPrint('[SAFE DEBUG LOG] HomeScreen._buildRoleDashboard(): user_email=${user.email}, role=$role');
+    switch (role) {
       case 'DONOR':
         return DonorDashboard(user: user);
       case 'NGO':
@@ -442,10 +444,23 @@ class _HomeScreenState extends State<HomeScreen>
       case 'ADMIN':
         return AdminDashboard(user: user);
       case 'UNKNOWN':
-        // Role is still being resolved from Firestore — show loader
         return const Center(child: CircularProgressIndicator());
       default:
-        return DonorDashboard(user: user);
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline, size: 48, color: Colors.red),
+              const SizedBox(height: 16),
+              Text(
+                'Invalid or unsupported user role: "${user.role}"',
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              const Text('Please re-login or contact support.'),
+            ],
+          ),
+        );
     }
   }
 

@@ -32,8 +32,13 @@ const protect = async (req, res, next) => {
     
     // 1. Try finding by email (legacy mapping)
     if (decodedToken.email) {
-      user = await prisma.user.findUnique({
-        where: { email: decodedToken.email },
+      user = await prisma.user.findFirst({
+        where: {
+          email: {
+            equals: decodedToken.email.trim().toLowerCase(),
+            mode: "insensitive",
+          },
+        },
         select: {
           id: true, name: true, email: true, phone: true, phoneVerified: true,
           address: true, profileImage: true, role: true, organizationName: true,
