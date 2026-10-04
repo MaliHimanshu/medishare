@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'package:crypto/crypto.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -186,12 +184,12 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
                         vertical: 6,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF0C2340),
+                        color: AppColors.primary,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Row(
                         children: [
-                          Icon(Icons.bolt, color: Colors.blueAccent, size: 16),
+                          Icon(Icons.bolt, color: Colors.white, size: 16),
                           SizedBox(width: 4),
                           Text(
                             "Razorpay",
@@ -212,23 +210,23 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.green.shade50,
+                        color: Colors.green.withAlpha(30),
                         borderRadius: BorderRadius.circular(6),
-                        border: Border.all(color: Colors.green.shade300),
+                        border: Border.all(color: Colors.green.withAlpha(80)),
                       ),
-                      child: Text(
+                      child: const Text(
                         "100% SECURE",
                         style: TextStyle(
                           fontSize: 9,
                           fontWeight: FontWeight.bold,
-                          color: Colors.green.shade800,
+                          color: Colors.green,
                         ),
                       ),
                     ),
                   ],
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close),
+                  icon: Icon(Icons.close, color: context.textPrimaryColor),
                   onPressed: () => Navigator.pop(context),
                 ),
               ],
@@ -256,15 +254,16 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 15,
-                            color: Theme.of(context).colorScheme.onSurface,
+                            color: context.textPrimaryColor,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
+                      const SizedBox(width: 8),
                       Text(
                         "${widget.rental.numberOfDays} day(s)",
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontWeight: FontWeight.w600,
                           fontSize: 13,
                           color: AppColors.primary,
@@ -276,15 +275,28 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        "Rental Amount:",
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      Expanded(
+                        child: Text(
+                          "Rental Amount:",
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: context.textSecondaryColor,
+                          ),
+                        ),
                       ),
-                      Text(
-                        "₹${widget.rental.rentalAmount.toStringAsFixed(0)}",
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            "₹${widget.rental.rentalAmount.toStringAsFixed(0)}",
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: context.textPrimaryColor,
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -293,36 +305,59 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        "Security Deposit:",
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      Expanded(
+                        child: Text(
+                          "Security Deposit:",
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: context.textSecondaryColor,
+                          ),
+                        ),
                       ),
-                      Text(
-                        "₹${widget.rental.securityDeposit.toStringAsFixed(0)}",
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            "₹${widget.rental.securityDeposit.toStringAsFixed(0)}",
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: context.textPrimaryColor,
+                            ),
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  const Divider(height: 18),
+                  Divider(height: 18, color: context.borderColor),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        "Total Payable:",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                      Expanded(
+                        child: Text(
+                          "Total Payable:",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            color: context.textPrimaryColor,
+                          ),
                         ),
                       ),
-                      Text(
-                        "₹${widget.rental.totalAmount.toStringAsFixed(0)}",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                          color: context.textPrimaryColor,
+                      const SizedBox(width: 8),
+                      Flexible(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerRight,
+                          child: Text(
+                            "₹${widget.rental.totalAmount.toStringAsFixed(0)}",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                              color: AppColors.primary,
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -344,14 +379,14 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
                   children: [
                     const Icon(
                       Icons.error_outline,
-                      color: Colors.red,
+                      color: AppColors.error,
                       size: 20,
                     ),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         _errorMessage!,
-                        style: TextStyle(color: Colors.red, fontSize: 12),
+                        style: const TextStyle(color: AppColors.error, fontSize: 12),
                       ),
                     ),
                   ],
@@ -369,7 +404,7 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _isSuccess
                       ? AppColors.success
-                      : const Color(0xFF0C2340),
+                      : AppColors.primary,
                   foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
@@ -411,11 +446,14 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
                           ),
                         ],
                       )
-                    : Text(
-                        "Pay ₹${widget.rental.totalAmount.toStringAsFixed(0)} via Razorpay",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
+                    : FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          "Pay ₹${widget.rental.totalAmount.toStringAsFixed(0)} via Razorpay",
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
                         ),
                       ),
               ),

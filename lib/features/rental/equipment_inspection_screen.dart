@@ -212,10 +212,12 @@ class _EquipmentInspectionScreenState extends State<EquipmentInspectionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         title: const Text('Return Inspection'),
         backgroundColor: context.surfaceBg,
-        foregroundColor: AppColors.textPrimary,
+        foregroundColor: context.textPrimaryColor,
+        elevation: 0,
       ),
       body: _isLoading 
         ? const Center(child: CircularProgressIndicator())
@@ -224,18 +226,44 @@ class _EquipmentInspectionScreenState extends State<EquipmentInspectionScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Equipment: ${widget.rental.equipment?.name ?? "Unknown"}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Text(
+                  'Equipment: ${widget.rental.equipment?.name ?? "Unknown"}',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: context.textPrimaryColor,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 const SizedBox(height: 8),
-                Text('Rental ID: ${widget.rental.id}'),
+                Text(
+                  'Rental ID: ${widget.rental.id}',
+                  style: TextStyle(color: context.textSecondaryColor),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 const SizedBox(height: 8),
-                Text('Before Condition: ${widget.rental.equipment?.condition ?? "Unknown"}', style: const TextStyle(color: Colors.blue)),
+                Text(
+                  'Before Condition: ${widget.rental.equipment?.condition ?? "Unknown"}',
+                  style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w600),
+                ),
                 
                 const SizedBox(height: 24),
-                const Text('After Condition:', style: TextStyle(fontWeight: FontWeight.bold)),
+                Text(
+                  'After Condition:',
+                  style: TextStyle(fontWeight: FontWeight.bold, color: context.textPrimaryColor),
+                ),
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
                   value: _afterCondition,
-                  decoration: const InputDecoration(border: OutlineInputBorder()),
+                  dropdownColor: context.cardBg,
+                  style: TextStyle(color: context.textPrimaryColor),
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    fillColor: context.inputBg,
+                    filled: true,
+                  ),
                   items: ['Excellent', 'Good', 'Fair', 'Damaged']
                       .map((c) => DropdownMenuItem(value: c, child: Text(c)))
                       .toList(),
@@ -247,10 +275,14 @@ class _EquipmentInspectionScreenState extends State<EquipmentInspectionScreen> {
                 const SizedBox(height: 24),
                 Row(
                   children: [
-                    const Text('Damage Reported?', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text(
+                      'Damage Reported?',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: context.textPrimaryColor),
+                    ),
                     const Spacer(),
                     Switch(
                       value: _hasDamage,
+                      activeColor: AppColors.primary,
                       onChanged: (val) {
                         setState(() => _hasDamage = val);
                       },
@@ -262,16 +294,22 @@ class _EquipmentInspectionScreenState extends State<EquipmentInspectionScreen> {
                   const SizedBox(height: 16),
                   TextField(
                     controller: _descriptionController,
-                    decoration: const InputDecoration(
+                    style: TextStyle(color: context.textPrimaryColor),
+                    decoration: InputDecoration(
                       labelText: 'Damage Description',
-                      border: OutlineInputBorder(),
+                      border: const OutlineInputBorder(),
+                      fillColor: context.inputBg,
+                      filled: true,
                     ),
                     maxLines: 3,
                   ),
                 ],
 
                 const SizedBox(height: 24),
-                const Text('Inspection Photos', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Text(
+                  'Inspection Photos',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: context.textPrimaryColor),
+                ),
                 const SizedBox(height: 8),
                 
                 // Photo Gallery
@@ -291,9 +329,15 @@ class _EquipmentInspectionScreenState extends State<EquipmentInspectionScreen> {
                   child: FilledButton(
                     onPressed: (_isUploading || _isLoading) ? null : _submitInspection,
                     style: FilledButton.styleFrom(
-                      backgroundColor: _hasDamage ? Colors.orange : Colors.green,
+                      backgroundColor: _hasDamage ? Colors.orange : AppColors.success,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
                     ),
-                    child: Text(_hasDamage ? 'Submit Disputed Inspection' : 'Submit Clean Inspection'),
+                    child: Text(
+                      _hasDamage ? 'Submit Disputed Inspection' : 'Submit Clean Inspection',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ),
               ],

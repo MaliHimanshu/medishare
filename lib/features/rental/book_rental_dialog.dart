@@ -19,27 +19,23 @@ class _BookRentalDialogState extends State<BookRentalDialog> {
   DateTime _endDate = DateTime.now().add(const Duration(days: 4));
   bool _isSubmitting = false;
   bool _agreementAccepted = false;
-  final _addressController = TextEditingController();
-  final _reasonController = TextEditingController();
-  final _noteController = TextEditingController();
-
-  @override
-  void dispose() {
-    _addressController.dispose();
-    _reasonController.dispose();
-    _noteController.dispose();
-    super.dispose();
-  }
 
   int get _numberOfDays {
     final diff = _endDate.difference(_startDate).inDays;
     return diff > 0 ? diff : 1;
   }
 
-  double get _rentalPricePerDay => widget.equipment.rentalPricePerDay ?? 0.0;
-  double get _securityDeposit => widget.equipment.securityDeposit ?? 0.0;
-  double get _rentalAmount => _rentalPricePerDay * _numberOfDays;
-  double get _totalAmount => _rentalAmount + _securityDeposit;
+  /// Returns the per-day price from the equipment, or null if not set.
+  /// DO NOT fall back to 0 — null means the backend data is missing.
+  double? get _rentalPricePerDay => widget.equipment.rentalPricePerDay;
+  double? get _securityDeposit => widget.equipment.securityDeposit;
+
+  /// True only when the backend has supplied a valid (> 0) rental price.
+  bool get _hasPricingData =>
+      _rentalPricePerDay != null && _rentalPricePerDay! > 0;
+
+  double get _rentalAmount => (_rentalPricePerDay ?? 0) * _numberOfDays;
+  double get _totalAmount => _rentalAmount + (_securityDeposit ?? 0);
 
   Future<void> _selectStartDate() async {
     final picked = await showDatePicker(
@@ -76,15 +72,24 @@ class _BookRentalDialogState extends State<BookRentalDialog> {
   }
 
   Future<void> _submitBooking() async {
-    if (!_agreementAccepted) {
+    // Block booking if the backend did not provide a rental price
+    if (!_hasPricingData) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please accept the rental agreement terms.'), backgroundColor: Colors.red),
+        const SnackBar(
+          content: Text(
+            'Rental price not available for this equipment. Please contact the owner.',
+          ),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
-    if (_addressController.text.isEmpty || _reasonController.text.isEmpty) {
+    if (!_agreementAccepted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all required fields.'), backgroundColor: Colors.red),
+        const SnackBar(
+          content: Text('Please accept the rental agreement terms.'),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
@@ -94,24 +99,21 @@ class _BookRentalDialogState extends State<BookRentalDialog> {
     final messenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
 
-    final success = await provider.createRental(
+    final createdRental = await provider.createRental(
       equipmentId: widget.equipment.id,
       startDate: _startDate,
       endDate: _endDate,
+      rentalPricePerDay: _rentalPricePerDay,
+      securityDeposit: _securityDeposit,
+      totalAmount: _totalAmount,
+      agreementAccepted: _agreementAccepted,
     );
 
     setState(() => _isSubmitting = false);
 
     if (mounted) {
-      if (success) {
-        navigator.pop(true);
-        messenger.showSnackBar(
-          const SnackBar(
-            content: Text("Rental request submitted successfully!"),
-            backgroundColor: AppColors.success,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+      if (createdRental != null) {
+        navigator.pop(createdRental);
       } else {
         messenger.showSnackBar(
           SnackBar(
@@ -131,18 +133,22 @@ class _BookRentalDialogState extends State<BookRentalDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      backgroundColor: context.cardBg,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(color: context.borderColor),
+      ),
       title: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.orange.shade50,
+              color: AppColors.primary.withAlpha(25),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(
+            child: const Icon(
               Icons.calendar_month,
-              color: Colors.orange.shade700,
+              color: AppColors.primary,
               size: 22,
             ),
           ),
@@ -150,7 +156,11 @@ class _BookRentalDialogState extends State<BookRentalDialog> {
           Expanded(
             child: Text(
               "Rent ${widget.equipment.name}",
-              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+                color: context.textPrimaryColor,
+              ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
@@ -162,9 +172,9 @@ class _BookRentalDialogState extends State<BookRentalDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
+            Text(
               "Select your rental period:",
-              style: TextStyle(fontSize: 12, color: Colors.grey),
+              style: TextStyle(fontSize: 12, color: context.textSecondaryColor),
             ),
             const SizedBox(height: 14),
 
@@ -181,26 +191,28 @@ class _BookRentalDialogState extends State<BookRentalDialog> {
                         vertical: 12,
                       ),
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade300),
+                        border: Border.all(color: context.borderColor),
                         borderRadius: BorderRadius.circular(12),
+                        color: context.inputBg,
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             "Start Date",
                             style: TextStyle(
                               fontSize: 10,
-                              color: Colors.grey,
+                              color: context.textSecondaryColor,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             "${_startDate.day}/${_startDate.month}/${_startDate.year}",
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.bold,
+                              color: context.textPrimaryColor,
                             ),
                           ),
                         ],
@@ -219,26 +231,28 @@ class _BookRentalDialogState extends State<BookRentalDialog> {
                         vertical: 12,
                       ),
                       decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade300),
+                        border: Border.all(color: context.borderColor),
                         borderRadius: BorderRadius.circular(12),
+                        color: context.inputBg,
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             "End Date",
                             style: TextStyle(
                               fontSize: 10,
-                              color: Colors.grey,
+                              color: context.textSecondaryColor,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             "${_endDate.day}/${_endDate.month}/${_endDate.year}",
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.bold,
+                              color: context.textPrimaryColor,
                             ),
                           ),
                         ],
@@ -251,119 +265,223 @@ class _BookRentalDialogState extends State<BookRentalDialog> {
 
             const SizedBox(height: 16),
 
-            // Rental Calculation Summary Card
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: Colors.orange.shade50.withAlpha(80),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Colors.orange.shade200),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Duration:",
+            if (!_hasPricingData)
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppColors.error.withAlpha(25),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.error.withAlpha(80)),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.error_outline, color: AppColors.error, size: 20),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        "Rental price is not configured for this equipment. Booking is currently unavailable.",
                         style: TextStyle(
                           fontSize: 12,
-                          color: Theme.of(context).colorScheme.onSurface,
+                          color: AppColors.error,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
-                      Text(
-                        "$_numberOfDays day(s)",
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
+                    ),
+                  ],
+                ),
+              )
+            else
+              // Rental Calculation Summary Card
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withAlpha(15),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: AppColors.primary.withAlpha(40)),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            "Duration:",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: context.textSecondaryColor,
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Rate (₹${_rentalPricePerDay.toStringAsFixed(0)} × $_numberOfDays):",
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Theme.of(context).colorScheme.onSurface,
+                        const SizedBox(width: 8),
+                        Text(
+                          "$_numberOfDays day(s)",
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: context.textPrimaryColor,
+                          ),
                         ),
-                      ),
-                      Text(
-                        "₹${_rentalAmount.toStringAsFixed(0)}",
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  if (_securityDeposit > 0) ...[
+                      ],
+                    ),
                     const SizedBox(height: 6),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          "Security Deposit (Refundable):",
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Theme.of(context).colorScheme.onSurface,
+                        Expanded(
+                          child: Text(
+                            "Rate (₹${(_rentalPricePerDay ?? 0).toStringAsFixed(0)} × $_numberOfDays):",
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: context.textSecondaryColor,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        Text(
-                          "₹${_securityDeposit.toStringAsFixed(0)}",
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              "₹${_rentalAmount.toStringAsFixed(0)}",
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: context.textPrimaryColor,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if ((_securityDeposit ?? 0) > 0) ...[
+                      const SizedBox(height: 6),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              "Security Deposit (Refundable):",
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: context.textSecondaryColor,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.centerRight,
+                              child: Text(
+                                "₹${(_securityDeposit ?? 0).toStringAsFixed(0)}",
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: context.textPrimaryColor,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    Divider(height: 16, color: context.borderColor),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            "Total Amount:",
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: context.textPrimaryColor,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Flexible(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            alignment: Alignment.centerRight,
+                            child: Text(
+                              "₹${_totalAmount.toStringAsFixed(0)}",
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.primary,
+                              ),
+                            ),
                           ),
                         ),
                       ],
                     ),
                   ],
-                  const Divider(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Total Amount:",
+                ),
+              ),
+            if (_hasPricingData) ...[
+              const SizedBox(height: 12),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(
+                    height: 24,
+                    width: 24,
+                    child: Checkbox(
+                      value: _agreementAccepted,
+                      activeColor: AppColors.primary,
+                      onChanged: (val) {
+                        setState(() {
+                          _agreementAccepted = val ?? false;
+                        });
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _agreementAccepted = !_agreementAccepted;
+                        });
+                      },
+                      child: Text(
+                        "I accept the rental agreement terms & conditions.",
                         style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.onSurface,
+                          fontSize: 12,
+                          color: context.textSecondaryColor,
                         ),
                       ),
-                      Text(
-                        "₹${_totalAmount.toStringAsFixed(0)}",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.orange.shade800,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ],
               ),
-            ),
+            ],
           ],
         ),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text("Cancel"),
+          child: Text(
+            "Cancel",
+            style: TextStyle(color: context.textSecondaryColor),
+          ),
         ),
         ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.orange.shade700,
+            backgroundColor: AppColors.primary,
             foregroundColor: Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
           ),
-          onPressed: _isSubmitting ? null : _submitBooking,
+          onPressed: (_isSubmitting || !_hasPricingData) ? null : _submitBooking,
           child: _isSubmitting
               ? const SizedBox(
                   width: 18,

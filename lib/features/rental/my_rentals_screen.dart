@@ -271,6 +271,8 @@ class _MyRentalsScreenState extends State<MyRentalsScreen> {
                                   fontSize: 16,
                                   color: context.textPrimaryColor,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 2),
                               Text(
@@ -278,8 +280,10 @@ class _MyRentalsScreenState extends State<MyRentalsScreen> {
                                 style: const TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.orange,
+                                  color: AppColors.primary,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                               const SizedBox(height: 2),
                               Text(
@@ -305,23 +309,30 @@ class _MyRentalsScreenState extends State<MyRentalsScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.date_range,
-                              size: 14,
-                              color: context.textSecondaryColor,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${item.startDate.split('T').first} → ${item.endDate.split('T').first}',
-                              style: TextStyle(
-                                fontSize: 11,
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.date_range,
+                                size: 14,
                                 color: context.textSecondaryColor,
                               ),
-                            ),
-                          ],
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  '${item.startDate.split('T').first} → ${item.endDate.split('T').first}',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    color: context.textSecondaryColor,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
+                        const SizedBox(width: 8),
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -346,7 +357,7 @@ class _MyRentalsScreenState extends State<MyRentalsScreen> {
                                     vertical: 3,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF0C2340),
+                                    color: AppColors.primary,
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: const Row(
@@ -355,7 +366,7 @@ class _MyRentalsScreenState extends State<MyRentalsScreen> {
                                       Icon(
                                         Icons.bolt,
                                         size: 10,
-                                        color: Colors.blueAccent,
+                                        color: Colors.white,
                                       ),
                                       SizedBox(width: 2),
                                       Text(

@@ -13,10 +13,11 @@ class NgoRentalRequestDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: context.scaffoldBg,
       appBar: AppBar(
         title: const Text('Request Detail'),
         backgroundColor: context.surfaceBg,
-        foregroundColor: AppColors.textPrimary,
+        foregroundColor: context.textPrimaryColor,
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -24,25 +25,56 @@ class NgoRentalRequestDetailScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Equipment: ${rental.equipment?.name ?? "Unknown"}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text(
+              'Equipment: ${rental.equipment?.name ?? "Unknown"}',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: context.textPrimaryColor,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
             const SizedBox(height: 10),
-            Text('Recipient: ${rental.renterName}'),
-            Text('Phone: ${rental.renterPhone}'),
+            Text(
+              'Recipient: ${rental.renterName}',
+              style: TextStyle(color: context.textSecondaryColor),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            Text(
+              'Phone: ${rental.renterPhone}',
+              style: TextStyle(color: context.textSecondaryColor),
+            ),
             const SizedBox(height: 10),
-            Text('Rental Period: ${rental.startDate.split("T").first} - ${rental.endDate.split("T").first}'),
+            Text(
+              'Rental Period: ${rental.startDate.split("T").first} - ${rental.endDate.split("T").first}',
+              style: TextStyle(color: context.textSecondaryColor),
+            ),
             const SizedBox(height: 20),
-            const Text('Action:', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              'Action:',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: context.textPrimaryColor,
+              ),
+            ),
             const SizedBox(height: 10),
             Row(
               children: [
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () {
-                      // Handle rejection logic
                       context.read<RentalProvider>().updateRentalStatus(rental.id, 'REJECTED');
                       Navigator.pop(context);
                     },
-                    style: OutlinedButton.styleFrom(foregroundColor: Colors.red),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.error,
+                      side: const BorderSide(color: AppColors.error),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
                     child: const Text('Reject'),
                   ),
                 ),
@@ -50,11 +82,15 @@ class NgoRentalRequestDetailScreen extends StatelessWidget {
                 Expanded(
                   child: FilledButton(
                     onPressed: () {
-                      // Handle approval logic
                       context.read<RentalProvider>().updateRentalStatus(rental.id, 'APPROVED');
                       Navigator.pop(context);
                     },
-                    style: FilledButton.styleFrom(backgroundColor: Colors.green),
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.success,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
                     child: const Text('Approve'),
                   ),
                 ),
@@ -74,8 +110,16 @@ class NgoRentalRequestDetailScreen extends StatelessWidget {
                     );
                   },
                   icon: const Icon(Icons.delivery_dining),
-                  label: const Text('Assign Delivery Partner'),
-                  style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
+                  label: const FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text('Assign Delivery Partner'),
+                  ),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                 ),
               ),
             ]

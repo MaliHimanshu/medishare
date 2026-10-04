@@ -317,21 +317,22 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
             // Financial & Rental Details Card
             Card(
               elevation: 0,
-              color: AppColors.surface,
+              color: context.cardBg,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: Colors.grey.shade200),
+                side: BorderSide(color: context.borderColor),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       "Rental Financial Summary",
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 15,
+                        color: context.textPrimaryColor,
                       ),
                     ),
                     const SizedBox(height: 14),
@@ -349,12 +350,12 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
                       "Security Deposit (Refundable)",
                       "₹${_currentRental.securityDeposit.toStringAsFixed(0)}",
                     ),
-                    const Divider(height: 20),
+                    Divider(height: 20, color: context.borderColor),
                     _buildRow(
                       "Total Amount",
                       "₹${_currentRental.totalAmount.toStringAsFixed(0)}",
                       isBold: true,
-                      color: Colors.orange.shade800,
+                      color: AppColors.primary,
                     ),
                     const SizedBox(height: 8),
                     _buildRow(
@@ -365,7 +366,7 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
                           ? Colors.green
                           : _currentRental.paymentStatus.toUpperCase() ==
                                 'FAILED'
-                          ? Colors.red
+                          ? AppColors.error
                           : Colors.orange,
                     ),
                     if (_currentRental.razorpayOrderId != null &&
@@ -396,19 +397,22 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
                 height: 50,
                 child: ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF0C2340),
+                    backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
                     elevation: 2,
                   ),
-                  icon: const Icon(Icons.bolt, color: Colors.blueAccent),
-                  label: Text(
-                    "Pay ₹${_currentRental.totalAmount.toStringAsFixed(0)} via Razorpay",
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
+                  icon: const Icon(Icons.bolt, color: Colors.white),
+                  label: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      "Pay ₹${_currentRental.totalAmount.toStringAsFixed(0)} via Razorpay",
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
                     ),
                   ),
                   onPressed: () async {
@@ -445,30 +449,44 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
             // Dates & Renter Information Card
             Card(
               elevation: 0,
-              color: AppColors.surface,
+              color: context.cardBg,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: Colors.grey.shade200),
+                side: BorderSide(color: context.borderColor),
               ),
               child: Column(
                 children: [
                   ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: Colors.blue.shade50,
-                      child: const Icon(Icons.person, color: Colors.blue),
+                      backgroundColor: AppColors.primary.withAlpha(25),
+                      child: const Icon(Icons.person, color: AppColors.primary),
                     ),
-                    title: const Text('Renter'),
-                    subtitle: Text(_currentRental.renterName),
+                    title: Text(
+                      'Renter',
+                      style: TextStyle(color: context.textPrimaryColor),
+                    ),
+                    subtitle: Text(
+                      _currentRental.renterName,
+                      style: TextStyle(color: context.textSecondaryColor),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                  const Divider(height: 1),
+                  Divider(height: 1, color: context.borderColor),
                   ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: Colors.orange.shade50,
+                      backgroundColor: Colors.orange.withAlpha(25),
                       child: const Icon(Icons.date_range, color: Colors.orange),
                     ),
-                    title: const Text('Rental Period'),
+                    title: Text(
+                      'Rental Period',
+                      style: TextStyle(color: context.textPrimaryColor),
+                    ),
                     subtitle: Text(
                       '${_currentRental.startDate.split('T').first}  →  ${_currentRental.endDate.split('T').first}',
+                      style: TextStyle(color: context.textSecondaryColor),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
@@ -477,33 +495,33 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
 
             const SizedBox(height: 16),
 
-            // Pickup Location Card (dummy example)
+            // Pickup Location Card
             Card(
               elevation: 0,
-              color: AppColors.surface,
+              color: context.cardBg,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: Colors.grey.shade200),
+                side: BorderSide(color: context.borderColor),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Row(
+                    Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.location_on_rounded,
-                          color: Colors.redAccent,
+                          color: AppColors.error,
                           size: 20,
                         ),
-                        SizedBox(width: 8),
+                        const SizedBox(width: 8),
                         Text(
                           'Pickup Location',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 15,
-                            color: AppColors.textPrimary,
+                            color: context.textPrimaryColor,
                           ),
                         ),
                       ],
@@ -513,9 +531,9 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
-                        color: Colors.red.shade50,
+                        color: AppColors.error.withAlpha(15),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.red.shade100),
+                        border: Border.all(color: AppColors.error.withAlpha(40)),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -526,28 +544,32 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
                               const Icon(
                                 Icons.home_work_outlined,
                                 size: 18,
-                                color: Colors.redAccent,
+                                color: AppColors.error,
                               ),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: const [
+                                  children: [
                                     Text(
                                       '12, MG Road, Indiranagar',
                                       style: TextStyle(
                                         fontWeight: FontWeight.w600,
                                         fontSize: 14,
-                                        color: AppColors.textPrimary,
+                                        color: context.textPrimaryColor,
                                       ),
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                    SizedBox(height: 2),
+                                    const SizedBox(height: 2),
                                     Text(
                                       'Bengaluru, Karnataka — 560 038',
                                       style: TextStyle(
                                         fontSize: 12,
-                                        color: AppColors.textSecondary,
+                                        color: context.textSecondaryColor,
                                       ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ],
                                 ),
@@ -557,20 +579,24 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
                           const SizedBox(height: 10),
                           Row(
                             children: [
-                              const Icon(
+                              Icon(
                                 Icons.access_time_rounded,
                                 size: 14,
-                                color: AppColors.textSecondary,
+                                color: context.textSecondaryColor,
                               ),
                               const SizedBox(width: 4),
-                              const Text(
-                                'Available: 9:00 AM – 6:00 PM',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: AppColors.textSecondary,
+                              Expanded(
+                                child: Text(
+                                  'Available: 9:00 AM – 6:00 PM',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: context.textSecondaryColor,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              const Spacer(),
+                              const SizedBox(width: 8),
                               GestureDetector(
                                 onTap: () {
                                   ScaffoldMessenger.of(context).showSnackBar(
@@ -584,14 +610,14 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
                                     Icon(
                                       Icons.map_rounded,
                                       size: 14,
-                                      color: Colors.redAccent,
+                                      color: AppColors.error,
                                     ),
                                     SizedBox(width: 4),
                                     Text(
                                       'View on Map',
                                       style: TextStyle(
                                         fontSize: 12,
-                                        color: Colors.redAccent,
+                                        color: AppColors.error,
                                         fontWeight: FontWeight.w600,
                                       ),
                                     ),
@@ -647,7 +673,10 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
                   child: OutlinedButton.icon(
                     onPressed: _showStatusDialog,
                     icon: const Icon(Icons.sync_alt),
-                    label: const Text('Update Status'),
+                    label: const FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text('Update Status'),
+                    ),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
@@ -661,9 +690,12 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
                   child: FilledButton.icon(
                     onPressed: _confirmDelete,
                     icon: const Icon(Icons.delete_outline),
-                    label: const Text('Delete'),
+                    label: const FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text('Delete'),
+                    ),
                     style: FilledButton.styleFrom(
-                      backgroundColor: Colors.red,
+                      backgroundColor: AppColors.error,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -688,20 +720,29 @@ class _RentalDetailScreenState extends State<RentalDetailScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: isBold ? 14 : 13,
-            fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-            color: Theme.of(context).colorScheme.onSurface,
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: isBold ? 14 : 13,
+              fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
+              color: context.textPrimaryColor,
+            ),
           ),
         ),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: isBold ? 16 : 13,
-            fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
-            color: color ?? Colors.black87,
+        const SizedBox(width: 8),
+        Flexible(
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerRight,
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: isBold ? 16 : 13,
+                fontWeight: isBold ? FontWeight.bold : FontWeight.w600,
+                color: color ?? context.textPrimaryColor,
+              ),
+            ),
           ),
         ),
       ],

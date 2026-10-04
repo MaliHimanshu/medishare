@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../models/equipment_model.dart';
+import '../../models/rental_model.dart';
 import '../../shared/widgets/ms_image.dart';
 import 'book_rental_dialog.dart';
+import 'razorpay_checkout_sheet.dart';
 
 class EquipmentRentalDetailScreen extends StatelessWidget {
   final EquipmentModel equipment;
@@ -16,7 +18,12 @@ class EquipmentRentalDetailScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Rental Details'),
         backgroundColor: context.surfaceBg,
-        foregroundColor: AppColors.textPrimary,
+    return Scaffold(
+      backgroundColor: context.scaffoldBg,
+      appBar: AppBar(
+        title: const Text('Rental Details'),
+        backgroundColor: context.surfaceBg,
+        foregroundColor: context.textPrimaryColor,
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -36,11 +43,13 @@ class EquipmentRentalDetailScreen extends StatelessWidget {
                 children: [
                   Text(
                     equipment.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+                      color: context.textPrimaryColor,
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 8),
                   Row(
@@ -50,13 +59,13 @@ class EquipmentRentalDetailScreen extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: (equipment.rentalAvailable) 
                               ? Colors.green.withAlpha(30)
-                              : Colors.red.withAlpha(30),
+                              : AppColors.error.withAlpha(30),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
                           equipment.rentalAvailable ? 'Available' : 'Unavailable',
                           style: TextStyle(
-                            color: equipment.rentalAvailable ? Colors.green : Colors.red,
+                            color: equipment.rentalAvailable ? Colors.green : AppColors.error,
                             fontWeight: FontWeight.bold,
                             fontSize: 12,
                           ),
@@ -66,13 +75,13 @@ class EquipmentRentalDetailScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.blue.withAlpha(30),
+                          color: AppColors.primary.withAlpha(30),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
                           equipment.condition,
                           style: const TextStyle(
-                            color: Colors.blue,
+                            color: AppColors.primary,
                             fontWeight: FontWeight.bold,
                             fontSize: 12,
                           ),
@@ -81,44 +90,49 @@ class EquipmentRentalDetailScreen extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  const Text(
+                  Text(
                     'Rental Terms',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+                      color: context.textPrimaryColor,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     equipment.rentalTerms ?? 'Standard terms apply. You are responsible for the equipment during the rental period.',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
-                      color: AppColors.textSecondary,
+                      color: context.textSecondaryColor,
                     ),
                   ),
                   const SizedBox(height: 20),
-                  const Text(
+                  Text(
                     'Owner / NGO',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
+                      color: context.textPrimaryColor,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
                       CircleAvatar(
-                        backgroundColor: Colors.grey.shade200,
-                        child: const Icon(Icons.business),
+                        backgroundColor: AppColors.primary.withAlpha(25),
+                        child: const Icon(Icons.business, color: AppColors.primary),
                       ),
                       const SizedBox(width: 12),
-                      Text(
-                        equipment.donor,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
+                      Expanded(
+                        child: Text(
+                          equipment.donor,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: context.textPrimaryColor,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
@@ -133,14 +147,8 @@ class EquipmentRentalDetailScreen extends StatelessWidget {
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: AppColors.surface,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(10),
-              blurRadius: 10,
-              offset: const Offset(0, -5),
-            ),
-          ],
+          color: context.surfaceBg,
+          border: Border(top: BorderSide(color: context.borderColor)),
         ),
         child: FilledButton(
           style: FilledButton.styleFrom(
@@ -151,13 +159,21 @@ class EquipmentRentalDetailScreen extends StatelessWidget {
             ),
           ),
           onPressed: equipment.rentalAvailable
-              ? () {
-                  showModalBottomSheet(
+              ? () async {
+                  final createdRental = await showModalBottomSheet<RentalModel>(
                     context: context,
                     isScrollControlled: true,
                     backgroundColor: Colors.transparent,
-                    builder: (context) => BookRentalDialog(equipment: equipment),
+                    builder: (ctx) => BookRentalDialog(equipment: equipment),
                   );
+                  if (createdRental != null && context.mounted) {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      builder: (_) => RazorpayCheckoutSheet(rental: createdRental),
+                    );
+                  }
                 }
               : null,
           child: const Text(
