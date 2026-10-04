@@ -23,6 +23,11 @@ const rentalSchema = z.object({
     .refine((val) => !isNaN(Date.parse(val)), {
       message: "Invalid end date format.",
     }),
+
+  rentalPricePerDay: z.number().optional(),
+  securityDeposit: z.number().optional(),
+  totalAmount: z.number().optional(),
+  agreementAccepted: z.boolean().optional(),
 });
 
 // Update Rental Status

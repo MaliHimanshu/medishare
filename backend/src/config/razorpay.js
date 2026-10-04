@@ -8,8 +8,15 @@ const getRazorpayInstance = () => {
   const key_id = process.env.RAZORPAY_KEY_ID;
   const key_secret = process.env.RAZORPAY_KEY_SECRET;
 
+  console.log("Razorpay configured:", {
+    keyIdPresent: !!key_id,
+    keySecretPresent: !!key_secret,
+  });
+
   if (!key_id || !key_secret) {
-    throw new Error("Razorpay Key ID and Key Secret must be set in environment variables.");
+    throw new Error(
+      "Razorpay Key ID (RAZORPAY_KEY_ID) and Key Secret (RAZORPAY_KEY_SECRET) are missing in environment variables."
+    );
   }
 
   return new Razorpay({
