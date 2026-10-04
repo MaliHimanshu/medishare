@@ -29,45 +29,26 @@ class AuthService {
       );
       debugPrint('[AuthService] signInWithEmailAndPassword succeeded for uid: ${credential.user?.uid}');
 
-      UserModel user;
+      final token = await credential.user!.getIdToken();
+      if (token != null) {
+        await _storage.write(key: _tokenKey, value: token);
+      }
+
+      UserModel? user;
       try {
-        // Try Firestore with a generous timeout (Render cold starts can take 5-7s)
-        DocumentSnapshot<Map<String, dynamic>>? doc;
-        try {
-          doc = await FirebaseFirestore.instance
-              .collection('users')
-              .doc(credential.user!.uid)
-              .get()
-              .timeout(const Duration(seconds: 10));
-        } catch (timeoutErr) {
-          debugPrint('[AuthService][ROLE SYNC] First Firestore read timed out, retrying without timeout: $timeoutErr');
-          // Retry once without timeout — role MUST be correct
-          doc = await FirebaseFirestore.instance
-              .collection('users')
-              .doc(credential.user!.uid)
-              .get();
+        final response = await _dio.get(ApiEndpoints.me);
+        if (response.data != null && response.data['success'] == true) {
+          user = UserModel.fromJson(response.data['data'] as Map<String, dynamic>);
+          debugPrint('[ROLE SYNC] login() backend PostgreSQL role: ${user.role} for email: ${user.email}');
         }
-            
-        if (doc.exists) {
-          final data = doc.data()!;
-          data['id'] = credential.user!.uid;
-          user = UserModel.fromJson(data);
-          debugPrint('[ROLE SYNC] login() Firestore role: ${user.role} for uid: ${credential.user!.uid}');
-        } else {
-          // Document truly doesn't exist — create a minimal placeholder.
-          // Do NOT default to DONOR; role will be resolved on next fetchProfile().
-          debugPrint('[ROLE SYNC] login() Firestore doc missing for uid: ${credential.user!.uid}');
-          user = UserModel(
-            id: credential.user!.uid,
-            name: credential.user!.displayName ?? 'User',
-            email: email.trim(),
-            role: 'UNKNOWN',
-            createdAt: DateTime.now(),
-          );
-        }
-      } catch (e) {
-        debugPrint('[AuthService][ROLE SYNC] Profile fetch failed after retry: $e');
-        // Still do NOT default to DONOR — use UNKNOWN so the UI knows to resolve
+      } catch (backendErr) {
+        debugPrint('[AuthService] login() backend fetch failed: $backendErr');
+      }
+
+      // If backend API call was unreachable, fallback to cached user
+      user ??= await getCachedUser();
+
+      if (user == null && credential.user != null) {
         user = UserModel(
           id: credential.user!.uid,
           name: credential.user!.displayName ?? 'User',
@@ -77,12 +58,15 @@ class AuthService {
         );
       }
 
-      await _storage.write(key: _userKey, value: jsonEncode(user.toJson()));
+      if (user != null) {
+        await _storage.write(key: _userKey, value: jsonEncode(user.toJson()));
+      }
+
       return AuthResponseModel(
         success: true,
         message: 'Logged in successfully',
-        user: user,
-        token: '',
+        user: user!,
+        token: token ?? '',
       );
     } on FirebaseAuthException catch (e) {
       debugPrint('[AuthService] FirebaseAuthException: code=${e.code}, message=${e.message}');
@@ -213,39 +197,22 @@ class AuthService {
   Future<UserModel?> getMe() async {
     try {
       final fUser = FirebaseAuth.instance.currentUser;
-      if (fUser == null) return null;
+      if (fUser == null) return await getCachedUser();
 
-      // Try with generous timeout; retry without timeout if it fails
-      DocumentSnapshot<Map<String, dynamic>>? doc;
-      try {
-        doc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(fUser.uid)
-            .get()
-            .timeout(const Duration(seconds: 10));
-      } catch (timeoutErr) {
-        debugPrint('[AuthService][ROLE SYNC] getMe() timed out, retrying: $timeoutErr');
-        doc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(fUser.uid)
-            .get();
-      }
-
-      if (doc.exists) {
-        final data = doc.data()!;
-        data['id'] = fUser.uid;
-        final user = UserModel.fromJson(data);
-        debugPrint('[ROLE SYNC] getMe() Firestore role: ${user.role} uid: ${fUser.uid}');
-        // Always update cache with the fresh Firestore role
+      final response = await _dio.get(ApiEndpoints.me);
+      if (response.data != null && response.data['success'] == true) {
+        final userData = response.data['data'] as Map<String, dynamic>;
+        final user = UserModel.fromJson(userData);
+        debugPrint('[ROLE SYNC] getMe() backend PostgreSQL role: ${user.role} for email: ${user.email}');
         await _storage.write(key: _userKey, value: jsonEncode(user.toJson()));
         return user;
       }
-      debugPrint('[ROLE SYNC] getMe() Firestore doc missing for uid: ${fUser.uid}');
-      return null;
+    } on DioException catch (e) {
+      debugPrint('[AuthService] getMe() Dio error: $e');
     } catch (e) {
-      debugPrint('[ROLE SYNC] getMe() Firestore read failed: $e — falling back to cache');
-      return await getCachedUser();
+      debugPrint('[AuthService] getMe() error: $e');
     }
+    return await getCachedUser();
   }
 
   // ── Storage Helpers ───────────────────────────────────
