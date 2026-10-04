@@ -568,7 +568,7 @@ const verifyRazorpayPayment = async (rentalId, userId, paymentData) => {
     throw new Error("You are not authorized to verify this payment.");
   }
 
-  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+  let keySecret = process.env.RAZORPAY_KEY_SECRET ? process.env.RAZORPAY_KEY_SECRET.trim().replace(/^["']|["']$/g, "") : "";
   
   if (!keySecret) {
     throw new Error("Razorpay secret not configured on the server.");
