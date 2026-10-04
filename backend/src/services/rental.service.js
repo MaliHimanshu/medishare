@@ -467,11 +467,11 @@ const createRazorpayOrder = async (rentalId, userId) => {
     throw new Error(`Calculated amount in paise is invalid: ${amountInPaise}`);
   }
 
-  const keyId = process.env.RAZORPAY_KEY_ID;
-  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+  let keyId = process.env.RAZORPAY_KEY_ID ? process.env.RAZORPAY_KEY_ID.trim().replace(/^["']|["']$/g, "") : "";
+  let keySecret = process.env.RAZORPAY_KEY_SECRET ? process.env.RAZORPAY_KEY_SECRET.trim().replace(/^["']|["']$/g, "") : "";
 
   if (!keyId || !keySecret) {
-    throw new Error("Razorpay credentials (RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET) are missing in server environment variables.");
+    throw new Error("Razorpay credentials (RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET) are missing or empty in server environment variables.");
   }
 
   let order;
@@ -479,6 +479,7 @@ const createRazorpayOrder = async (rentalId, userId) => {
     rentalId,
     amount: amountInPaise,
     currency: "INR",
+    keyPrefix: keyId ? keyId.substring(0, 9) : "none",
   });
 
   try {
@@ -498,22 +499,25 @@ const createRazorpayOrder = async (rentalId, userId) => {
     console.log("Razorpay order created successfully:", order.id);
   } catch (error) {
     console.error("RAZORPAY CREATE ORDER ERROR", {
-      message: error?.message,
       statusCode: error?.statusCode,
-      error: error?.error,
+      code: error?.error?.code,
+      description: error?.error?.description,
+      message: error?.message,
     });
     const detailMsg = extractRazorpayErrorMessage(error);
 
-    // In development mode, if key is test/dummy (e.g. 1234567890) or Razorpay returns 401 Unauthorized,
-    // fallback to a mock order ID so local development/testing of payment flow can proceed smoothly.
-    if (process.env.NODE_ENV === "development" && (keyId.includes("12345") || keyId.includes("test") || error?.statusCode === 401)) {
-      console.warn("Using fallback mock Razorpay order for development testing.");
+    // Only allow mock dev fallback if strictly in non-production development mode AND dummy keys are used
+    if (process.env.NODE_ENV === "development" && (keyId.includes("12345") || keyId.includes("dummy"))) {
+      console.warn("Using fallback mock Razorpay order for local dev environment only.");
       order = {
         id: `order_dev_${Date.now()}_${rental.id.replace(/[^a-zA-Z0-9]/g, "").slice(-6)}`,
         amount: amountInPaise,
         currency: "INR",
       };
     } else {
+      if (error?.statusCode === 401 || (error?.error?.description && error.error.description.includes("Authentication failed"))) {
+        throw new Error("Razorpay API authentication failed. Please verify that RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET environment variables on your production server (Render) contain valid matching Razorpay credentials.");
+      }
       throw new Error(`Failed to create Razorpay order: ${detailMsg}`);
     }
   }
