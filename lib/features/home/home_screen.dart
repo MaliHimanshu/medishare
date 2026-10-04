@@ -43,9 +43,9 @@ import '../auth/login_screen.dart';
 import '../auth/otp_verification_screen.dart';
 import '../rental/my_rentals_screen.dart';
 import '../../core/theme/app_page_transitions.dart';
-import '../../providers/emergency_alert_provider.dart';
 import '../emergency_alerts/hospital_emergency_alerts_screen.dart';
 import '../emergency_alerts/ngo_emergency_alerts_screen.dart';
+import '../delivery/delivery_partner_dashboard_screen.dart';
 
 // Role Dashboards
 import 'dashboards/donor_dashboard.dart';
@@ -519,12 +519,22 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
+  void _showNotImplementedSnackBar(BuildContext context, String moduleName) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$moduleName module is under administrative review.'),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   Widget _buildDrawer(
     BuildContext context,
     UserModel? user,
     AuthProvider auth,
   ) {
-    final role = user?.role.toUpperCase() ?? 'UNKNOWN';
+    final role = user?.role.trim().toUpperCase() ?? 'UNKNOWN';
 
     return Drawer(
       backgroundColor: context.surfaceBg,
@@ -643,20 +653,51 @@ class _HomeScreenState extends State<HomeScreen>
             child: ListView(
               padding: const EdgeInsets.only(top: 8, bottom: 24),
               children: [
-                _buildDrawerSectionHeader(context, "Main"),
-                _buildDrawerItem(
-                  context,
-                  icon: Icons.dashboard_outlined,
-                  title: "Home",
-                  onTap: () => Navigator.pop(context),
-                ),
+                if (role == 'ADMIN') ...[
+                  // ── ADMIN DRAWER MENU ──
+                  _buildDrawerSectionHeader(context, "Main"),
+                  _buildDrawerItem(
+                    context,
+                    icon: Icons.dashboard_outlined,
+                    title: "Dashboard",
+                    onTap: () => Navigator.pop(context),
+                  ),
 
-                _buildDrawerSectionHeader(context, "Services"),
-                if (role == 'NGO' || role == 'RECIPIENT' || role == 'ADMIN')
+                  _buildDrawerSectionHeader(context, "Management"),
+                  _buildDrawerItem(
+                    context,
+                    icon: Icons.manage_accounts_outlined,
+                    title: "User Management",
+                    onTap: () {
+                      Navigator.pop(context);
+                      _showNotImplementedSnackBar(context, 'User Management');
+                    },
+                  ),
+                  _buildDrawerItem(
+                    context,
+                    icon: Icons.local_hospital_outlined,
+                    title: "Hospital Management",
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        AppPageTransitions.slideRight(const HospitalScreen()),
+                      );
+                    },
+                  ),
+                  _buildDrawerItem(
+                    context,
+                    icon: Icons.foundation_outlined,
+                    title: "NGO Management",
+                    onTap: () {
+                      Navigator.pop(context);
+                      _showNotImplementedSnackBar(context, 'NGO Management');
+                    },
+                  ),
                   _buildDrawerItem(
                     context,
                     icon: Icons.medical_services_outlined,
-                    title: "Explore Equipment",
+                    title: "Equipment Management",
                     onTap: () {
                       Navigator.pop(context);
                       Navigator.push(
@@ -667,62 +708,10 @@ class _HomeScreenState extends State<HomeScreen>
                       );
                     },
                   ),
-                if (role == 'DONOR' || role == 'HOSPITAL' || role == 'ADMIN')
-                  _buildDrawerItem(
-                    context,
-                    icon: Icons.inventory_2_outlined,
-                    title: role == 'HOSPITAL'
-                        ? "Hospital Equipment"
-                        : "My Equipment",
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        AppPageTransitions.slideRight(
-                          const MyEquipmentScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                if (role == 'DONOR' || role == 'HOSPITAL' || role == 'ADMIN')
-                  _buildDrawerItem(
-                    context,
-                    icon: Icons.add_box_outlined,
-                    title: "Add Equipment",
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        AppPageTransitions.slideUp(const AddEquipmentScreen()),
-                      );
-                    },
-                  ),
-                if (role == 'DONOR' ||
-                    role == 'NGO' ||
-                    role == 'HOSPITAL' ||
-                    role == 'ADMIN')
-                  _buildDrawerItem(
-                    context,
-                    icon: Icons.favorite_border_outlined,
-                    title: role == 'NGO' ? "Donations Network" : "My Donations",
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(
-                        context,
-                        AppPageTransitions.slideRight(
-                          const MyDonationsScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                if (role == 'NGO' ||
-                    role == 'HOSPITAL' ||
-                    role == 'RECIPIENT' ||
-                    role == 'ADMIN')
                   _buildDrawerItem(
                     context,
                     icon: Icons.assignment_outlined,
-                    title: role == 'NGO' ? "Equipment Requests" : "My Requests",
+                    title: "Request Management",
                     onTap: () {
                       Navigator.pop(context);
                       Navigator.push(
@@ -731,14 +720,10 @@ class _HomeScreenState extends State<HomeScreen>
                       );
                     },
                   ),
-                if (role == 'DONOR' ||
-                    role == 'RECIPIENT' ||
-                    role == 'HOSPITAL' ||
-                    role == 'ADMIN')
                   _buildDrawerItem(
                     context,
                     icon: Icons.handshake_outlined,
-                    title: role == 'DONOR' ? "Rental Requests" : "My Rentals",
+                    title: "Rental Management",
                     onTap: () {
                       Navigator.pop(context);
                       Navigator.push(
@@ -747,109 +732,339 @@ class _HomeScreenState extends State<HomeScreen>
                       );
                     },
                   ),
-                _buildDrawerItem(
-                  context,
-                  icon: Icons.location_on_outlined,
-                  title: "Nearby Equipment",
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      AppPageTransitions.slideRight(
-                        const NearbyEquipmentScreen(),
-                      ),
-                    );
-                  },
-                ),
-                _buildDrawerItem(
-                  context,
-                  icon: Icons.local_hospital_outlined,
-                  title: "Nearby Hospitals",
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      AppPageTransitions.slideRight(const HospitalScreen()),
-                    );
-                  },
-                ),
+                  _buildDrawerItem(
+                    context,
+                    icon: Icons.local_shipping_outlined,
+                    title: "Delivery Management",
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        AppPageTransitions.slideRight(
+                          const DeliveryPartnerDashboardScreen(),
+                        ),
+                      );
+                    },
+                  ),
 
-                if (role == 'HOSPITAL' || role == 'NGO' || role == 'ADMIN') ...[
-                  _buildDrawerSectionHeader(context, "Alerts"),
+                  _buildDrawerSectionHeader(context, "Monitoring"),
+                  _buildDrawerItem(
+                    context,
+                    icon: Icons.location_on_outlined,
+                    title: "Live Tracking",
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        AppPageTransitions.slideRight(
+                          const MyRentalsScreen(),
+                        ),
+                      );
+                    },
+                  ),
                   _buildDrawerItem(
                     context,
                     icon: Icons.crisis_alert_rounded,
-                    title: role == 'HOSPITAL'
-                        ? "Emergency Alerts"
-                        : "Emergency Shortages",
+                    title: "Emergency Alerts",
                     iconColor: const Color(0xFFDC2626),
                     textColor: const Color(0xFFDC2626),
                     onTap: () {
                       Navigator.pop(context);
-                      if (role == 'HOSPITAL' || role == 'ADMIN') {
+                      Navigator.push(
+                        context,
+                        AppPageTransitions.slideRight(
+                          const HospitalEmergencyAlertsScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildDrawerItem(
+                    context,
+                    icon: Icons.notifications_outlined,
+                    title: "Notifications",
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        AppPageTransitions.slideRight(
+                          const NotificationScreen(),
+                        ),
+                      );
+                    },
+                  ),
+
+                  _buildDrawerSectionHeader(context, "Analytics"),
+                  _buildDrawerItem(
+                    context,
+                    icon: Icons.bar_chart_outlined,
+                    title: "Reports & Analytics",
+                    onTap: () {
+                      Navigator.pop(context);
+                      _showNotImplementedSnackBar(
+                        context,
+                        'Reports & Analytics',
+                      );
+                    },
+                  ),
+                  _buildDrawerItem(
+                    context,
+                    icon: Icons.payments_outlined,
+                    title: "Payments & Transactions",
+                    onTap: () {
+                      Navigator.pop(context);
+                      _showNotImplementedSnackBar(
+                        context,
+                        'Payments & Transactions',
+                      );
+                    },
+                  ),
+
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 8,
+                    ),
+                    child: Divider(color: context.borderColor),
+                  ),
+
+                  _buildDrawerSectionHeader(context, "Account"),
+                  _buildDrawerItem(
+                    context,
+                    icon: Icons.person_outline,
+                    title: "Profile",
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        AppPageTransitions.slideRight(const ProfileScreen()),
+                      );
+                    },
+                  ),
+                  _buildDrawerItem(
+                    context,
+                    icon: Icons.settings_outlined,
+                    title: "Settings",
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        AppPageTransitions.slideRight(const SettingsScreen()),
+                      );
+                    },
+                  ),
+                  _buildDrawerItem(
+                    context,
+                    icon: Icons.logout_outlined,
+                    title: "Logout",
+                    iconColor: AppColors.error,
+                    textColor: AppColors.error,
+                    onTap: () async {
+                      debugPrint('[LOGOUT] Logout button pressed in Drawer');
+                      Navigator.pop(context);
+                      await LogoutHelper.performLogout(context);
+                    },
+                  ),
+                ] else ...[
+                  // ── GENERAL DRAWER MENU (DONOR, NGO, HOSPITAL, RECIPIENT) ──
+                  _buildDrawerSectionHeader(context, "Main"),
+                  _buildDrawerItem(
+                    context,
+                    icon: Icons.dashboard_outlined,
+                    title: "Home",
+                    onTap: () => Navigator.pop(context),
+                  ),
+
+                  _buildDrawerSectionHeader(context, "Services"),
+                  if (role == 'NGO' || role == 'RECIPIENT')
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.medical_services_outlined,
+                      title: "Explore Equipment",
+                      onTap: () {
+                        Navigator.pop(context);
                         Navigator.push(
                           context,
                           AppPageTransitions.slideRight(
-                            const HospitalEmergencyAlertsScreen(),
+                            const EquipmentListScreen(),
                           ),
                         );
-                      } else {
+                      },
+                    ),
+                  if (role == 'DONOR' || role == 'HOSPITAL')
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.inventory_2_outlined,
+                      title: role == 'HOSPITAL'
+                          ? "Hospital Equipment"
+                          : "My Equipment",
+                      onTap: () {
+                        Navigator.pop(context);
                         Navigator.push(
                           context,
                           AppPageTransitions.slideRight(
-                            const NgoEmergencyAlertsScreen(),
+                            const MyEquipmentScreen(),
                           ),
                         );
-                      }
+                      },
+                    ),
+                  if (role == 'DONOR' || role == 'HOSPITAL')
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.add_box_outlined,
+                      title: "Add Equipment",
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          AppPageTransitions.slideUp(const AddEquipmentScreen()),
+                        );
+                      },
+                    ),
+                  if (role == 'DONOR' || role == 'NGO' || role == 'HOSPITAL')
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.favorite_border_outlined,
+                      title: role == 'NGO' ? "Donations Network" : "My Donations",
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          AppPageTransitions.slideRight(
+                            const MyDonationsScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  if (role == 'NGO' || role == 'HOSPITAL' || role == 'RECIPIENT')
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.assignment_outlined,
+                      title: role == 'NGO' ? "Equipment Requests" : "My Requests",
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          AppPageTransitions.slideRight(const RequestScreen()),
+                        );
+                      },
+                    ),
+                  if (role == 'DONOR' || role == 'RECIPIENT' || role == 'HOSPITAL')
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.handshake_outlined,
+                      title: role == 'DONOR' ? "Rental Requests" : "My Rentals",
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          AppPageTransitions.slideRight(const MyRentalsScreen()),
+                        );
+                      },
+                    ),
+                  _buildDrawerItem(
+                    context,
+                    icon: Icons.location_on_outlined,
+                    title: "Nearby Equipment",
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        AppPageTransitions.slideRight(
+                          const NearbyEquipmentScreen(),
+                        ),
+                      );
+                    },
+                  ),
+                  _buildDrawerItem(
+                    context,
+                    icon: Icons.local_hospital_outlined,
+                    title: "Nearby Hospitals",
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        AppPageTransitions.slideRight(const HospitalScreen()),
+                      );
+                    },
+                  ),
+
+                  if (role == 'HOSPITAL' || role == 'NGO') ...[
+                    _buildDrawerSectionHeader(context, "Alerts"),
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.crisis_alert_rounded,
+                      title: role == 'HOSPITAL'
+                          ? "Emergency Alerts"
+                          : "Emergency Shortages",
+                      iconColor: const Color(0xFFDC2626),
+                      textColor: const Color(0xFFDC2626),
+                      onTap: () {
+                        Navigator.pop(context);
+                        if (role == 'HOSPITAL') {
+                          Navigator.push(
+                            context,
+                            AppPageTransitions.slideRight(
+                              const HospitalEmergencyAlertsScreen(),
+                            ),
+                          );
+                        } else {
+                          Navigator.push(
+                            context,
+                            AppPageTransitions.slideRight(
+                              const NgoEmergencyAlertsScreen(),
+                            ),
+                          );
+                        }
+                      },
+                    ),
+                  ],
+
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 8,
+                    ),
+                    child: Divider(color: context.borderColor),
+                  ),
+
+                  _buildDrawerSectionHeader(context, "Account"),
+                  _buildDrawerItem(
+                    context,
+                    icon: Icons.person_outline,
+                    title: "Profile",
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        AppPageTransitions.slideRight(const ProfileScreen()),
+                      );
+                    },
+                  ),
+                  _buildDrawerItem(
+                    context,
+                    icon: Icons.settings_outlined,
+                    title: "Settings",
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        AppPageTransitions.slideRight(const SettingsScreen()),
+                      );
+                    },
+                  ),
+                  _buildDrawerItem(
+                    context,
+                    icon: Icons.logout_outlined,
+                    title: "Logout",
+                    iconColor: AppColors.error,
+                    textColor: AppColors.error,
+                    onTap: () async {
+                      debugPrint('[LOGOUT] Logout button pressed in Drawer');
+                      Navigator.pop(context);
+                      await LogoutHelper.performLogout(context);
                     },
                   ),
                 ],
-
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 8,
-                  ),
-                  child: Divider(color: context.borderColor),
-                ),
-
-                _buildDrawerSectionHeader(context, "Account"),
-                _buildDrawerItem(
-                  context,
-                  icon: Icons.person_outline,
-                  title: "Profile",
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      AppPageTransitions.slideRight(const ProfileScreen()),
-                    );
-                  },
-                ),
-                _buildDrawerItem(
-                  context,
-                  icon: Icons.settings_outlined,
-                  title: "Settings",
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      AppPageTransitions.slideRight(const SettingsScreen()),
-                    );
-                  },
-                ),
-                _buildDrawerItem(
-                  context,
-                  icon: Icons.logout_outlined,
-                  title: "Logout",
-                  iconColor: AppColors.error,
-                  textColor: AppColors.error,
-                  onTap: () async {
-                    debugPrint('[LOGOUT] Logout button pressed in Drawer');
-                    Navigator.pop(context);
-                    await LogoutHelper.performLogout(context);
-                  },
-                ),
               ],
             ),
           ),
