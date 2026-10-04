@@ -262,6 +262,7 @@ enum UserRole {
   NGO
   HOSPITAL
   RECIPIENT
+  DELIVERY_PARTNER
 }
 
 enum EquipmentCondition {
