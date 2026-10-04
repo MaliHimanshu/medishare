@@ -4,7 +4,6 @@ import '../../core/constants/app_colors.dart';
 import '../../models/rental_model.dart';
 import '../../models/delivery_model.dart';
 import '../../services/delivery_service.dart';
-import '../../services/rental_service.dart';
 
 class AssignDeliveryPartnerScreen extends StatelessWidget {
   final RentalModel rental;

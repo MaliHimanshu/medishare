@@ -4,22 +4,43 @@ import '../../core/constants/app_colors.dart';
 import '../delivery/assign_delivery_partner_screen.dart';
 import 'equipment_inspection_screen.dart';
 import '../../models/rental_model.dart';
-import '../../services/rental_service.dart';
-import '../../providers/auth_provider.dart';
+import '../../providers/rental_provider.dart';
 
-class NgoRentalManagementScreen extends StatelessWidget {
+class NgoRentalManagementScreen extends StatefulWidget {
   const NgoRentalManagementScreen({super.key});
 
   @override
+  State<NgoRentalManagementScreen> createState() => _NgoRentalManagementScreenState();
+}
+
+class _NgoRentalManagementScreenState extends State<NgoRentalManagementScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<RentalProvider>().fetchRentals();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final ngoId = Provider.of<AuthProvider>(context, listen: false).user?.id ?? '';
-    final rentalService = RentalService();
+    final rentalProvider = context.watch<RentalProvider>();
+    final rentals = rentalProvider.rentals;
+
+    final requests = rentals.where((r) => r.status == RentalStatus.REQUESTED).toList();
+    final active = rentals.where((r) => r.status == RentalStatus.ACTIVE || r.status == RentalStatus.APPROVED).toList();
+    final returns = rentals.where((r) => r.status == RentalStatus.RETURN_REQUESTED || r.status == RentalStatus.RETURNED).toList();
+    final history = rentals.where((r) => r.status == RentalStatus.COMPLETED || r.status == RentalStatus.CANCELLED || r.status == RentalStatus.DISPUTED).toList();
 
     return DefaultTabController(
       length: 4,
       child: Scaffold(
+        backgroundColor: context.scaffoldBg,
         appBar: AppBar(
           title: const Text('NGO Rental Management'),
+          backgroundColor: context.surfaceBg,
+          foregroundColor: context.textPrimaryColor,
+          elevation: 0,
           bottom: const TabBar(
             isScrollable: true,
             tabs: [
@@ -30,32 +51,16 @@ class NgoRentalManagementScreen extends StatelessWidget {
             ],
           ),
         ),
-        body: StreamBuilder<List<RentalModel>>(
-          stream: rentalService.streamRentalsByNgo(ngoId),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            }
-
-            final rentals = snapshot.data ?? [];
-            final requests = rentals.where((r) => r.status == RentalStatus.REQUESTED).toList();
-            final active = rentals.where((r) => r.status == RentalStatus.ACTIVE || r.status == RentalStatus.APPROVED).toList();
-            final returns = rentals.where((r) => r.status == RentalStatus.RETURN_REQUESTED || r.status == RentalStatus.RETURNED).toList();
-            final history = rentals.where((r) => r.status == RentalStatus.COMPLETED || r.status == RentalStatus.CANCELLED || r.status == RentalStatus.DISPUTED).toList();
-
-            return TabBarView(
-              children: [
-                _buildList(requests, context, 'Pending Requests', emptyMsg: 'No pending requests.', isRequest: true),
-                _buildList(active, context, 'Active Rentals', emptyMsg: 'No active rentals.', isActive: true),
-                _buildList(returns, context, 'Pending Returns', emptyMsg: 'No returns pending.', isReturns: true),
-                _buildList(history, context, 'Rental History', emptyMsg: 'No history found.'),
-              ],
-            );
-          },
-        ),
+        body: rentalProvider.isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : TabBarView(
+                children: [
+                  _buildList(requests, context, 'Pending Requests', emptyMsg: 'No pending requests.', isRequest: true),
+                  _buildList(active, context, 'Active Rentals', emptyMsg: 'No active rentals.', isActive: true),
+                  _buildList(returns, context, 'Pending Returns', emptyMsg: 'No returns pending.', isReturns: true),
+                  _buildList(history, context, 'Rental History', emptyMsg: 'No history found.'),
+                ],
+              ),
       ),
     );
   }

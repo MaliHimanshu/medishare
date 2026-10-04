@@ -91,36 +91,59 @@ class RentalModel {
           ? json['equipment'] as Map<String, dynamic>
           : null;
       final equip = equipJson != null ? EquipmentModel.fromJson(equipJson) : null;
+      final renterJson = json['renter'] is Map
+          ? json['renter'] as Map<String, dynamic>
+          : null;
+
+      final startDateStr = json['startDate']?.toString() ?? '';
+      final endDateStr = json['endDate']?.toString() ?? json['expectedReturnDate']?.toString() ?? '';
+
+      double parsedRentalAmount = double.tryParse(json['rentalAmount']?.toString() ?? '0') ?? 0.0;
+      double parsedSecurityDeposit = double.tryParse(json['securityDeposit']?.toString() ?? '0') ?? 0.0;
+      double parsedTotalAmount = double.tryParse(json['totalAmount']?.toString() ?? '0') ?? 0.0;
+
+      final days = int.tryParse(json['numberOfDays']?.toString() ?? '1') ?? 1;
+
+      // Mathematical fallback for rentalAmount if 0 but totalAmount/securityDeposit or equipment rate exists
+      if (parsedRentalAmount == 0.0 && parsedTotalAmount > parsedSecurityDeposit) {
+        parsedRentalAmount = parsedTotalAmount - parsedSecurityDeposit;
+      } else if (parsedRentalAmount == 0.0 && equip != null && equip.rentalPricePerDay != null) {
+        parsedRentalAmount = equip.rentalPricePerDay! * days;
+      }
+
+      if (parsedTotalAmount == 0.0) {
+        parsedTotalAmount = parsedRentalAmount + parsedSecurityDeposit;
+      }
 
       return RentalModel(
         id: json['id']?.toString() ?? '',
         equipmentId: json['equipmentId']?.toString() ?? '',
-        renterId: json['renterId']?.toString() ?? '',
-        ownerId: json['ownerId']?.toString() ?? '',
+        renterId: json['renterId']?.toString() ?? renterJson?['id']?.toString() ?? '',
+        ownerId: json['ownerId']?.toString() ?? equipJson?['ownerId']?.toString() ?? '',
         ngoId: json['ngoId']?.toString() ?? '',
-        startDate: json['startDate']?.toString() ?? '',
-        expectedReturnDate: json['expectedReturnDate']?.toString() ?? '',
+        startDate: startDateStr,
+        expectedReturnDate: endDateStr,
         actualReturnDate: json['actualReturnDate']?.toString(),
         status: _parseRentalStatus(json['status']?.toString()),
         agreementAccepted: json['agreementAccepted'] == true || json['agreementAccepted'] == 'true',
         createdAt: json['createdAt']?.toString() ?? '',
         updatedAt: json['updatedAt']?.toString() ?? '',
         equipment: equip,
-        endDate: json['endDate']?.toString() ?? json['expectedReturnDate']?.toString() ?? '',
-        numberOfDays: int.tryParse(json['numberOfDays']?.toString() ?? '1') ?? 1,
-        rentalAmount: double.tryParse(json['rentalAmount']?.toString() ?? '0') ?? 0.0,
-        securityDeposit: double.tryParse(json['securityDeposit']?.toString() ?? '0') ?? 0.0,
-        totalAmount: double.tryParse(json['totalAmount']?.toString() ?? '0') ?? 0.0,
+        endDate: endDateStr,
+        numberOfDays: days,
+        rentalAmount: parsedRentalAmount,
+        securityDeposit: parsedSecurityDeposit,
+        totalAmount: parsedTotalAmount,
         paymentStatus: json['paymentStatus']?.toString() ?? 'PENDING',
         razorpayOrderId: json['razorpayOrderId']?.toString() ?? '',
         razorpayPaymentId: json['razorpayPaymentId']?.toString() ?? '',
-        renterName: json['renterName']?.toString() ?? 'Anonymous',
-        renterEmail: json['renterEmail']?.toString() ?? '',
-        renterPhone: json['renterPhone']?.toString() ?? '',
+        renterName: renterJson?['name']?.toString() ?? json['renterName']?.toString() ?? 'Anonymous',
+        renterEmail: renterJson?['email']?.toString() ?? json['renterEmail']?.toString() ?? '',
+        renterPhone: renterJson?['phone']?.toString() ?? json['renterPhone']?.toString() ?? '',
       );
     } catch (_) {
       return RentalModel(
-        id: 'unknown',
+        id: json['id']?.toString() ?? 'unknown',
         equipmentId: '',
         renterId: '',
         ownerId: '',
