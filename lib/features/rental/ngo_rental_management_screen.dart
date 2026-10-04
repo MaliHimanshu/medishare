@@ -12,7 +12,7 @@ class NgoRentalManagementScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ngoId = Provider.of<AuthProvider>(context, listen: false).user?.uid ?? '';
+    final ngoId = Provider.of<AuthProvider>(context, listen: false).user?.id ?? '';
     final rentalService = RentalService();
 
     return DefaultTabController(

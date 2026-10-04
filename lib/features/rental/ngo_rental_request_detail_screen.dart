@@ -105,7 +105,7 @@ class NgoRentalRequestDetailScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const AssignDeliveryPartnerScreen(),
+                        builder: (_) => AssignDeliveryPartnerScreen(rental: rental),
                       ),
                     );
                   },

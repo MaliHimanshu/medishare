@@ -18,11 +18,6 @@ class EquipmentRentalDetailScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Rental Details'),
         backgroundColor: context.surfaceBg,
-    return Scaffold(
-      backgroundColor: context.scaffoldBg,
-      appBar: AppBar(
-        title: const Text('Rental Details'),
-        backgroundColor: context.surfaceBg,
         foregroundColor: context.textPrimaryColor,
         elevation: 0,
       ),

@@ -9,7 +9,7 @@ import '../../services/rental_service.dart';
 class AssignDeliveryPartnerScreen extends StatelessWidget {
   final RentalModel rental;
 
-  const AssignDeliveryPartnerScreen({super.key, required this rental});
+  const AssignDeliveryPartnerScreen({super.key, required this.rental});
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +17,7 @@ class AssignDeliveryPartnerScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Assign Delivery Partner'),
         backgroundColor: context.surfaceBg,
-        foregroundColor: AppColors.textPrimary,
+        foregroundColor: context.textPrimaryColor,
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
@@ -81,8 +81,8 @@ class AssignDeliveryPartnerScreen extends StatelessWidget {
                         onPressed: () async {
                           // Create delivery doc
                           final deliveryId = FirebaseFirestore.instance.collection('deliveries').doc().id;
-                          final type = rental.status == RentalStatus.RETURN_REQUESTED || rental.status == RentalStatus.RETURN_APPROVED 
-                               ? DeliveryType.RETURN 
+                          final type = (rental.status == RentalStatus.RETURN_REQUESTED || rental.status == RentalStatus.RETURN_ASSIGNED || rental.status == RentalStatus.RETURN_PICKUP) 
+                               ? DeliveryType.RETURN_PICKUP 
                                : DeliveryType.DELIVERY;
 
                           final newDelivery = DeliveryModel(

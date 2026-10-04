@@ -169,7 +169,7 @@ class ProfileProvider extends ChangeNotifier {
   // ── Fetch User Statistics ──────────────────────────────────────────
   Future<void> fetchStats() async {
     try {
-      final res = await _dio.get(ApiEndpoints.summary);
+      final res = await _dio.get(ApiEndpoints.summary).timeout(const Duration(seconds: 5));
       if (res.data != null && res.data['success'] == true) {
         final data = res.data['data'] as Map<String, dynamic>;
         _equipmentCount = data['availableEquipment'] is int

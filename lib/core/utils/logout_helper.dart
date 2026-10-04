@@ -52,21 +52,17 @@ class LogoutHelper {
       final auth = context.read<AuthProvider>();
       await auth.logout(); // This clears cached role/user and calls Firebase signOut
       
-      if (context.mounted) {
-        navigator.pushAndRemoveUntil(
-          AppPageTransitions.slideRight(const LoginScreen()),
-          (route) => false, // Remove authenticated navigation history
-        );
-      }
+      navigator.pushAndRemoveUntil(
+        AppPageTransitions.slideRight(const LoginScreen()),
+        (route) => false, // Remove authenticated navigation history
+      );
     } catch (e) {
       debugPrint('[LOGOUT] performLogout error: $e');
       // Force navigation to login on error
-      if (context.mounted) {
-        navigator.pushAndRemoveUntil(
-          AppPageTransitions.slideRight(const LoginScreen()),
-          (route) => false,
-        );
-      }
+      navigator.pushAndRemoveUntil(
+        AppPageTransitions.slideRight(const LoginScreen()),
+        (route) => false,
+      );
     } finally {
       _isLoggingOut = false;
     }

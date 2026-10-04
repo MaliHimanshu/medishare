@@ -16,7 +16,7 @@ class ApiEndpoints {
   static const bool _useLiveApi = true;
 
   // Set to true if testing on a physical mobile phone connected to local backend via Wi-Fi
-  static const bool _usePhysicalPhoneLocal = false;
+  static const bool _usePhysicalPhoneLocal = true;
 
   static String get baseUrl {
     // ALWAYS use live URL in release mode, or if _useLiveApi is manually set to true

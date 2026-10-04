@@ -15,7 +15,7 @@ class DeliveryPartnerDashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final partnerId = Provider.of<AuthProvider>(context, listen: false).user?.uid ?? '';
+    final partnerId = Provider.of<AuthProvider>(context, listen: false).user?.id ?? '';
     final deliveryService = DeliveryService();
 
     return DefaultTabController(

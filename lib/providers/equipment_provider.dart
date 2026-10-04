@@ -272,8 +272,8 @@ class EquipmentProvider extends ChangeNotifier {
           'rentalPricePerDay': rentalPricePerDay,
         if (mode.toUpperCase() != 'DONATE' && securityDeposit != null)
           'securityDeposit': securityDeposit,
-        'latitude': ?latitude,
-        'longitude': ?longitude,
+        if (latitude != null) 'latitude': latitude,
+        if (longitude != null) 'longitude': longitude,
         if (address != null && address.isNotEmpty) 'address': address,
         if (manufacturer != null && manufacturer.isNotEmpty)
           'manufacturer': manufacturer,
@@ -427,5 +427,16 @@ class EquipmentProvider extends ChangeNotifier {
       _isLoadingNearby = false;
       notifyListeners();
     }
+  }
+
+  // ── Clear State on Logout ───────────────────────────────────────────
+  void clear() {
+    _equipment = [];
+    _nearbyEquipment = [];
+    _nearbyMeta = null;
+    _errorMessage = '';
+    _nearbyError = '';
+    _searchQuery = '';
+    notifyListeners();
   }
 }

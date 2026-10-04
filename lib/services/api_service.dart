@@ -24,7 +24,7 @@ class AuthService {
       final sanitizedDomain = email.contains('@') ? '@${email.split('@').last}' : '(invalid)';
       debugPrint('[AuthService] Attempting signInWithEmailAndPassword (domain: $sanitizedDomain)...');
       final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email,
+        email: email.trim(),
         password: password,
       );
       debugPrint('[AuthService] signInWithEmailAndPassword succeeded for uid: ${credential.user?.uid}');
@@ -60,7 +60,7 @@ class AuthService {
           user = UserModel(
             id: credential.user!.uid,
             name: credential.user!.displayName ?? 'User',
-            email: email,
+            email: email.trim(),
             role: 'UNKNOWN',
             createdAt: DateTime.now(),
           );
@@ -71,7 +71,7 @@ class AuthService {
         user = UserModel(
           id: credential.user!.uid,
           name: credential.user!.displayName ?? 'User',
-          email: email,
+          email: email.trim(),
           role: 'UNKNOWN',
           createdAt: DateTime.now(),
         );
@@ -86,7 +86,7 @@ class AuthService {
       );
     } on FirebaseAuthException catch (e) {
       debugPrint('[AuthService] FirebaseAuthException: code=${e.code}, message=${e.message}');
-      throw Exception(e.message ?? 'Authentication failed.');
+      rethrow;
     } catch (e) {
       debugPrint('[AuthService] Unexpected error during login: $e');
       throw Exception(e.toString());
@@ -108,7 +108,7 @@ class AuthService {
   }) async {
     try {
       final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: email,
+        email: email.trim(),
         password: password,
       );
 
@@ -117,7 +117,7 @@ class AuthService {
       final user = UserModel(
         id: credential.user!.uid,
         name: name,
-        email: email,
+        email: email.trim(),
         role: role,
         phone: phone,
         address: address,
@@ -138,8 +138,10 @@ class AuthService {
         token: '',
       );
     } on FirebaseAuthException catch (e) {
-      throw Exception(e.message ?? 'Registration failed.');
+      debugPrint('[AuthService] FirebaseAuthException during register: code=${e.code}, message=${e.message}');
+      rethrow;
     } catch (e) {
+      debugPrint('[AuthService] Unexpected error during register: $e');
       throw Exception(e.toString());
     }
   }

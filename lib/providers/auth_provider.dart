@@ -89,7 +89,7 @@ class AuthProvider extends ChangeNotifier {
     _setStatus(AuthStatus.loading);
     _errorMessage = null;
     try {
-      final result = await _authService.login(email, password);
+      final result = await _authService.login(email.trim(), password);
       _user = result.user;
       debugPrint('[ROLE SYNC] AuthProvider.login(): uid=${_user?.id} role=${_user?.role}');
       _setStatus(AuthStatus.authenticated);
@@ -100,10 +100,44 @@ class AuthProvider extends ChangeNotifier {
         _refreshRoleFromFirestore();
       }
       return true;
+    } on FirebaseAuthException catch (e) {
+      _errorMessage = _getFriendlyFirebaseAuthErrorMessage(e);
+      debugPrint('[AuthProvider] login FirebaseAuthException: [${e.code}] $_errorMessage');
+      _setStatus(AuthStatus.error);
+      return false;
     } catch (e) {
       _errorMessage = e.toString().replaceAll('Exception: ', '');
       _setStatus(AuthStatus.error);
       return false;
+    }
+  }
+
+  static String _getFriendlyFirebaseAuthErrorMessage(FirebaseAuthException e) {
+    switch (e.code) {
+      case 'invalid-credential':
+        return 'Incorrect email or password. Please verify your credentials or register a new account. [invalid-credential]';
+      case 'user-not-found':
+        return 'No user found with this email. Please check your email or register. [user-not-found]';
+      case 'wrong-password':
+        return 'Incorrect password. Please try again. [wrong-password]';
+      case 'invalid-email':
+        return 'The email address is improperly formatted. [invalid-email]';
+      case 'user-disabled':
+        return 'This account has been disabled. Please contact support. [user-disabled]';
+      case 'email-already-in-use':
+        return 'An account already exists with this email address. Please log in instead. [email-already-in-use]';
+      case 'weak-password':
+        return 'The password provided is too weak. Please use at least 6 characters. [weak-password]';
+      case 'too-many-requests':
+        return 'Too many unsuccessful attempts. Please wait a moment and try again. [too-many-requests]';
+      case 'operation-not-allowed':
+        return 'Email/password sign-in is not enabled in Firebase Console. [operation-not-allowed]';
+      case 'network-request-failed':
+        return 'Network error: Unable to reach Firebase. Please check your internet connection. [network-request-failed]';
+      case 'app-not-authorized':
+        return 'This app is not authorized to use Firebase Authentication. [app-not-authorized]';
+      default:
+        return '${e.message ?? "Authentication failed."} [${e.code}]';
     }
   }
 
@@ -117,7 +151,7 @@ class AuthProvider extends ChangeNotifier {
           .doc(fUser.uid)
           .get();
       if (doc.exists) {
-        final role = doc.data()?['role']?.toString() ?? 'DONOR';
+        final role = doc.data()?['role']?.toString() ?? 'UNKNOWN';
         debugPrint('[ROLE SYNC] AuthProvider._refreshRoleFromFirestore(): resolved role=$role');
         if (_user != null && _user!.role != role) {
           _user = UserModel(
@@ -181,6 +215,11 @@ class AuthProvider extends ChangeNotifier {
       _setStatus(AuthStatus.authenticated);
       FcmService().registerDeviceToken(_user!.id);
       return true;
+    } on FirebaseAuthException catch (e) {
+      _errorMessage = _getFriendlyFirebaseAuthErrorMessage(e);
+      debugPrint('[AuthProvider] register FirebaseAuthException: [${e.code}] $_errorMessage');
+      _setStatus(AuthStatus.error);
+      return false;
     } catch (e) {
       _errorMessage = e.toString().replaceAll('Exception: ', '');
       _setStatus(AuthStatus.error);

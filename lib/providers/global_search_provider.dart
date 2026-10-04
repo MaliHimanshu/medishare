@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../core/network/dio_client.dart';
 import '../core/network/api_endpoints.dart';
@@ -121,13 +122,19 @@ class GlobalSearchProvider extends ChangeNotifier {
     debugPrint('[GLOBAL SEARCH]\nRequest started');
 
     try {
+      final user = FirebaseAuth.instance.currentUser;
+      final token = await user?.getIdToken();
+      final options = token != null 
+          ? Options(headers: {'Authorization': 'Bearer $token'})
+          : null;
+
       // Execute multi-module requests concurrently
       final futures = await Future.wait([
-        _dio.get(ApiEndpoints.equipment),
-        _dio.get(ApiEndpoints.donation),
-        _dio.get(ApiEndpoints.request),
-        _dio.get(ApiEndpoints.hospital),
-        _dio.get(ApiEndpoints.rental), // Add rental
+        _dio.get(ApiEndpoints.equipment, options: options),
+        _dio.get(ApiEndpoints.donation, options: options),
+        _dio.get(ApiEndpoints.request, options: options),
+        _dio.get(ApiEndpoints.hospital, options: options),
+        _dio.get(ApiEndpoints.rental, options: options), // Add rental
       ]);
       
       debugPrint('[GLOBAL SEARCH]\nResponse: 200');

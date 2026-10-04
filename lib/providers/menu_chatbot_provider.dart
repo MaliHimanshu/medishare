@@ -360,7 +360,7 @@ class MenuChatbotProvider extends ChangeNotifier {
           normalized.contains('my rentals')) {
         await handleOption4TrackRental();
       } else {
-        _showMainMenu();
+        await _sendToAIBackend(trimmed);
       }
     } else if (_currentRole == 'NGO') {
       if (trimmed == '1' ||
@@ -386,7 +386,7 @@ class MenuChatbotProvider extends ChangeNotifier {
           normalized.contains('beneficiar')) {
         await handleNgoBeneficiaries();
       } else {
-        _showMainMenu();
+        await _sendToAIBackend(trimmed);
       }
     } else if (_currentRole == 'HOSPITAL') {
       if (trimmed == '1' ||
@@ -413,7 +413,7 @@ class MenuChatbotProvider extends ChangeNotifier {
           normalized.contains('request')) {
         await handleOption3MyRequests();
       } else {
-        _showMainMenu();
+        await _sendToAIBackend(trimmed);
       }
     } else if (_currentRole == 'RECIPIENT') {
       if (trimmed == '1' ||
@@ -440,7 +440,7 @@ class MenuChatbotProvider extends ChangeNotifier {
           normalized.contains('my rentals')) {
         await handleOption4TrackRental();
       } else {
-        _showMainMenu();
+        await _sendToAIBackend(trimmed);
       }
     } else {
       // Default (ADMIN / other)
@@ -466,7 +466,7 @@ class MenuChatbotProvider extends ChangeNotifier {
           normalized.contains('donate')) {
         await handleOption5DonationHelp();
       } else {
-        _showMainMenu();
+        await _sendToAIBackend(trimmed);
       }
     }
 

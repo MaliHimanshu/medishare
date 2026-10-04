@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../constants/app_strings.dart';
 import 'api_endpoints.dart';
@@ -10,8 +9,6 @@ import 'api_endpoints.dart';
 /// - Request/Response logging in debug mode
 class DioClient {
   DioClient._();
-
-  static final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   static Dio? _instance;
 
@@ -112,12 +109,14 @@ class DioClient {
     if (data is Map) {
       if (data.containsKey('message') &&
           data['message'] != null &&
-          data['message'].toString().isNotEmpty) {
+          data['message'].toString().isNotEmpty &&
+          data['message'].toString() != 'undefined') {
         return data['message'].toString();
       }
       if (data.containsKey('error') &&
           data['error'] != null &&
-          data['error'].toString().isNotEmpty) {
+          data['error'].toString().isNotEmpty &&
+          data['error'].toString() != 'undefined') {
         return data['error'].toString();
       }
       if (data.containsKey('errors') &&
@@ -129,11 +128,13 @@ class DioClient {
         }
         return firstErr.toString();
       }
+    } else if (data is String && data.isNotEmpty && data != 'undefined') {
+      return data;
     }
     if (e.response?.statusCode != null) {
-      return 'Server returned error (${e.response!.statusCode}). Please try again.';
+      return 'Server error (${e.response!.statusCode}): ${e.response?.statusMessage ?? "Failed to complete request."}';
     }
-    return AppStrings.genericError;
+    return e.message ?? AppStrings.genericError;
   }
 
   static void debugLog(String message) {

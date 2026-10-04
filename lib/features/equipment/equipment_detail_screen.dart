@@ -10,11 +10,13 @@ import '../../providers/equipment_provider.dart';
 // Models
 import '../../models/equipment_model.dart';
 import '../../models/chat_user_model.dart';
+import '../../models/rental_model.dart';
 
 // Screens
 import 'edit_equipment_screen.dart';
 import '../rental/book_rental_dialog.dart';
 import '../rental/my_rentals_screen.dart';
+import '../rental/razorpay_checkout_sheet.dart';
 
 // Shared Constants
 import '../../core/constants/app_colors.dart';
@@ -176,11 +178,20 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
     );
   }
 
-  void _showBookRentalDialog(BuildContext context) {
-    showDialog(
+  void _showBookRentalDialog(BuildContext context) async {
+    final createdRental = await showDialog<RentalModel>(
       context: context,
       builder: (ctx) => BookRentalDialog(equipment: widget.equipment),
     );
+
+    if (createdRental != null && context.mounted) {
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) => RazorpayCheckoutSheet(rental: createdRental),
+      );
+    }
   }
 
   @override
