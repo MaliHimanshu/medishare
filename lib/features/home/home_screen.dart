@@ -38,6 +38,7 @@ import '../profile/profile_screen.dart';
 import '../notifications/notification_screen.dart';
 import '../settings/settings_screen.dart';
 import '../chat/messages_screen.dart';
+import '../chat/find_users_screen.dart';
 import '../search/global_search_screen.dart';
 import '../auth/login_screen.dart';
 import '../auth/otp_verification_screen.dart';
@@ -670,7 +671,10 @@ class _HomeScreenState extends State<HomeScreen>
                     title: "User Management",
                     onTap: () {
                       Navigator.pop(context);
-                      _showNotImplementedSnackBar(context, 'User Management');
+                      Navigator.push(
+                        context,
+                        AppPageTransitions.slideRight(const FindUsersScreen()),
+                      );
                     },
                   ),
                   _buildDrawerItem(

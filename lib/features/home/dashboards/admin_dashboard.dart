@@ -10,6 +10,7 @@ import '../../equipment/equipment_list_screen.dart';
 import '../../requests/request_screen.dart';
 import '../../hospital/hospital_screen.dart';
 import '../../chatbot/chat_home_screen.dart';
+import '../../chat/find_users_screen.dart';
 
 class AdminDashboard extends StatefulWidget {
   final UserModel user;
@@ -141,7 +142,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 value: totalUsers,
                 icon: Icons.people_rounded,
                 color: Colors.blue,
-                onTap: () {},
+                onTap: () => Navigator.push(
+                  context,
+                  AppPageTransitions.slideRight(const FindUsersScreen()),
+                ),
               ),
             ),
           ],

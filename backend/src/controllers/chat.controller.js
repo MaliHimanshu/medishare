@@ -126,11 +126,7 @@ const searchUsers = async (req, res) => {
     const query = req.query.q || "";
     const currentUserId = req.user.id;
 
-    if (query.trim().length === 0) {
-      return res.status(200).json({ success: true, data: [] });
-    }
-
-    const users = await chatService.searchUsers(query.trim(), currentUserId);
+    const users = await chatService.searchUsers(query, currentUserId);
     return res.status(200).json({ success: true, data: users });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });

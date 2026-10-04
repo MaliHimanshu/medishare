@@ -180,22 +180,34 @@ const markAsRead = async (conversationId, userId) => {
 
 // Search users
 const searchUsers = async (query, currentUserId) => {
+  const where = {
+    id: { not: currentUserId },
+  };
+
+  if (query && query.trim().length > 0) {
+    const q = query.trim();
+    where.OR = [
+      { name: { contains: q, mode: 'insensitive' } },
+      { email: { contains: q, mode: 'insensitive' } },
+      { role: { contains: q, mode: 'insensitive' } },
+      { phone: { contains: q, mode: 'insensitive' } },
+    ];
+  }
+
   return await prisma.user.findMany({
-    where: {
-      id: { not: currentUserId },
-      OR: [
-        { name: { contains: query, mode: 'insensitive' } },
-        { email: { contains: query, mode: 'insensitive' } }
-      ]
-    },
+    where,
     select: {
       id: true,
       name: true,
       email: true,
+      phone: true,
       role: true,
       profileImage: true,
+      verificationStatus: true,
+      createdAt: true,
     },
-    take: 20
+    take: 50,
+    orderBy: { createdAt: 'desc' },
   });
 };
 
