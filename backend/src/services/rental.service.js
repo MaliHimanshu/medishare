@@ -228,7 +228,23 @@ const getRentalById = async (id, user) => {
   if (user && user.role !== "ADMIN") {
     const isOwner = rental.equipment.ownerId === user.id;
     const isRenter = rental.renterId === user.id;
-    if (!isOwner && !isRenter) {
+    let isAssignedDeliveryPartner = false;
+
+    if (user.role === "DELIVERY_PARTNER") {
+      const { getFirestore } = require("../config/firebaseAdmin");
+      const db = getFirestore();
+      if (db) {
+        const deliveriesSnapshot = await db
+          .collection("deliveries")
+          .where("rentalId", "==", rental.id)
+          .where("deliveryPartnerId", "==", user.id)
+          .limit(1)
+          .get();
+        isAssignedDeliveryPartner = !deliveriesSnapshot.empty;
+      }
+    }
+
+    if (!isOwner && !isRenter && !isAssignedDeliveryPartner) {
       throw new Error("You are not authorized to view this rental.");
     }
   }
@@ -254,7 +270,16 @@ const updateRentalStatus = async (id, status, user) => {
     const isOwner = rental.equipment.ownerId === user.id;
     const isRenter = rental.renterId === user.id;
 
+    console.log("=== RENTAL STATUS UPDATE DIAGNOSTICS ===");
+    console.log("Rental ID:", id);
+    console.log("Current Status:", rental.status);
+    console.log("Requested New Status:", status);
+    console.log("User Role:", user.role);
+    console.log("isOwner:", isOwner, "(ownerId:", rental.equipment.ownerId, ")");
+    console.log("isRenter:", isRenter, "(renterId:", rental.renterId, ")");
+
     if (!isOwner && !isRenter) {
+      console.error("Authorization failed: User is neither owner nor renter.");
       throw new Error("You are not authorized to update this rental.");
     }
 
@@ -262,6 +287,7 @@ const updateRentalStatus = async (id, status, user) => {
     // Renter can only cancel their own pending request
     if (isRenter && !isOwner) {
       if (status !== "CANCELLED") {
+        console.error("Authorization failed: Renter attempted to change status to", status);
         throw new Error("Renters can only cancel their pending rental requests.");
       }
     }
