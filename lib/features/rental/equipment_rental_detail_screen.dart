@@ -139,41 +139,43 @@ class EquipmentRentalDetailScreen extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: context.surfaceBg,
-          border: Border(top: BorderSide(color: context.borderColor)),
-        ),
-        child: FilledButton(
-          style: FilledButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: context.surfaceBg,
+            border: Border(top: BorderSide(color: context.borderColor)),
           ),
-          onPressed: equipment.rentalAvailable
-              ? () async {
-                  final createdRental = await showModalBottomSheet<RentalModel>(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.transparent,
-                    builder: (ctx) => BookRentalDialog(equipment: equipment),
-                  );
-                  if (createdRental != null && context.mounted) {
-                    showModalBottomSheet(
+          child: FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            onPressed: equipment.rentalAvailable
+                ? () async {
+                    final createdRental = await showModalBottomSheet<RentalModel>(
                       context: context,
                       isScrollControlled: true,
                       backgroundColor: Colors.transparent,
-                      builder: (_) => RazorpayCheckoutSheet(rental: createdRental),
+                      builder: (ctx) => BookRentalDialog(equipment: equipment),
                     );
+                    if (createdRental != null && context.mounted) {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (_) => RazorpayCheckoutSheet(rental: createdRental),
+                      );
+                    }
                   }
-                }
-              : null,
-          child: const Text(
-            'Request Rental',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                : null,
+            child: const Text(
+              'Request Rental',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
           ),
         ),
       ),

@@ -154,26 +154,35 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('ETA', style: TextStyle(color: context.textSecondaryColor, fontSize: 12)),
-                            const Text('15 Mins', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                          ],
+                        Expanded(
+                          flex: 1,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('ETA', style: TextStyle(color: context.textSecondaryColor, fontSize: 12)),
+                              const Text('15 Mins', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                            ],
+                          ),
                         ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Status', style: TextStyle(color: context.textSecondaryColor, fontSize: 12)),
-                            Text(delivery.status.name.replaceAll('_', ' '), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                          ],
+                        Expanded(
+                          flex: 1,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Status', style: TextStyle(color: context.textSecondaryColor, fontSize: 12)),
+                              Text(delivery.status.name.replaceAll('_', ' '), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                            ],
+                          ),
                         ),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Last updated', style: TextStyle(color: context.textSecondaryColor, fontSize: 12)),
-                            Text(_formatTime(delivery.lastLocationUpdate), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                          ],
+                        Expanded(
+                          flex: 1,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Last updated', style: TextStyle(color: context.textSecondaryColor, fontSize: 12)),
+                              Text(_formatTime(delivery.lastLocationUpdate).replaceAll('Last updated: ', ''), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -184,61 +193,63 @@ class _LiveTrackingScreenState extends State<LiveTrackingScreen> {
                 bottom: 0,
                 left: 0,
                 right: 0,
-                child: Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: context.cardBg,
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-                    boxShadow: [
-                      BoxShadow(color: Colors.black.withAlpha(20), blurRadius: 10, offset: const Offset(0, -5))
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 24,
-                            backgroundImage: widget.partner.profilePhoto.isNotEmpty
-                                ? NetworkImage(widget.partner.profilePhoto)
-                                : null,
-                            child: widget.partner.profilePhoto.isEmpty ? const Icon(Icons.person) : null,
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(widget.partner.fullName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                                Text('Delivery Partner - NGO', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
-                                Text('${widget.partner.vehicleType.name} • ${widget.partner.vehicleNumber}', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
-                              ],
+                child: SafeArea(
+                  child: Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: context.cardBg,
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                      boxShadow: [
+                        BoxShadow(color: Colors.black.withAlpha(20), blurRadius: 10, offset: const Offset(0, -5))
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 24,
+                              backgroundImage: widget.partner.profilePhoto.isNotEmpty
+                                  ? NetworkImage(widget.partner.profilePhoto)
+                                  : null,
+                              child: widget.partner.profilePhoto.isEmpty ? const Icon(Icons.person) : null,
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: () {},
-                              icon: const Icon(Icons.call),
-                              label: const Text('Call'),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(widget.partner.fullName, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                  Text('Delivery Partner - NGO', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                                  Text('${widget.partner.vehicleType.name} • ${widget.partner.vehicleNumber}', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                                ],
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: FilledButton.icon(
-                              onPressed: () {},
-                              icon: const Icon(Icons.chat),
-                              label: const Text('Contact'),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton.icon(
+                                onPressed: () {},
+                                icon: const Icon(Icons.call),
+                                label: const Text('Call'),
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: FilledButton.icon(
+                                onPressed: () {},
+                                icon: const Icon(Icons.chat),
+                                label: const Text('Contact'),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

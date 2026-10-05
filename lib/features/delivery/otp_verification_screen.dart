@@ -193,6 +193,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       setState(() => _isLoading = false);
 
       if (mounted) {
+        ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Delivery Completed! Rental Active (Firestore Sync).'), backgroundColor: Colors.green),
         );
@@ -225,11 +226,12 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
       appBar: AppBar(
         title: const Text('Verify Delivery'),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
             const Icon(Icons.security, size: 64, color: AppColors.primary),
             const SizedBox(height: 20),
             const Text(
@@ -296,6 +298,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
             ),
           ],
         ),
+      ),
       ),
     );
   }

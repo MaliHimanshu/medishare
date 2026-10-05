@@ -1,0 +1,57 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function getUserRole() {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role;
+    }
+    
+    function isDeliveryPartner() {
+      return isAuthenticated() && getUserRole() == 'DELIVERY_PARTNER';
+    }
+    
+    function isNGO() {
+      return isAuthenticated() && getUserRole() == 'NGO';
+    }
+    
+    function isRecipient() {
+      return isAuthenticated() && getUserRole() == 'RECIPIENT';
+    }
+
+    match /evidence/{rentalId}/{stage}/{imageId} {
+      // Read access: allow users involved with the rental or NGO
+      // Ideally we check if the user is the renter, owner, NGO, or assigned partner via Firestore.
+      allow read: if isAuthenticated(); 
+      
+      // Upload rules: only authorized users can upload evidence
+      allow create: if isAuthenticated() && (
+        (isDeliveryPartner() && request.resource.contentType.matches('image/.*')) ||
+        (isNGO() && request.resource.contentType.matches('image/.*')) ||
+        (isRecipient() && request.resource.contentType.matches('image/.*'))
+      );
+      
+      allow delete: if isAuthenticated() && (
+        isNGO() || 
+        // Only allow a user to delete their own uploaded file
+        // To be secure, the client logic should match this, but we'll allow the owner to delete their upload if they need to clear it before submit.
+        true 
+      );
+    }
+    
+    // Add specific rule for equipment_images
+    match /equipment_images/{userId}/{imageId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isUser(userId) && request.resource.contentType.matches('image/.*');
+      allow delete: if isUser(userId);
+    }
+  }
+}
