@@ -58,13 +58,9 @@ class AuthService {
       }
 
       if (user == null && credential.user != null) {
-        user = UserModel(
-          id: credential.user!.uid,
-          name: credential.user!.displayName ?? 'User',
-          email: email.trim(),
-          role: 'UNKNOWN',
-          createdAt: DateTime.now(),
-        );
+        // We MUST NOT proceed without a valid role from the backend!
+        await clearAuth();
+        throw Exception('Failed to fetch user role from backend. Please check your connection and try again.');
       }
 
       if (user != null) {
@@ -76,19 +72,21 @@ class AuthService {
           final firebaseUid = FirebaseAuth.instance.currentUser?.uid;
           if (firebaseUid != null) {
             debugPrint('[DIAGNOSTICS] ROLE SYNC START');
-            debugPrint('[DIAGNOSTICS] Firebase UID: $firebaseUid');
-            debugPrint('[DIAGNOSTICS] Backend role: ${user.role}');
+            debugPrint('[AUTH SYNC] Backend user ID: ${user.id}');
+            debugPrint('[AUTH SYNC] Backend role: ${user.role}');
             
             await FirebaseFirestore.instance.collection('users').doc(firebaseUid).set(
               {'role': user.role, 'name': user.name, 'email': user.email},
               SetOptions(merge: true),
             );
+            debugPrint('[AUTH SYNC] Firestore role: ${user.role}');
+            debugPrint('[AUTH SYNC] FINAL ACTIVE ROLE: ${user.role}');
             debugPrint('[DIAGNOSTICS] ROLE SYNC SUCCESS');
           }
         } catch (syncErr) {
           final firebaseUid = FirebaseAuth.instance.currentUser?.uid;
           debugPrint('[DIAGNOSTICS] ROLE SYNC FAILED');
-          debugPrint('[DIAGNOSTICS] Firebase UID: $firebaseUid');
+          debugPrint('[AUTH SYNC] Firebase UID: $firebaseUid');
           if (syncErr is FirebaseException) {
             debugPrint('[DIAGNOSTICS] Error code: ${syncErr.code}');
             debugPrint('[DIAGNOSTICS] Error message: ${syncErr.message}');
@@ -252,9 +250,12 @@ class AuthService {
     
     final cached = await getCachedUser();
     final fUser = FirebaseAuth.instance.currentUser;
-    if (cached != null && fUser != null && cached.id != fUser.uid) {
-      debugPrint('[AuthService] SECURITY ALERT: Cached user UID (${cached.id}) does not match Firebase UID (${fUser.uid}). Discarding cache.');
-      return null;
+    if (cached != null) {
+      if (fUser == null || cached.id != fUser.uid) {
+        debugPrint('[AuthService] SECURITY ALERT: Cached user UID (${cached.id}) does not match Firebase UID (${fUser?.uid}). Discarding cache.');
+        await _storage.delete(key: _userKey);
+        return null;
+      }
     }
     return cached;
   }
@@ -272,20 +273,21 @@ class AuthService {
 
   Future<void> clearAuth() async {
     try {
+      debugPrint('[LOGOUT] SecureStorage cleanup started');
+      await _storage.deleteAll().timeout(const Duration(seconds: 2));
+      debugPrint('[LOGOUT] SecureStorage cleanup completed');
+    } catch (e) {
+      debugPrint('[LOGOUT] SecureStorage cleanup error/timeout: $e, falling back to ignore');
+      _storage.delete(key: _tokenKey).ignore();
+      _storage.delete(key: 'medishare_token').ignore();
+      _storage.delete(key: _userKey).ignore();
+    }
+    try {
       debugPrint('[LOGOUT] Firebase signOut started');
       await FirebaseAuth.instance.signOut().timeout(const Duration(seconds: 2));
       debugPrint('[LOGOUT] Firebase signOut completed');
     } catch (e) {
       debugPrint('[LOGOUT] Firebase signOut error/timeout: $e');
-    }
-    try {
-      debugPrint('[LOGOUT] SecureStorage cleanup started');
-      await _storage.delete(key: _tokenKey).timeout(const Duration(seconds: 1));
-      await _storage.delete(key: 'medishare_token').timeout(const Duration(seconds: 1));
-      await _storage.delete(key: _userKey).timeout(const Duration(seconds: 1));
-      debugPrint('[LOGOUT] SecureStorage cleanup completed');
-    } catch (e) {
-      debugPrint('[LOGOUT] SecureStorage cleanup error/timeout: $e');
     }
   }
 

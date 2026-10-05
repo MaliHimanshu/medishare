@@ -31,6 +31,7 @@ class AuthProvider extends ChangeNotifier {
 
   // ── Init: Check existing JWT on app launch ────────────
   Future<void> checkAuthStatus() async {
+    if (_status == AuthStatus.loading) return;
     _setStatus(AuthStatus.loading);
     try {
       final hasToken = await _authService.hasToken();
@@ -41,7 +42,9 @@ class AuthProvider extends ChangeNotifier {
       
       // Attempt to load profile from backend / local secure storage
       final user = await _authService.getMe();
-      if (user != null) {
+      final firebaseUser = FirebaseAuth.instance.currentUser;
+
+      if (user != null && firebaseUser != null && user.id == firebaseUser.uid) {
         _user = user;
         _setStatus(AuthStatus.authenticated);
         debugPrint('[ROLE SYNC] AuthProvider.checkAuthStatus(): uid=${_user?.id} role=${_user?.role}');
@@ -49,9 +52,12 @@ class AuthProvider extends ChangeNotifier {
         // Register FCM in background without awaiting
         FcmService().registerDeviceToken(_user!.id).ignore();
       } else {
+        if (user != null) {
+           debugPrint('[AUTH SYNC] Mismatch in checkAuthStatus. Backend user: ${user.id}, Firebase: ${firebaseUser?.uid}');
+           await _authService.clearAuth();
+        }
         _setStatus(AuthStatus.unauthenticated);
       }
-      notifyListeners();
     } catch (e) {
       debugPrint('[AuthProvider] checkAuthStatus error: $e');
       _setStatus(AuthStatus.unauthenticated);
@@ -64,6 +70,14 @@ class AuthProvider extends ChangeNotifier {
     _errorMessage = null;
     try {
       final result = await _authService.login(email.trim(), password);
+      final currentFirebaseUser = FirebaseAuth.instance.currentUser;
+      if (currentFirebaseUser == null || currentFirebaseUser.uid != result.user.id) {
+         debugPrint('[AUTH SYNC] Race condition detected in login(). Firebase UID changed. Aborting login.');
+         await _authService.clearAuth();
+         _setStatus(AuthStatus.unauthenticated);
+         return false;
+      }
+
       _user = result.user;
       debugPrint('[ROLE SYNC] AuthProvider.login(): uid=${_user?.id} role=${_user?.role}');
       debugPrint('CURRENT USER EMAIL = ${_user?.email}');
