@@ -77,24 +77,35 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Row(
+        backgroundColor: context.surfaceBg,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: context.borderColor),
+        ),
+        title: Row(
           children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.red),
-            SizedBox(width: 10),
-            Text('Delete Hospital?'),
+            const Icon(Icons.warning_amber_rounded, color: AppColors.error),
+            const SizedBox(width: 10),
+            Text(
+              'Delete Hospital?',
+              style: TextStyle(color: context.textPrimaryColor),
+            ),
           ],
         ),
         content: Text(
           'Are you sure you want to delete "${_currentHospital.hospitalName}" from the MediShare network?',
+          style: TextStyle(color: context.textSecondaryColor),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('Cancel'),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: context.textSecondaryColor),
+            ),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.error),
             onPressed: () async {
               final messenger = ScaffoldMessenger.of(context);
               final navigator = Navigator.of(context);
@@ -127,7 +138,7 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
                 }
               }
             },
-            child: Text('Delete'),
+            child: const Text('Delete'),
           ),
         ],
       ),
@@ -141,10 +152,13 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
     return Scaffold(
       backgroundColor: context.scaffoldBg,
       appBar: AppBar(
-        title: Text('Hospital Details'),
+        title: Text(
+          'Hospital Details',
+          style: TextStyle(color: context.textPrimaryColor),
+        ),
         centerTitle: true,
         backgroundColor: context.surfaceBg,
-        foregroundColor: AppColors.textPrimary,
+        foregroundColor: context.textPrimaryColor,
         elevation: 0,
         actions: [
           IconButton(
@@ -152,7 +166,7 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
             onPressed: _openEditScreen,
           ),
           IconButton(
-            icon: const Icon(Icons.delete_outline, color: Colors.red),
+            icon: const Icon(Icons.delete_outline, color: AppColors.error),
             onPressed: _confirmDelete,
           ),
         ],
@@ -190,7 +204,7 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.textPrimary,
+                          color: context.textPrimaryColor,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -198,7 +212,7 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
                         'Registration ID: #${h.id.isNotEmpty ? h.id : 'MS-HOSP-001'}',
                         style: TextStyle(
                           fontSize: 12,
-                          color: AppColors.textSecondary,
+                          color: context.textSecondaryColor,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -211,9 +225,11 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.amber.shade50,
+                    color: Colors.amber.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.amber.shade300),
+                    border: Border.all(
+                      color: Colors.amber.withValues(alpha: 0.4),
+                    ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -222,10 +238,10 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
                       const SizedBox(width: 4),
                       Text(
                         h.rating.toStringAsFixed(1),
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 13,
-                          color: Theme.of(context).colorScheme.onSurface,
+                          color: Colors.amber,
                         ),
                       ),
                     ],
@@ -238,30 +254,36 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
 
             // Stats 3-Column Banner
             Container(
-              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 14),
+              padding: const EdgeInsets.symmetric(
+                vertical: 16,
+                horizontal: 14,
+              ),
               decoration: BoxDecoration(
-                color: AppColors.surface,
+                color: context.cardBg,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey.shade200),
+                border: Border.all(color: context.borderColor),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   _buildStatItem(
+                    context,
                     'Equipment',
                     h.availableEquipmentCount.toString(),
                     Icons.medical_services_outlined,
                     Colors.teal,
                   ),
-                  Container(height: 30, width: 1, color: Colors.grey.shade300),
+                  Container(height: 30, width: 1, color: context.borderColor),
                   _buildStatItem(
+                    context,
                     'Donations',
                     h.totalDonationsCount.toString(),
                     Icons.volunteer_activism_outlined,
-                    Colors.pink,
+                    Colors.pinkAccent,
                   ),
-                  Container(height: 30, width: 1, color: Colors.grey.shade300),
+                  Container(height: 30, width: 1, color: context.borderColor),
                   _buildStatItem(
+                    context,
                     'Requests',
                     h.activeRequestsCount.toString(),
                     Icons.assignment_outlined,
@@ -276,79 +298,147 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
             // Facility Information Card
             Card(
               elevation: 0,
-              color: AppColors.surface,
+              color: context.cardBg,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
-                side: BorderSide(color: Colors.grey.shade200),
+                side: BorderSide(color: context.borderColor),
               ),
               child: Column(
                 children: [
                   ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: Colors.red.shade50,
-                      child: const Icon(Icons.location_on, color: Colors.red),
+                      backgroundColor: Colors.red.withValues(alpha: 0.15),
+                      child: const Icon(Icons.location_on, color: Colors.redAccent),
                     ),
-                    title: Text('Full Address'),
+                    title: Text(
+                      'Full Address',
+                      style: TextStyle(
+                        color: context.textSecondaryColor,
+                        fontSize: 12,
+                      ),
+                    ),
                     subtitle: Text(
                       '${h.address}, ${h.city}, ${h.state} - ${h.pincode}',
+                      style: TextStyle(
+                        color: context.textPrimaryColor,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
-                  const Divider(height: 1),
+                  Divider(height: 1, color: context.borderColor),
                   ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: Colors.green.shade50,
+                      backgroundColor: Colors.green.withValues(alpha: 0.15),
                       child: const Icon(Icons.phone, color: Colors.green),
                     ),
-                    title: Text('Phone Number'),
+                    title: Text(
+                      'Phone Number',
+                      style: TextStyle(
+                        color: context.textSecondaryColor,
+                        fontSize: 12,
+                      ),
+                    ),
                     subtitle: Text(
                       h.phone.isNotEmpty ? h.phone : 'Not Provided',
+                      style: TextStyle(
+                        color: context.textPrimaryColor,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
-                  const Divider(height: 1),
+                  Divider(height: 1, color: context.borderColor),
                   ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: Colors.blue.shade50,
-                      child: const Icon(Icons.email, color: Colors.blue),
+                      backgroundColor: Colors.blue.withValues(alpha: 0.15),
+                      child: const Icon(Icons.email, color: AppColors.primary),
                     ),
-                    title: Text('Email Address'),
+                    title: Text(
+                      'Email Address',
+                      style: TextStyle(
+                        color: context.textSecondaryColor,
+                        fontSize: 12,
+                      ),
+                    ),
                     subtitle: Text(
                       h.email.isNotEmpty ? h.email : 'Not Provided',
+                      style: TextStyle(
+                        color: context.textPrimaryColor,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
-                  const Divider(height: 1),
+                  Divider(height: 1, color: context.borderColor),
                   ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: Colors.purple.shade50,
-                      child: const Icon(Icons.person, color: Colors.purple),
+                      backgroundColor: Colors.purple.withValues(alpha: 0.15),
+                      child: const Icon(Icons.person, color: Colors.purpleAccent),
                     ),
-                    title: Text('Contact Person'),
-                    subtitle: Text(h.contactPerson),
+                    title: Text(
+                      'Contact Person',
+                      style: TextStyle(
+                        color: context.textSecondaryColor,
+                        fontSize: 12,
+                      ),
+                    ),
+                    subtitle: Text(
+                      h.contactPerson,
+                      style: TextStyle(
+                        color: context.textPrimaryColor,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
-                  const Divider(height: 1),
+                  Divider(height: 1, color: context.borderColor),
                   ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: Colors.indigo.shade50,
-                      child: const Icon(Icons.language, color: Colors.indigo),
+                      backgroundColor: Colors.indigo.withValues(alpha: 0.15),
+                      child: const Icon(Icons.language, color: Colors.indigoAccent),
                     ),
-                    title: Text('Website'),
+                    title: Text(
+                      'Website',
+                      style: TextStyle(
+                        color: context.textSecondaryColor,
+                        fontSize: 12,
+                      ),
+                    ),
                     subtitle: Text(
                       h.website.isNotEmpty ? h.website : 'None listed',
+                      style: TextStyle(
+                        color: context.textPrimaryColor,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
-                  const Divider(height: 1),
+                  Divider(height: 1, color: context.borderColor),
                   ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: Colors.teal.shade50,
+                      backgroundColor: Colors.teal.withValues(alpha: 0.15),
                       child: const Icon(
                         Icons.calendar_month,
                         color: Colors.teal,
                       ),
                     ),
-                    title: Text('Joined Date'),
+                    title: Text(
+                      'Joined Date',
+                      style: TextStyle(
+                        color: context.textSecondaryColor,
+                        fontSize: 12,
+                      ),
+                    ),
                     subtitle: Text(
                       h.createdAt.isNotEmpty
                           ? h.createdAt.split('T').first
                           : 'Recently Joined',
+                      style: TextStyle(
+                        color: context.textPrimaryColor,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ],
@@ -363,16 +453,16 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: AppColors.textPrimary,
+                color: context.textPrimaryColor,
               ),
             ),
             const SizedBox(height: 8),
             Card(
               elevation: 0,
-              color: AppColors.surface,
+              color: context.cardBg,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
-                side: BorderSide(color: Colors.grey.shade200),
+                side: BorderSide(color: context.borderColor),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -380,7 +470,11 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
                   h.description.isNotEmpty
                       ? h.description
                       : 'No description provided for this healthcare center.',
-                  style: TextStyle(fontSize: 14, height: 1.4),
+                  style: TextStyle(
+                    fontSize: 14,
+                    height: 1.4,
+                    color: context.textPrimaryColor,
+                  ),
                 ),
               ),
             ),
@@ -393,9 +487,11 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: _openEditScreen,
-                    icon: const Icon(Icons.edit_outlined),
-                    label: Text('Edit Facility'),
+                    icon: const Icon(Icons.edit_outlined, color: AppColors.primary),
+                    label: const Text('Edit Facility'),
                     style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.primary,
+                      side: const BorderSide(color: AppColors.primary),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -408,9 +504,9 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
                   child: FilledButton.icon(
                     onPressed: _confirmDelete,
                     icon: const Icon(Icons.delete_outline),
-                    label: Text('Delete'),
+                    label: const Text('Delete'),
                     style: FilledButton.styleFrom(
-                      backgroundColor: Colors.red,
+                      backgroundColor: AppColors.error,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -428,6 +524,7 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
   }
 
   Widget _buildStatItem(
+    BuildContext context,
     String label,
     String value,
     IconData icon,
@@ -439,10 +536,21 @@ class _HospitalDetailScreenState extends State<HospitalDetailScreen> {
         const SizedBox(height: 4),
         Text(
           value,
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+            color: context.textPrimaryColor,
+          ),
         ),
-        Text(label, style: TextStyle(fontSize: 11, color: Colors.grey)),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            color: context.textSecondaryColor,
+          ),
+        ),
       ],
     );
   }
 }
+

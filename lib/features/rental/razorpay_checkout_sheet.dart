@@ -77,12 +77,20 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
   }
 
   void _handlePaymentError(PaymentFailureResponse response) async {
-    debugPrint('[PAYMENT] Payment error/cancelled: ${response.message}');
+    debugPrint('=== RAZORPAY DIAGNOSTICS (FAILURE) ===');
+    debugPrint('orderId = $_currentOrderId');
+    debugPrint('amount = ${widget.rental.totalAmount * 100} paise');
+    debugPrint('Razorpay error code = ${response.code}');
+    debugPrint('Razorpay error description = ${response.message}');
+    debugPrint('metadata/reason = ${response.error}');
+    debugPrint('Failure stage: BEFORE backend verification (in Razorpay UI/SDK)');
+    debugPrint('======================================');
+    
     final rentalProvider = context.read<RentalProvider>();
     await rentalProvider.recordPaymentFailure(widget.rental.id);
     setState(() {
       _isProcessing = false;
-      _errorMessage = 'Payment failed or cancelled: ${response.message ?? ""}';
+      _errorMessage = 'Payment failed: [${response.code}] ${response.message ?? "User cancelled or initialization failed"}';
     });
   }
 
@@ -116,10 +124,18 @@ class _RazorpayCheckoutSheetState extends State<RazorpayCheckoutSheet> {
 
       final orderId = orderData['orderId']?.toString() ?? '';
       _currentOrderId = orderId;
-      debugPrint('[PAYMENT] Order created: $orderId');
+      debugPrint('RAZORPAY CHECKOUT START');
+      debugPrint('orderId = $orderId');
 
       final amount = orderData['amount'];
       final keyId = orderData['keyId'];
+      
+      debugPrint('=== RAZORPAY DIAGNOSTICS (START) ===');
+      debugPrint('orderId = $orderId');
+      debugPrint('amount = $amount paise');
+      debugPrint('key ID = $keyId');
+      debugPrint('====================================');
+      
       final equipmentName = orderData['equipmentName'] ?? "Medical Equipment";
       final renterPhone = orderData['renterPhone'] ?? "";
       final renterEmail = orderData['renterEmail'] ?? "";

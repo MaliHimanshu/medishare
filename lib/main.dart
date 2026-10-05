@@ -27,9 +27,14 @@ void main() {
       await CrashlyticsService.instance.init();
 
       // 3. Firebase App Check (debug provider in debug, Play Integrity in release)
-      await FirebaseAppCheck.instance.activate(
-        androidProvider: AndroidProvider.debug,
-      );
+      try {
+        await FirebaseAppCheck.instance.activate(
+          androidProvider: AndroidProvider.debug,
+        );
+        debugPrint('[APPCHECK] initialization status: SUCCESS');
+      } catch (e) {
+        debugPrint('[APPCHECK] initialization status: FAILED ($e)');
+      }
 
       // 4. Initialize Analytics
       await AnalyticsService.instance.init();

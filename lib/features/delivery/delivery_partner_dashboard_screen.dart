@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/network/api_endpoints.dart';
 import '../../services/location_service.dart';
 import '../../services/delivery_service.dart';
 import '../../services/rental_service.dart';
@@ -45,7 +46,7 @@ class DeliveryPartnerDashboardScreen extends StatelessWidget {
 
             final deliveries = snapshot.data ?? [];
             final assigned = deliveries.where((d) => d.status == DeliveryStatus.ASSIGNED).toList();
-            final active = deliveries.where((d) => d.status == DeliveryStatus.IN_TRANSIT || d.status == DeliveryStatus.PICKED_UP).toList();
+            final active = deliveries.where((d) => d.status == DeliveryStatus.GOING_TO_PICKUP || d.status == DeliveryStatus.IN_TRANSIT || d.status == DeliveryStatus.PICKED_UP).toList();
             final completed = deliveries.where((d) => d.status == DeliveryStatus.DELIVERED || d.status == DeliveryStatus.CANCELLED).toList();
 
             return TabBarView(
@@ -95,7 +96,65 @@ class DeliveryPartnerDashboardScreen extends StatelessWidget {
                     width: double.infinity,
                     child: FilledButton(
                       onPressed: () async {
-                        final rental = await RentalService().getRental(delivery.rentalId);
+                        debugPrint('=== [START PICKUP] DIAGNOSTICS ===');
+                        debugPrint('deliveryId = ${delivery.id}');
+                        debugPrint('firebaseUid = ${Provider.of<AuthProvider>(context, listen: false).user?.id}');
+                        debugPrint('deliveryPartnerId = ${delivery.deliveryPartnerId}');
+                        debugPrint('currentStatus = $status');
+                        debugPrint('requestedStatus = GOING_TO_PICKUP');
+                        
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (context) => const Center(child: CircularProgressIndicator()),
+                        );
+                        
+                        try {
+                          debugPrint('update started');
+                          await DeliveryService().updateDeliveryStatus(delivery.id, DeliveryStatus.GOING_TO_PICKUP);
+                          debugPrint('update completed');
+                          
+                          if (context.mounted) {
+                            Navigator.pop(context); // close dialog
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Status updated to GOING TO PICKUP'), backgroundColor: Colors.green));
+                          }
+                        } catch (e) {
+                          debugPrint('FirebaseException code/message: $e');
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to update status: $e'), backgroundColor: Colors.red));
+                          }
+                        }
+                      },
+                      child: const Text('Start Pickup'),
+                    ),
+                  ),
+
+                if (status == 'GOING_TO_PICKUP')
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton(
+                      onPressed: () async {
+                        debugPrint('=== [ARRIVED PICKUP DEBUG] ===');
+                        debugPrint('deliveryId = ${delivery.id}');
+                        debugPrint('delivery.rentalId = ${delivery.rentalId}');
+                        debugPrint('firebaseUserId = ${Provider.of<AuthProvider>(context, listen: false).user?.id}');
+                        debugPrint('userRole = ${Provider.of<AuthProvider>(context, listen: false).user?.role}');
+                        debugPrint('API base URL = ${ApiEndpoints.baseUrl}');
+                        debugPrint('GET rental URL = ${ApiEndpoints.rental}/${delivery.rentalId}');
+
+                        RentalModel? rental;
+                        try {
+                          rental = await RentalService().getRental(delivery.rentalId);
+                        } catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('API Error: $e'), duration: const Duration(seconds: 5)));
+                          }
+                          return;
+                        }
+
+                        debugPrint('rental found = ${rental != null}');
+                        
                         if (rental == null && context.mounted) {
                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Rental details not found.')));
                            return;
@@ -113,7 +172,7 @@ class DeliveryPartnerDashboardScreen extends StatelessWidget {
                           );
                         }
                       },
-                      child: const Text('Start Pickup'),
+                      child: const Text('Arrived at Pickup (Take Photo)'),
                     ),
                   ),
                   
@@ -122,12 +181,32 @@ class DeliveryPartnerDashboardScreen extends StatelessWidget {
                     width: double.infinity,
                     child: FilledButton(
                       onPressed: () async {
-                        final locationService = LocationService();
-                        await locationService.startTracking(delivery.id);
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Delivery started. Live tracking active.')),
-                          );
+                        print('[START DELIVERY] Button tapped');
+                        print('[START DELIVERY] Delivery ID: ${delivery.id}');
+                        print('[START DELIVERY] Current status: $status');
+                        
+                        try {
+                          final locationService = LocationService();
+                          await locationService.startTracking(delivery.id);
+                          
+                          if (status == 'PICKED_UP') {
+                            print('[START DELIVERY] Updating status to IN_TRANSIT');
+                            await DeliveryService().updateDeliveryStatus(delivery.id, DeliveryStatus.IN_TRANSIT);
+                            print('[START DELIVERY] Update completed');
+                          }
+
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Delivery started. Live tracking active.')),
+                            );
+                          }
+                        } catch (e) {
+                          print('[START DELIVERY] Failed: $e');
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Failed to start delivery: $e'), backgroundColor: Colors.red),
+                            );
+                          }
                         }
                       },
                       child: Text(
@@ -141,21 +220,38 @@ class DeliveryPartnerDashboardScreen extends StatelessWidget {
                     width: double.infinity,
                     child: OutlinedButton(
                       onPressed: () async {
-                        final rental = await RentalService().getRental(delivery.rentalId);
-                        if (rental == null && context.mounted) {
-                           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Rental details not found.')));
-                           return;
-                        }
-                        if (context.mounted) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => OtpVerificationScreen(
-                                deliveryId: delivery.id,
-                                rental: rental!,
+                        print('[DELIVERY OTP] Button tapped');
+                        print('[DELIVERY OTP] Delivery ID: ${delivery.id}');
+                        print('[DELIVERY OTP] Current status: $status');
+                        print('[DELIVERY OTP] Request started');
+                        
+                        try {
+                          final rental = await RentalService().getRental(delivery.rentalId);
+                          print('[DELIVERY OTP] Request completed');
+                          
+                          if (rental == null && context.mounted) {
+                             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Rental details not found.')));
+                             return;
+                          }
+                          if (context.mounted) {
+                            print('[DELIVERY OTP] Opening OTP screen');
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => OtpVerificationScreen(
+                                  deliveryId: delivery.id,
+                                  rental: rental!,
+                                ),
                               ),
-                            ),
-                          );
+                            );
+                          }
+                        } catch (e) {
+                          print('[DELIVERY OTP] Error: $e');
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Failed to load rental details: $e'), backgroundColor: Colors.red),
+                            );
+                          }
                         }
                       },
                       child: const Text('Enter Delivery OTP'),

@@ -46,18 +46,29 @@ class _HospitalScreenState extends State<HospitalScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Delete Hospital'),
+        backgroundColor: context.surfaceBg,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: context.borderColor),
+        ),
+        title: Text(
+          'Delete Hospital',
+          style: TextStyle(color: context.textPrimaryColor),
+        ),
         content: Text(
           'Are you sure you want to delete "${hospital.hospitalName}"?',
+          style: TextStyle(color: context.textSecondaryColor),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancel'),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: context.textSecondaryColor),
+            ),
           ),
           FilledButton(
-            style: FilledButton.styleFrom(backgroundColor: Colors.red),
+            style: FilledButton.styleFrom(backgroundColor: AppColors.error),
             onPressed: () async {
               final messenger = ScaffoldMessenger.of(context);
               Navigator.pop(ctx);
@@ -189,7 +200,15 @@ class _HospitalScreenState extends State<HospitalScreen> {
                               ),
                             ),
                             selected: isSelected,
-                            selectedColor: AppColors.primary.withAlpha(35),
+                            selectedColor: AppColors.primary.withValues(
+                              alpha: 0.15,
+                            ),
+                            backgroundColor: context.inputBg,
+                            side: BorderSide(
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : context.borderColor,
+                            ),
                             onSelected: (val) {
                               hospitalProvider.setCityFilter(cityName);
                             },

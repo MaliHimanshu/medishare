@@ -42,13 +42,13 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   Future<void> _generateDevOtp() async {
     try {
       final deliveryService = DeliveryService();
-      final otp = await deliveryService.generateDeliveryOtp(widget.deliveryId);
+      final result = await deliveryService.generateDeliveryOtp(widget.deliveryId);
       if (mounted) {
          ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('[DEV ONLY] OTP Generated: $otp (Sent to recipient)'),
-              duration: const Duration(seconds: 10),
-              backgroundColor: Colors.blueGrey,
+              content: Text(result == "SMS Sent" ? 'Delivery OTP sent to recipient via SMS.' : result),
+              duration: Duration(seconds: result == "SMS Sent" ? 5 : 15),
+              backgroundColor: result == "SMS Sent" ? Colors.green : Colors.orange,
             ),
          );
       }
@@ -254,7 +254,13 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                 counterText: '',
               ),
             ),
-            const SizedBox(height: 40),
+
+            const SizedBox(height: 16),
+            TextButton(
+              onPressed: _isLoading ? null : _generateDevOtp,
+              child: const Text('Resend OTP via SMS'),
+            ),
+            const SizedBox(height: 24),
             
             // Delivery Photos
             const Align(

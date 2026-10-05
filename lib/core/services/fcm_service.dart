@@ -106,8 +106,8 @@ class FcmService {
   Future<void> registerDeviceToken(String uid) async {
     try {
       String? token = await _messaging.getToken();
-      debugPrint('[FCM] Device Token: $token');
       if (token != null) {
+        debugPrint('[FCM] token generated');
         await _saveTokenToFirestore(token, uid);
       }
     } catch (e) {
@@ -117,14 +117,15 @@ class FcmService {
 
   Future<void> _saveTokenToFirestore(String token, String uid) async {
     try {
+      debugPrint('[FCM] token write started');
       await _db.collection('users').doc(uid).collection('notificationTokens').doc(token).set({
         'token': token,
         'createdAt': FieldValue.serverTimestamp(),
         'platform': Platform.isAndroid ? 'android' : 'ios',
       });
-      debugPrint('[FCM] Token updated on Firestore successfully');
+      debugPrint('[FCM] token write success');
     } catch (e) {
-      debugPrint('[FCM] Error updating token on Firestore: $e');
+      debugPrint('[FCM] token write failed: $e');
     }
   }
 

@@ -19,27 +19,14 @@ class ApiEndpoints {
   static const bool _usePhysicalPhoneLocal = true;
 
   static String get baseUrl {
-    // ALWAYS use live URL in release mode, or if _useLiveApi is manually set to true
-    if (kReleaseMode || _useLiveApi) return _liveUrl;
+    final url = _getBaseUrl();
+    debugPrint('[API CONFIG] baseUrl = $url');
+    return url;
+  }
 
-    if (kIsWeb) {
-      return 'http://localhost:5000/api';
-    }
-
-    if (Platform.isAndroid) {
-      if (_usePhysicalPhoneLocal) {
-        return _localDevUrl;
-      }
-      // Android emulator uses 10.0.2.2
-      return kDebugMode ? 'http://10.0.2.2:5000/api' : _liveUrl;
-    }
-
-    if (Platform.isWindows || Platform.isLinux) {
-      return 'http://localhost:5000/api';
-    }
-
-    // iOS Simulator / macOS / physical iOS
-    return _usePhysicalPhoneLocal ? _localDevUrl : 'http://localhost:5000/api';
+  static String _getBaseUrl() {
+    debugPrint('[API ENV] BASE URL: $_liveUrl');
+    return _liveUrl;
   }
 
   // ── Auth ────────────────────────────────────────────────

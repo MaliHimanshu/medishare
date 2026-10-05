@@ -43,10 +43,13 @@ import '../search/global_search_screen.dart';
 import '../auth/login_screen.dart';
 import '../auth/otp_verification_screen.dart';
 import '../rental/my_rentals_screen.dart';
+import '../rental/ngo_rental_management_screen.dart';
 import '../../core/theme/app_page_transitions.dart';
 import '../emergency_alerts/hospital_emergency_alerts_screen.dart';
 import '../emergency_alerts/ngo_emergency_alerts_screen.dart';
 import '../delivery/delivery_partner_dashboard_screen.dart';
+import '../delivery/admin_delivery_management_screen.dart';
+import '../ngo/ngo_management_screen.dart';
 
 // Role Dashboards
 import 'dashboards/donor_dashboard.dart';
@@ -244,6 +247,30 @@ class _HomeScreenState extends State<HomeScreen>
         }
         break;
 
+      case 'DELIVERY_PARTNER':
+        // Navigation: Home, Deliveries, Chat, Profile
+        switch (index) {
+          case 1:
+            Navigator.push(
+              context,
+              AppPageTransitions.slideRight(const DeliveryPartnerDashboardScreen()),
+            );
+            break;
+          case 2:
+            Navigator.push(
+              context,
+              AppPageTransitions.slideUp(const MessagesScreen()),
+            );
+            break;
+          case 3:
+            Navigator.push(
+              context,
+              AppPageTransitions.slideRight(const ProfileScreen()),
+            );
+            break;
+        }
+        break;
+
       case 'ADMIN':
       default:
         // Navigation: Home, Equipment, Requests, Chat, Profile
@@ -395,6 +422,30 @@ class _HomeScreenState extends State<HomeScreen>
           ),
         ];
 
+      case 'DELIVERY_PARTNER':
+        return const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.dashboard_outlined),
+            activeIcon: Icon(Icons.dashboard),
+            label: "Home",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.local_shipping_outlined),
+            activeIcon: Icon(Icons.local_shipping),
+            label: "Deliveries",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.forum_outlined),
+            activeIcon: Icon(Icons.forum),
+            label: "Chat",
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
+            label: "Profile",
+          ),
+        ];
+
       case 'ADMIN':
       default:
         return const [
@@ -433,6 +484,8 @@ class _HomeScreenState extends State<HomeScreen>
     }
     final role = user.role.trim().toUpperCase();
     debugPrint('[SAFE DEBUG LOG] HomeScreen._buildRoleDashboard(): user_email=${user.email}, role=$role');
+    debugPrint('HOME EMAIL = ${user.email}');
+    debugPrint('HOME ROLE = $role');
     switch (role) {
       case 'DONOR':
         return DonorDashboard(user: user);
@@ -444,6 +497,36 @@ class _HomeScreenState extends State<HomeScreen>
         return RecipientDashboard(user: user);
       case 'ADMIN':
         return AdminDashboard(user: user);
+      case 'DELIVERY_PARTNER':
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(height: 48),
+              const Icon(Icons.local_shipping, size: 64, color: AppColors.primary),
+              const SizedBox(height: 16),
+              const Text(
+                'Welcome, Delivery Partner!',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 24),
+              Builder(
+                builder: (innerContext) {
+                  return FilledButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        innerContext,
+                        AppPageTransitions.slideRight(const DeliveryPartnerDashboardScreen()),
+                      );
+                    },
+                    icon: const Icon(Icons.local_shipping),
+                    label: const Text('Open Delivery Dashboard'),
+                  );
+                }
+              ),
+            ],
+          ),
+        );
       case 'UNKNOWN':
         return const Center(child: CircularProgressIndicator());
       default:
@@ -695,7 +778,12 @@ class _HomeScreenState extends State<HomeScreen>
                     title: "NGO Management",
                     onTap: () {
                       Navigator.pop(context);
-                      _showNotImplementedSnackBar(context, 'NGO Management');
+                      Navigator.push(
+                        context,
+                        AppPageTransitions.slideRight(
+                          const NgoManagementScreen(),
+                        ),
+                      );
                     },
                   ),
                   _buildDrawerItem(
@@ -745,7 +833,7 @@ class _HomeScreenState extends State<HomeScreen>
                       Navigator.push(
                         context,
                         AppPageTransitions.slideRight(
-                          const DeliveryPartnerDashboardScreen(),
+                          const AdminDeliveryManagementScreen(),
                         ),
                       );
                     },
@@ -894,6 +982,21 @@ class _HomeScreenState extends State<HomeScreen>
                         );
                       },
                     ),
+                  if (role == 'DELIVERY_PARTNER')
+                    _buildDrawerItem(
+                      context,
+                      icon: Icons.local_shipping_outlined,
+                      title: "My Deliveries",
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          AppPageTransitions.slideRight(
+                            const DeliveryPartnerDashboardScreen(),
+                          ),
+                        );
+                      },
+                    ),
                   if (role == 'DONOR' || role == 'HOSPITAL')
                     _buildDrawerItem(
                       context,
@@ -952,17 +1055,24 @@ class _HomeScreenState extends State<HomeScreen>
                         );
                       },
                     ),
-                  if (role == 'DONOR' || role == 'RECIPIENT' || role == 'HOSPITAL')
+                  if (role == 'DONOR' || role == 'RECIPIENT' || role == 'HOSPITAL' || role == 'NGO')
                     _buildDrawerItem(
                       context,
                       icon: Icons.handshake_outlined,
-                      title: role == 'DONOR' ? "Rental Requests" : "My Rentals",
+                      title: role == 'DONOR' ? "Rental Requests" : role == 'NGO' ? "Rental Management" : "My Rentals",
                       onTap: () {
                         Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          AppPageTransitions.slideRight(const MyRentalsScreen()),
-                        );
+                        if (role == 'NGO') {
+                          Navigator.push(
+                            context,
+                            AppPageTransitions.slideRight(const NgoRentalManagementScreen()),
+                          );
+                        } else {
+                          Navigator.push(
+                            context,
+                            AppPageTransitions.slideRight(const MyRentalsScreen()),
+                          );
+                        }
                       },
                     ),
                   _buildDrawerItem(

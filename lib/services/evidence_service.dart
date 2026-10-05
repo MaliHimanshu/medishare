@@ -39,7 +39,9 @@ class EvidenceService {
       createdAt: DateTime.now().toIso8601String(),
     );
 
-    await _db.collection('evidence').doc(evidenceId).set(evidence.toJson());
+    final docRef = _db.collection('evidence').doc(evidenceId);
+    print('[FIRESTORE WRITE] Path: ${docRef.path}');
+    await docRef.set(evidence.toJson());
 
     return evidence;
   }

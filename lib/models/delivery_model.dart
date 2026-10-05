@@ -46,6 +46,9 @@ class DeliveryModel {
   final String? pickedUpAt;
   final String? deliveredAt;
   final String? estimatedArrival;
+  final double? currentLatitude;
+  final double? currentLongitude;
+  final String? lastLocationUpdate;
   final String createdAt;
   final String updatedAt;
 
@@ -62,6 +65,9 @@ class DeliveryModel {
     this.pickedUpAt,
     this.deliveredAt,
     this.estimatedArrival,
+    this.currentLatitude,
+    this.currentLongitude,
+    this.lastLocationUpdate,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -80,6 +86,9 @@ class DeliveryModel {
       pickedUpAt: json['pickedUpAt']?.toString(),
       deliveredAt: json['deliveredAt']?.toString(),
       estimatedArrival: json['estimatedArrival']?.toString(),
+      currentLatitude: json['currentLatitude'] != null ? (json['currentLatitude'] as num).toDouble() : null,
+      currentLongitude: json['currentLongitude'] != null ? (json['currentLongitude'] as num).toDouble() : null,
+      lastLocationUpdate: json['lastLocationUpdate']?.toString(),
       createdAt: json['createdAt']?.toString() ?? '',
       updatedAt: json['updatedAt']?.toString() ?? '',
     );
@@ -99,6 +108,9 @@ class DeliveryModel {
       'pickedUpAt': pickedUpAt,
       'deliveredAt': deliveredAt,
       'estimatedArrival': estimatedArrival,
+      'currentLatitude': currentLatitude,
+      'currentLongitude': currentLongitude,
+      'lastLocationUpdate': lastLocationUpdate,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
     };

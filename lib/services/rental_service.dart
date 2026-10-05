@@ -23,11 +23,31 @@ class RentalService {
 
   Future<RentalModel?> getRental(String id) async {
     try {
-      final response = await _dio.get('${ApiEndpoints.rental}/$id');
+      final requestPath = '${ApiEndpoints.rental}/$id';
+      print('[ACTUAL RENTAL REQUEST] ${_dio.options.baseUrl}$requestPath');
+      print('[DIO RUNTIME BASE URL] ${_dio.options.baseUrl}');
+      print('[DIO RUNTIME REQUEST URI] ${_dio.options.baseUrl}$requestPath');
+      
+      print('[RENTAL LOOKUP REQUEST] GET $requestPath');
+      final response = await _dio.get(requestPath);
+      print('[RENTAL LOOKUP RESULT]');
+      print('HTTP status = ${response.statusCode}');
+      print('response data = ${response.data}');
+
       if (response.data != null && response.data['success'] == true) {
         return RentalModel.fromJson(response.data['data'] as Map<String, dynamic>);
       }
-    } catch (_) {}
+    } on DioException catch (e) {
+      print('=== [RENTAL LOOKUP ERROR] ===');
+      print('HTTP status = ${e.response?.statusCode}');
+      print('Dio error type = ${e.type}');
+      print('response data = ${e.response?.data}');
+      print('error message = ${e.message}');
+      throw e;
+    } catch (e) {
+      print('[RENTAL LOOKUP EXCEPTION] $e');
+      throw e;
+    }
     return null;
   }
 

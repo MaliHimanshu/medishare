@@ -34,6 +34,18 @@ class DioClient {
       ),
     );
 
+    // ── Diagnostic Interceptor ────────────────────────────
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          print('[DIO INTERCEPTOR URI] ${options.uri}');
+          print('[DIO INTERCEPTOR BASE URL] ${options.baseUrl}');
+          print('[DIO INTERCEPTOR PATH] ${options.path}');
+          return handler.next(options);
+        },
+      ),
+    );
+
     // ── Auth Interceptor ──────────────────────────────────
     dio.interceptors.add(
       InterceptorsWrapper(

@@ -47,6 +47,8 @@ class ProfileProvider extends ChangeNotifier {
         final userData = response.data['data'] as Map<String, dynamic>;
         _user = UserModel.fromJson(userData);
         debugPrint('[SAFE DEBUG LOG] ProfileProvider.fetchProfile(): email=${_user?.email}, parsed_role=${_user?.role}');
+        debugPrint('PROFILE EMAIL = ${_user?.email}');
+        debugPrint('PROFILE ROLE = ${_user?.role}');
       }
       debugPrint('[PROFILE] REST profile fetch completed');
     } catch (e) {
@@ -57,6 +59,8 @@ class ProfileProvider extends ChangeNotifier {
           final userData = fallbackRes.data['data'] as Map<String, dynamic>;
           _user = UserModel.fromJson(userData);
           debugPrint('[SAFE DEBUG LOG] ProfileProvider.fetchProfile() fallback: email=${_user?.email}, parsed_role=${_user?.role}');
+          debugPrint('PROFILE EMAIL = ${_user?.email}');
+          debugPrint('PROFILE ROLE = ${_user?.role}');
         }
       } catch (innerE) {
         debugPrint('[PROFILE] Fallback REST failed: $innerE');

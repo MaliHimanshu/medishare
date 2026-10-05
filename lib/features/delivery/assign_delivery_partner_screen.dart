@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../../core/constants/app_colors.dart';
 import '../../models/rental_model.dart';
 import '../../models/delivery_model.dart';
@@ -7,8 +8,13 @@ import '../../services/delivery_service.dart';
 
 class AssignDeliveryPartnerScreen extends StatelessWidget {
   final RentalModel rental;
+  final String? existingDeliveryId;
 
-  const AssignDeliveryPartnerScreen({super.key, required this.rental});
+  const AssignDeliveryPartnerScreen({
+    super.key, 
+    required this.rental,
+    this.existingDeliveryId,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -78,32 +84,70 @@ class AssignDeliveryPartnerScreen extends StatelessWidget {
                       ),
                       FilledButton(
                         onPressed: () async {
-                          // Create delivery doc
-                          final deliveryId = FirebaseFirestore.instance.collection('deliveries').doc().id;
-                          final type = (rental.status == RentalStatus.RETURN_REQUESTED || rental.status == RentalStatus.RETURN_ASSIGNED || rental.status == RentalStatus.RETURN_PICKUP) 
-                               ? DeliveryType.RETURN_PICKUP 
-                               : DeliveryType.DELIVERY;
-
-                          final newDelivery = DeliveryModel(
-                             id: deliveryId,
-                             rentalId: rental.id,
-                             deliveryPartnerId: partnerId,
-                             ngoId: rental.ngoId,
-                             type: type,
-                             status: DeliveryStatus.ASSIGNED,
-                             pickupAddress: 'NGO Address', // Need actual lookup in production
-                             deliveryAddress: 'Recipient Address', // Need actual lookup in production
-                             createdAt: DateTime.now().toIso8601String(),
-                             updatedAt: DateTime.now().toIso8601String(),
+                          debugPrint('=== ASSIGN DIAGNOSTICS ===');
+                          debugPrint('rental ID = ${rental.id}');
+                          debugPrint('selected delivery partner ID = $partnerId');
+                          debugPrint('current Firebase UID = FirebaseAuth.instance.currentUser?.uid'); // Cannot import firebase auth easily here without checking, wait I can just print it if I add the import.
+                          debugPrint('existing delivery ID = $existingDeliveryId');
+                          
+                          // Show loading indicator
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (context) => const Center(child: CircularProgressIndicator()),
                           );
                           
-                          await DeliveryService().createRental(newDelivery);
-                          
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Partner Assigned successfully!')),
-                            );
-                            Navigator.pop(context);
+                          try {
+                            debugPrint('Starting Firestore write...');
+                            if (existingDeliveryId != null) {
+                              debugPrint('Method: update existing delivery');
+                              await DeliveryService().assignDeliveryPartner(existingDeliveryId!, partnerId);
+                            } else {
+                              debugPrint('Method: create new delivery');
+                              final deliveryId = FirebaseFirestore.instance.collection('deliveries').doc().id;
+                              final type = (rental.status == RentalStatus.RETURN_REQUESTED || rental.status == RentalStatus.RETURN_ASSIGNED || rental.status == RentalStatus.RETURN_PICKUP) 
+                                   ? DeliveryType.RETURN_PICKUP 
+                                   : DeliveryType.DELIVERY;
+
+                              final newDelivery = DeliveryModel(
+                                 id: deliveryId,
+                                 rentalId: rental.id,
+                                 deliveryPartnerId: partnerId,
+                                 ngoId: FirebaseAuth.instance.currentUser?.uid ?? rental.ngoId,
+                                 type: type,
+                                 status: DeliveryStatus.ASSIGNED,
+                                 pickupAddress: 'NGO Address',
+                                 deliveryAddress: 'Recipient Address',
+                                 createdAt: DateTime.now().toIso8601String(),
+                                 updatedAt: DateTime.now().toIso8601String(),
+                              );
+                              
+                              await DeliveryService().createRental(newDelivery);
+                            }
+                            debugPrint('Firestore write completed successfully.');
+                            
+                            if (context.mounted) {
+                              Navigator.pop(context); // pop loading dialog
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(existingDeliveryId != null ? 'Partner Reassigned successfully!' : 'Delivery partner assigned successfully'),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                              Navigator.pop(context); // pop assign screen
+                            }
+                          } catch (e) {
+                            debugPrint('Firestore write FAILED: $e');
+                            if (context.mounted) {
+                              Navigator.pop(context); // pop loading dialog
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Failed to assign partner: $e'),
+                                  backgroundColor: Colors.red,
+                                  duration: const Duration(seconds: 5),
+                                ),
+                              );
+                            }
                           }
                         },
                         child: const Text('Assign'),

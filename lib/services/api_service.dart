@@ -40,6 +40,9 @@ class AuthService {
         if (response.data != null && response.data['success'] == true) {
           user = UserModel.fromJson(response.data['data'] as Map<String, dynamic>);
           debugPrint('[ROLE SYNC] login() backend PostgreSQL role: ${user.role} for email: ${user.email}');
+          debugPrint('AUTH SERVICE ROLE = ${user.role}');
+          debugPrint('LOGIN EMAIL = ${user.email}');
+          debugPrint('LOGIN ROLE = ${user.role}');
         }
       } catch (backendErr) {
         debugPrint('[AuthService] login() backend fetch failed: $backendErr');
@@ -47,6 +50,12 @@ class AuthService {
 
       // If backend API call was unreachable, fallback to cached user
       user ??= await getCachedUser();
+
+      // SECURITY FIX: Never allow a previous cached user to leak into a new login session
+      if (user != null && credential.user != null && user.id != credential.user!.uid) {
+        debugPrint('[AuthService] SECURITY ALERT: Cached user UID (${user.id}) does not match Firebase UID (${credential.user!.uid}). Discarding cache.');
+        user = null;
+      }
 
       if (user == null && credential.user != null) {
         user = UserModel(
@@ -60,6 +69,33 @@ class AuthService {
 
       if (user != null) {
         await _storage.write(key: _userKey, value: jsonEncode(user.toJson()));
+        
+        // Ensure Firestore role is synchronized with PostgreSQL source of truth
+        // Crucial Fix: Use exact Firebase UID, not the PostgreSQL user.id, to ensure firestore.rules (request.auth.uid) matches
+        try {
+          final firebaseUid = FirebaseAuth.instance.currentUser?.uid;
+          if (firebaseUid != null) {
+            debugPrint('[DIAGNOSTICS] ROLE SYNC START');
+            debugPrint('[DIAGNOSTICS] Firebase UID: $firebaseUid');
+            debugPrint('[DIAGNOSTICS] Backend role: ${user.role}');
+            
+            await FirebaseFirestore.instance.collection('users').doc(firebaseUid).set(
+              {'role': user.role, 'name': user.name, 'email': user.email},
+              SetOptions(merge: true),
+            );
+            debugPrint('[DIAGNOSTICS] ROLE SYNC SUCCESS');
+          }
+        } catch (syncErr) {
+          final firebaseUid = FirebaseAuth.instance.currentUser?.uid;
+          debugPrint('[DIAGNOSTICS] ROLE SYNC FAILED');
+          debugPrint('[DIAGNOSTICS] Firebase UID: $firebaseUid');
+          if (syncErr is FirebaseException) {
+            debugPrint('[DIAGNOSTICS] Error code: ${syncErr.code}');
+            debugPrint('[DIAGNOSTICS] Error message: ${syncErr.message}');
+          } else {
+            debugPrint('[DIAGNOSTICS] Error message: $syncErr');
+          }
+        }
       }
 
       return AuthResponseModel(
@@ -204,6 +240,7 @@ class AuthService {
         final userData = response.data['data'] as Map<String, dynamic>;
         final user = UserModel.fromJson(userData);
         debugPrint('[ROLE SYNC] getMe() backend PostgreSQL role: ${user.role} for email: ${user.email}');
+        debugPrint('AUTH SERVICE ROLE = ${user.role}');
         await _storage.write(key: _userKey, value: jsonEncode(user.toJson()));
         return user;
       }
@@ -212,7 +249,14 @@ class AuthService {
     } catch (e) {
       debugPrint('[AuthService] getMe() error: $e');
     }
-    return await getCachedUser();
+    
+    final cached = await getCachedUser();
+    final fUser = FirebaseAuth.instance.currentUser;
+    if (cached != null && fUser != null && cached.id != fUser.uid) {
+      debugPrint('[AuthService] SECURITY ALERT: Cached user UID (${cached.id}) does not match Firebase UID (${fUser.uid}). Discarding cache.');
+      return null;
+    }
+    return cached;
   }
 
   // ── Storage Helpers ───────────────────────────────────

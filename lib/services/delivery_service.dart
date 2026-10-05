@@ -1,11 +1,12 @@
-import 'dart:convert';
-import 'dart:math';
-import 'package:crypto/crypto.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import '../models/delivery_model.dart';
+import '../core/network/dio_client.dart';
 
 class DeliveryService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
+  final Dio _dio = DioClient.instance;
 
   Future<void> createRental(DeliveryModel delivery) async {
     await _db.collection('deliveries').doc(delivery.id).set({
@@ -57,94 +58,84 @@ class DeliveryService {
     await _db.collection('deliveries').doc(deliveryId).update(data);
   }
 
+  String _extractErrorMessage(dynamic data, String defaultMsg) {
+    if (data == null) return defaultMsg;
+    if (data is Map<String, dynamic>) {
+      return data['message']?.toString() ?? defaultMsg;
+    }
+    return data.toString();
+  }
+
   Future<String> generateDeliveryOtp(String deliveryId) async {
-    final random = Random.secure();
-    final otp = (1000 + random.nextInt(9000)).toString(); // 4 digit secure OTP
-
-    final otpHash = sha256.convert(utf8.encode(otp)).toString();
-
-    await _db.collection('deliveries').doc(deliveryId).update({
-      'otpHash': otpHash,
-      'otpCreatedAt': DateTime.now().toIso8601String(),
-      'otpExpiresAt': DateTime.now().add(const Duration(minutes: 15)).toIso8601String(),
-      'otpAttempts': 0,
-      'otpVerified': false,
-    });
-
-    return otp; // Return plaintext only to be shown in UI/Logged for dev
+    try {
+      debugPrint('[DELIVERY OTP DEBUG] BASE URL: ${_dio.options.baseUrl}');
+      final requestPath = '/delivery/$deliveryId/otp/generate';
+      debugPrint('[DELIVERY OTP DEBUG] REQUEST URL: ${_dio.options.baseUrl}$requestPath');
+      
+      final response = await _dio.post(requestPath);
+      
+      debugPrint('[DELIVERY OTP DEBUG] HTTP STATUS: ${response.statusCode}');
+      
+      final data = response.data;
+      if (data is Map<String, dynamic>) {
+        debugPrint('[DELIVERY OTP DEBUG] RESPONSE demoMode: ${data['demoMode']}');
+        debugPrint('[DELIVERY OTP DEBUG] RESPONSE success: ${data['success']}');
+        debugPrint('[DELIVERY OTP DEBUG] RESPONSE message: ${data['message']}');
+      }
+      
+      if (response.statusCode == 200) {
+        if (data is Map<String, dynamic> && data['demoMode'] == true) {
+          return "DEMO MODE — Delivery OTP: ${data['otp']}";
+        }
+        return "SMS Sent";
+      } else {
+        throw Exception(_extractErrorMessage(response.data, 'Failed to send OTP'));
+      }
+    } catch (e) {
+      if (e is DioException) {
+        debugPrint('[DELIVERY OTP DEBUG] HTTP STATUS: ${e.response?.statusCode}');
+        if (e.response?.data is Map<String, dynamic>) {
+           debugPrint('[DELIVERY OTP DEBUG] RESPONSE demoMode: ${e.response?.data['demoMode']}');
+           debugPrint('[DELIVERY OTP DEBUG] RESPONSE success: ${e.response?.data['success']}');
+           debugPrint('[DELIVERY OTP DEBUG] RESPONSE message: ${e.response?.data['message']}');
+        }
+        throw Exception(_extractErrorMessage(e.response?.data, e.message ?? 'Network error'));
+      }
+      throw Exception(e.toString());
+    }
   }
 
   Future<bool> verifyDeliveryOtp(String deliveryId, String rentalId, String enteredOtp) async {
-    final deliveryRef = _db.collection('deliveries').doc(deliveryId);
-    final rentalRef = _db.collection('rentals').doc(rentalId);
-
-    return await _db.runTransaction((transaction) async {
-      final doc = await transaction.get(deliveryRef);
-      if (!doc.exists) throw Exception('Delivery not found');
-
-      final data = doc.data()!;
+    try {
+      final response = await _dio.post(
+        '/delivery/$deliveryId/otp/verify',
+        data: {
+          'otp': enteredOtp,
+          'rentalId': rentalId,
+        },
+      );
       
-      if (data['otpVerified'] == true) {
-        throw Exception('OTP already verified');
+      if (response.statusCode == 200) {
+        return true;
+      } else {
+        throw Exception(_extractErrorMessage(response.data, 'Invalid OTP'));
       }
-
-      final attempts = data['otpAttempts'] ?? 0;
-      if (attempts >= 5) {
-        throw Exception('Too many attempts. Please request a new OTP.');
+    } catch (e) {
+      if (e is DioException) {
+        throw Exception(_extractErrorMessage(e.response?.data, e.message ?? 'Network error'));
       }
-
-      final expiresAtStr = data['otpExpiresAt'];
-      if (expiresAtStr != null) {
-        final expiresAt = DateTime.parse(expiresAtStr);
-        if (DateTime.now().isAfter(expiresAt)) {
-          throw Exception('OTP expired. Please request a new OTP.');
-        }
-      }
-
-      final storedHash = data['otpHash'];
-      final enteredHash = sha256.convert(utf8.encode(enteredOtp)).toString();
-
-      if (storedHash != enteredHash) {
-        transaction.update(deliveryRef, {'otpAttempts': attempts + 1});
-        throw Exception('Invalid OTP. Please try again.');
-      }
-
-      // Atomic Update
-      transaction.update(deliveryRef, {
-        'status': DeliveryStatus.DELIVERED.name.toUpperCase(),
-        'deliveredAt': DateTime.now().toIso8601String(),
-        'updatedAt': DateTime.now().toIso8601String(),
-        'otpVerified': true,
-        'verifiedAt': DateTime.now().toIso8601String(),
-      });
-
-      transaction.update(rentalRef, {
-        'status': 'ACTIVE',
-        'updatedAt': DateTime.now().toIso8601String(),
-      });
-
-      return true;
-    });
+      throw Exception(e.toString());
+    }
   }
 
   Future<void> assignDeliveryPartner(String deliveryId, String partnerId) async {
-    final batch = _db.batch();
-
     final deliveryRef = _db.collection('deliveries').doc(deliveryId);
-    final partnerRef = _db.collection('deliveryPartners').doc(partnerId);
 
-    batch.update(deliveryRef, {
+    await deliveryRef.update({
       'deliveryPartnerId': partnerId,
       'status': DeliveryStatus.ASSIGNED.name.toUpperCase(),
       'updatedAt': DateTime.now().toIso8601String(),
     });
-
-    batch.update(partnerRef, {
-      'isAvailable': false,
-      'currentDeliveryId': deliveryId,
-    });
-
-    await batch.commit();
   }
 
   Stream<List<DeliveryModel>> streamDeliveriesByPartner(String partnerId) {
@@ -153,18 +144,27 @@ class DeliveryService {
         .snapshots()
         .map((snapshot) => snapshot.docs.map((doc) {
               final data = doc.data();
-              return DeliveryModel(
-                id: data['id'] ?? doc.id,
-                rentalId: data['rentalId'] ?? '',
-                deliveryPartnerId: data['deliveryPartnerId'] ?? '',
-                ngoId: data['ngoId'] ?? '',
-                type: DeliveryType.values.firstWhere((e) => e.name == data['type'], orElse: () => DeliveryType.DELIVERY),
-                status: DeliveryStatus.values.firstWhere((e) => e.name == data['status'], orElse: () => DeliveryStatus.ASSIGNED),
-                pickupAddress: data['pickupAddress'] ?? '',
-                deliveryAddress: data['deliveryAddress'] ?? '',
-                createdAt: data['createdAt'] ?? '',
-                updatedAt: data['updatedAt'] ?? '',
-              );
+              data['id'] = doc.id;
+              return DeliveryModel.fromJson(data);
             }).toList());
+  }
+
+  Stream<List<DeliveryModel>> streamAllDeliveries() {
+    return _db.collection('deliveries')
+        .snapshots()
+        .map((snapshot) => snapshot.docs.map((doc) {
+              final data = doc.data();
+              data['id'] = doc.id; // ensure ID is passed
+              return DeliveryModel.fromJson(data);
+            }).toList());
+  }
+
+  Stream<DeliveryModel?> streamDelivery(String deliveryId) {
+    return _db.collection('deliveries').doc(deliveryId).snapshots().map((doc) {
+      if (!doc.exists || doc.data() == null) return null;
+      final data = doc.data()!;
+      data['id'] = doc.id;
+      return DeliveryModel.fromJson(data);
+    });
   }
 }

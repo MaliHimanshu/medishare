@@ -49,13 +49,26 @@ const getAllRentals = async (req, res) => {
 // Get Rental By ID
 const getRentalById = async (req, res) => {
   try {
+    console.log(`\n--- RENTAL LOOKUP REQUEST ---`);
+    console.log(`userId = ${req.user?.id}`);
+    console.log(`role = ${req.user?.role}`);
+    console.log(`rentalId = ${req.params.id}`);
+
     const rental = await rentalService.getRentalById(req.params.id, req.user);
+
+    console.log(`RENTAL LOOKUP RESULT`);
+    console.log(`found = true`);
+    console.log(`status = 200`);
 
     return res.status(200).json({
       success: true,
       data: rental,
     });
   } catch (error) {
+    console.log(`RENTAL LOOKUP RESULT`);
+    console.log(`found = false`);
+    console.log(`status = 404 (or error)`);
+    console.log(`error message = ${error.message}`);
     return res.status(404).json({
       success: false,
       message: error.message,

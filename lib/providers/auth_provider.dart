@@ -66,6 +66,8 @@ class AuthProvider extends ChangeNotifier {
       final result = await _authService.login(email.trim(), password);
       _user = result.user;
       debugPrint('[ROLE SYNC] AuthProvider.login(): uid=${_user?.id} role=${_user?.role}');
+      debugPrint('CURRENT USER EMAIL = ${_user?.email}');
+      debugPrint('CURRENT USER ROLE = ${_user?.role}');
       _setStatus(AuthStatus.authenticated);
       FcmService().registerDeviceToken(_user!.id);
       return true;

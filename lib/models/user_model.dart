@@ -87,6 +87,8 @@ class UserModel {
         return 'Hospital';
       case 'RECIPIENT':
         return 'Recipient';
+      case 'DELIVERY_PARTNER':
+        return 'Delivery Partner';
       case 'UNKNOWN':
         return 'Loading...';
       default:

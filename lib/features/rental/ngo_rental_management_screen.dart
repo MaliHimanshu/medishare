@@ -131,8 +131,15 @@ class _NgoRentalManagementScreenState extends State<NgoRentalManagementScreen> {
                     children: [
                       Expanded(
                         child: OutlinedButton(
-                          onPressed: () {
-                            RentalService().updateRentalStatus(rental.id, RentalStatus.REJECTED);
+                          onPressed: () async {
+                            final success = await context.read<RentalProvider>().updateRentalStatus(rental.id, 'REJECTED');
+                            if (!mounted) return;
+                            if (success) {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Rental rejected.')));
+                            } else {
+                              final msg = context.read<RentalProvider>().errorMessage;
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to reject: $msg'), backgroundColor: Colors.red));
+                            }
                           },
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppColors.error,
@@ -147,8 +154,15 @@ class _NgoRentalManagementScreenState extends State<NgoRentalManagementScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: FilledButton(
-                          onPressed: () {
-                            RentalService().updateRentalStatus(rental.id, RentalStatus.APPROVED);
+                          onPressed: () async {
+                            final success = await context.read<RentalProvider>().updateRentalStatus(rental.id, 'APPROVED');
+                            if (!mounted) return;
+                            if (success) {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Rental approved successfully.')));
+                            } else {
+                              final msg = context.read<RentalProvider>().errorMessage;
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to approve: $msg'), backgroundColor: Colors.red));
+                            }
                           },
                           style: FilledButton.styleFrom(
                             backgroundColor: AppColors.success,

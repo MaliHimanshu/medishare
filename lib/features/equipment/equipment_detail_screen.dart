@@ -594,9 +594,8 @@ class _EquipmentDetailScreenState extends State<EquipmentDetailScreen> {
                           ),
                         ),
                       ] else if (widget.equipment.status == 'AVAILABLE') ...[
-                        // Non-owner role-based actions
-                        // Rent Now: RECIPIENT or HOSPITAL (if mode is RENT or BOTH)
-                        if ((role == 'RECIPIENT' || role == 'HOSPITAL') &&
+                        // Rent Now: RECIPIENT, NGO, or HOSPITAL (if mode is RENT or BOTH)
+                        if ((role == 'RECIPIENT' || role == 'HOSPITAL' || role == 'NGO') &&
                             (widget.equipment.mode == 'RENT' ||
                                 widget.equipment.mode == 'BOTH')) ...[
                           const SizedBox(width: 8),

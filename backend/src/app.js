@@ -76,6 +76,9 @@ app.use("/api/tracking", trackingRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/emergency-alerts", emergencyAlertRoutes);
 app.use("/api/delivery", deliveryRoutes);
+console.log('[ROUTE CHECK] Delivery OTP routes mounted:');
+console.log('POST /api/delivery/:deliveryId/otp/generate');
+console.log('POST /api/delivery/:deliveryId/otp/verify');
 
 // ── Health Checks (for Render / Railway / Docker) ────────────────────────────
 app.get("/api/health", (req, res) => {

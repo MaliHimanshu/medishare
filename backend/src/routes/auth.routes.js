@@ -203,6 +203,7 @@ router.post("/forgot-password/reset-password", resetPasswordController);
 router.get("/me", protect, (req, res) => {
   if (req.user) {
     console.log(`[SAFE DEBUG LOG] GET /api/auth/me response: email=${req.user.email}, database_role=${req.user.role}, me_response_role=${req.user.role}`);
+    console.log(`AUTH ME ROLE = ${req.user.role}`);
   }
   res.status(200).json({
     success: true,
