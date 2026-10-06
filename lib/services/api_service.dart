@@ -125,14 +125,21 @@ class AuthService {
     String? equipmentPreference,
   }) async {
     try {
+      // Step 1: Create Firebase account
       final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
         email: email.trim(),
         password: password,
       );
-
       await credential.user!.updateDisplayName(name);
 
-      final user = UserModel(
+      // Step 2: Persist Firebase ID token for authenticated backend calls
+      final firebaseToken = await credential.user!.getIdToken();
+      if (firebaseToken != null) {
+        await _storage.write(key: _tokenKey, value: firebaseToken);
+      }
+
+      // Step 3: Write Firestore role document so auth middleware can read the role
+      final localUser = UserModel(
         id: credential.user!.uid,
         name: name,
         email: email.trim(),
@@ -145,15 +152,52 @@ class AuthService {
         equipmentPreference: equipmentPreference,
         createdAt: DateTime.now(),
       );
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(localUser.id)
+          .set(localUser.toJson());
+      // Write local cache so the app is usable even if backend calls fail
+      await _storage.write(key: _userKey, value: jsonEncode(localUser.toJson()));
 
-      await FirebaseFirestore.instance.collection('users').doc(user.id).set(user.toJson());
-      await _storage.write(key: _userKey, value: jsonEncode(user.toJson()));
+      // Step 4: Call GET /api/auth/me — this triggers auth middleware to
+      // auto-create the Postgres user record with the correct role from Firestore.
+      // It also sends back the fully hydrated user from the DB.
+      UserModel backendUser = localUser;
+      String? otpError;
+      bool otpSent = false;
+
+      try {
+        final meResponse = await _dio.get(ApiEndpoints.me);
+        if (meResponse.data != null && meResponse.data['success'] == true) {
+          final meData = meResponse.data['data'] as Map<String, dynamic>;
+          backendUser = UserModel.fromJson(meData);
+          debugPrint('[AuthService] register(): Postgres user created via middleware, role=${backendUser.role}');
+          // Persist the backend-sourced user (has real DB id, correct role)
+          await _storage.write(key: _userKey, value: jsonEncode(backendUser.toJson()));
+        }
+      } catch (meErr) {
+        debugPrint('[AuthService] register(): GET /api/auth/me failed: $meErr — using local user');
+      }
+
+      // Step 5: Send the first registration OTP if phone is provided
+      if (phone != null && phone.trim().isNotEmpty) {
+        try {
+          await _dio.post(ApiEndpoints.sendOtp, data: {'phone': phone.trim()});
+          otpSent = true;
+          debugPrint('[AuthService] register(): First OTP sent to $phone');
+        } catch (otpErr) {
+          otpError = otpErr.toString().replaceAll('Exception: ', '');
+          debugPrint('[AuthService] register(): First OTP send failed: $otpError');
+        }
+      }
 
       return AuthResponseModel(
         success: true,
         message: 'Registered successfully',
-        user: user,
-        token: '',
+        user: backendUser,
+        token: firebaseToken ?? '',
+        otpSent: otpSent,
+        otpError: otpError,
       );
     } on FirebaseAuthException catch (e) {
       debugPrint('[AuthService] FirebaseAuthException during register: code=${e.code}, message=${e.message}');
@@ -176,9 +220,43 @@ class AuthService {
 
   Future<bool> verifyOtp(String phone, String otp) async {
     try {
-      final success = await _dio.post(ApiEndpoints.verifyOtp, data: {'phone': phone, 'otp': otp});
-      // OTP verification for phone typically doesn't login the user into Firebase.
-      return success.statusCode == 200;
+      final response = await _dio.post(
+        ApiEndpoints.verifyOtp,
+        data: {'phone': phone, 'otp': otp},
+      );
+      if (response.statusCode == 200 && response.data != null) {
+        final data = response.data as Map<String, dynamic>;
+
+        // Persist updated token if backend returned one
+        final newToken = data['token']?.toString();
+        if (newToken != null && newToken.isNotEmpty) {
+          await _storage.write(key: _tokenKey, value: newToken);
+        }
+
+        // Persist updated user (contains phoneVerified: true) to cache
+        final userJson = (data['user'] ?? data['data']) as Map<String, dynamic>?;
+        if (userJson != null) {
+          final updatedUser = UserModel.fromJson(userJson);
+          await _storage.write(key: _userKey, value: jsonEncode(updatedUser.toJson()));
+          debugPrint('[AuthService] verifyOtp(): phoneVerified=${updatedUser.phoneVerified} persisted to cache');
+        } else {
+          // Backend returned 200 but no user body — refresh from /api/auth/me
+          try {
+            final meRes = await _dio.get(ApiEndpoints.me);
+            if (meRes.data != null && meRes.data['success'] == true) {
+              final meUser = UserModel.fromJson(
+                meRes.data['data'] as Map<String, dynamic>,
+              );
+              await _storage.write(key: _userKey, value: jsonEncode(meUser.toJson()));
+              debugPrint('[AuthService] verifyOtp(): refreshed user from /me, phoneVerified=${meUser.phoneVerified}');
+            }
+          } catch (meErr) {
+            debugPrint('[AuthService] verifyOtp(): /me refresh failed: $meErr');
+          }
+        }
+        return true;
+      }
+      return false;
     } on DioException catch (e) {
       throw Exception(DioClient.handleError(e));
     }

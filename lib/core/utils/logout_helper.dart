@@ -29,28 +29,40 @@ class LogoutHelper {
     debugPrint('[LOGOUT] performLogout started');
     
     final navigator = Navigator.of(context);
+    final profileProv = context.read<ProfileProvider>();
+    final equipmentProv = context.read<EquipmentProvider>();
+    final donationProv = context.read<DonationProvider>();
+    final requestProv = context.read<RequestProvider>();
+    final hospitalProv = context.read<HospitalProvider>();
+    final notifProv = context.read<NotificationProvider>();
+    final menuChatbotProv = context.read<MenuChatbotProvider>();
+    final chatbotProv = context.read<ChatbotProvider>();
+    final globalSearchProv = context.read<GlobalSearchProvider>();
+    final rentalProv = context.read<RentalProvider>();
+    final trackingProv = context.read<TrackingProvider>();
+    final chatProv = context.read<ChatProvider>();
+    final emergencyAlertProv = context.read<EmergencyAlertProvider>();
+    final dashboardProv = context.read<DashboardProvider>();
+    final authProv = context.read<AuthProvider>();
     
     try {
-      if (context.mounted) {
-        // Disconnect sockets, stop tracking, clear local provider state
-        context.read<ProfileProvider>().clear();
-        context.read<EquipmentProvider>().clear();
-        context.read<DonationProvider>().clear();
-        context.read<RequestProvider>().clear();
-        context.read<HospitalProvider>().clear();
-        context.read<NotificationProvider>().clear();
-        context.read<MenuChatbotProvider>().clear();
-        context.read<ChatbotProvider>().clear();
-        context.read<GlobalSearchProvider>().clear();
-        context.read<RentalProvider>().clear();
-        context.read<TrackingProvider>().clear();
-        context.read<ChatProvider>().clear();
-        context.read<EmergencyAlertProvider>().clear();
-        context.read<DashboardProvider>().clear();
-      }
+      // Disconnect sockets, stop tracking, clear local provider state
+      profileProv.clear();
+      equipmentProv.clear();
+      donationProv.clear();
+      requestProv.clear();
+      hospitalProv.clear();
+      notifProv.clear();
+      menuChatbotProv.clear();
+      chatbotProv.clear();
+      globalSearchProv.clear();
+      rentalProv.clear();
+      trackingProv.clear();
+      chatProv.clear();
+      emergencyAlertProv.clear();
+      dashboardProv.clear();
       
-      final auth = context.read<AuthProvider>();
-      await auth.logout(); // This clears cached role/user and calls Firebase signOut
+      await authProv.logout(); // This clears cached role/user and calls Firebase signOut
       
       navigator.pushAndRemoveUntil(
         AppPageTransitions.slideRight(const LoginScreen()),

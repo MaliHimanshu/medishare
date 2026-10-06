@@ -121,21 +121,21 @@ class ProfileProvider extends ChangeNotifier {
     try {
       final payload = <String, dynamic>{
         'name': name,
-        'phone': phone,
-        'address': address,
+        if (phone.isNotEmpty) 'phone': phone,
+        if (address.isNotEmpty) 'address': address,
         if (profileImage != null && profileImage.isNotEmpty)
           'profileImage': profileImage,
       };
-      if (organizationName != null) {
+      if (organizationName != null && organizationName.isNotEmpty) {
         payload['organizationName'] = organizationName;
       }
-      if (registrationNumber != null) {
+      if (registrationNumber != null && registrationNumber.isNotEmpty) {
         payload['registrationNumber'] = registrationNumber;
       }
-      if (contactPerson != null) {
+      if (contactPerson != null && contactPerson.isNotEmpty) {
         payload['contactPerson'] = contactPerson;
       }
-      if (equipmentPreference != null) {
+      if (equipmentPreference != null && equipmentPreference.isNotEmpty) {
         payload['equipmentPreference'] = equipmentPreference;
       }
 

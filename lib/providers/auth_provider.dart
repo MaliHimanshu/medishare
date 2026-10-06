@@ -200,9 +200,13 @@ class AuthProvider extends ChangeNotifier {
     try {
       final success = await _authService.verifyOtp(phone, otp);
       if (success) {
-        final cachedUser = await _authService.getCachedUser();
-        if (cachedUser != null) {
-          _user = cachedUser;
+        // AuthService.verifyOtp() has already persisted the updated user
+        // (with phoneVerified: true) to secure storage cache.
+        // Reading it here gives the correct post-verification state.
+        final updatedUser = await _authService.getCachedUser();
+        if (updatedUser != null) {
+          _user = updatedUser;
+          debugPrint('[AuthProvider] verifyOtp(): _user.phoneVerified=${_user?.phoneVerified}');
         }
         final hasToken = await _authService.hasToken();
         if (hasToken) {
