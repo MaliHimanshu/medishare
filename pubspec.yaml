@@ -71,3 +71,4 @@ flutter:
     - assets/icons/
     - assets/animations/
     - assets/audio/medishare_clear_sound.mp3
+    - assets/audio/emergency_siren.wav

@@ -189,7 +189,6 @@ const searchUsers = async (query, currentUserId) => {
     where.OR = [
       { name: { contains: q, mode: 'insensitive' } },
       { email: { contains: q, mode: 'insensitive' } },
-      { role: { contains: q, mode: 'insensitive' } },
       { phone: { contains: q, mode: 'insensitive' } },
     ];
   }

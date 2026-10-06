@@ -6,7 +6,9 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../app/app.dart';
+import '../../providers/emergency_alert_provider.dart';
 
 // Top-level background message handler
 @pragma('vm:entry-point')
@@ -137,6 +139,8 @@ class FcmService {
 
     if (notification != null && android != null) {
       debugPrint('[FCM] Showing local notification for foreground message');
+      final isEmergency = message.data['notificationType'] == 'EMERGENCY_ALERT';
+
       _localNotificationsPlugin.show(
         id: notification.hashCode,
         title: notification.title,
@@ -149,11 +153,21 @@ class FcmService {
             importance: Importance.max,
             priority: Priority.high,
             icon: '@mipmap/ic_launcher',
-            playSound: true,
+            playSound: !isEmergency,
           ),
         ),
         payload: jsonEncode(message.data),
       );
+      
+      if (isEmergency) {
+        // Trigger a background provider refresh in case Socket didn't catch it
+        final context = MediShareApp.navigatorKey.currentContext;
+        if (context != null) {
+          try {
+            Provider.of<EmergencyAlertProvider>(context, listen: false).fetchActiveAlerts();
+          } catch (_) {}
+        }
+      }
     }
   }
 

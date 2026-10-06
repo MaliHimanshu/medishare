@@ -61,38 +61,46 @@ class _NgoEmergencyAlertsScreenState extends State<NgoEmergencyAlertsScreen> {
         child: prov.isLoading && alerts.isEmpty
             ? const Center(child: CircularProgressIndicator())
             : alerts.isEmpty
-            ? Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.check_circle_outline_rounded,
-                        size: 64,
-                        color: Colors.green,
-                      ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'No Active Emergency Alerts',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+            ? ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.7,
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(32),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.check_circle_outline_rounded,
+                              size: 64,
+                              color: Colors.green,
+                            ),
+                            const SizedBox(height: 16),
+                            const Text(
+                              'No Active Emergency Alerts',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'All hospital equipment requirements in your area are currently fulfilled. You will receive high-priority alerts when an urgent shortage occurs.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: context.textSecondaryColor,
+                                height: 1.4,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'All hospital equipment requirements in your area are currently fulfilled. You will receive high-priority alerts when an urgent shortage occurs.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: context.textSecondaryColor,
-                          height: 1.4,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
+                ],
               )
             : ListView.separated(
                 padding: const EdgeInsets.symmetric(
