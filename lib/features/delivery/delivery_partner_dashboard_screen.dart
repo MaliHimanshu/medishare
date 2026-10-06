@@ -25,12 +25,31 @@ class DeliveryPartnerDashboardScreen extends StatelessWidget {
         appBar: AppBar(
           title: const Text('Partner Dashboard'),
           bottom: const TabBar(
-            isScrollable: true,
             tabs: [
-              Tab(text: "Today's Tasks"),
-              Tab(text: 'Active Delivery'),
-              Tab(text: 'Upcoming'),
-              Tab(text: 'Completed'),
+              Tab(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text("Today's Tasks"),
+                ),
+              ),
+              Tab(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text('Active Delivery'),
+                ),
+              ),
+              Tab(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text('Upcoming'),
+                ),
+              ),
+              Tab(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text('Completed'),
+                ),
+              ),
             ],
           ),
         ),
