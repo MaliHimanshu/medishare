@@ -223,7 +223,7 @@ const sendOtp = async (destination, type) => {
 /**
  * Verify OTP (SMS via Twilio Verify)
  */
-const verifyOtp = async (destination, otp, type) => {
+const verifyOtp = async (destination, otp, type, userId = null) => {
   if (!otp || typeof otp !== "string" || otp.trim().length !== 6) {
     return {
       success: false,
@@ -257,8 +257,15 @@ const verifyOtp = async (destination, otp, type) => {
     };
   }
 
-  // Verification succeeded - find user if one exists
-  const user = await findUserByPhone(normalizedPhone);
+  // Verification succeeded - find user securely using authenticated session if available
+  let user;
+  if (userId) {
+    user = await prisma.user.findUnique({ where: { id: userId } });
+  }
+  // Fallback ONLY if not authenticated (should not happen for standard profile verification)
+  if (!user) {
+    user = await findUserByPhone(normalizedPhone);
+  }
 
   if (user) {
     const updatedUser = await prisma.user.update({

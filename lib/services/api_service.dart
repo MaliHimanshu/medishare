@@ -220,40 +220,54 @@ class AuthService {
 
   Future<bool> verifyOtp(String phone, String otp) async {
     try {
+      debugPrint('[AUDIT] BEFORE OTP: Firebase UID = ${FirebaseAuth.instance.currentUser?.uid}');
+      debugPrint('[AUDIT] BEFORE OTP: Firebase email = ${FirebaseAuth.instance.currentUser?.email}');
+      
+      final preCache = await getCachedUser();
+      debugPrint('[AUDIT] BEFORE OTP: AuthProvider/Cached user ID = ${preCache?.id}');
+      debugPrint('[AUDIT] BEFORE OTP: Backend email = ${preCache?.email}');
+      debugPrint('[AUDIT] BEFORE OTP: Backend role = ${preCache?.role}');
+      
       final response = await _dio.post(
         ApiEndpoints.verifyOtp,
         data: {'phone': phone, 'otp': otp},
       );
+      
+      debugPrint('[AUDIT] POST /api/auth/verify-otp status: ${response.statusCode}');
+      
       if (response.statusCode == 200 && response.data != null) {
-        final data = response.data as Map<String, dynamic>;
-
-        // Persist updated token if backend returned one
-        final newToken = data['token']?.toString();
-        if (newToken != null && newToken.isNotEmpty) {
-          await _storage.write(key: _tokenKey, value: newToken);
-        }
-
-        // Persist updated user (contains phoneVerified: true) to cache
-        final userJson = (data['user'] ?? data['data']) as Map<String, dynamic>?;
-        if (userJson != null) {
-          final updatedUser = UserModel.fromJson(userJson);
-          await _storage.write(key: _userKey, value: jsonEncode(updatedUser.toJson()));
-          debugPrint('[AuthService] verifyOtp(): phoneVerified=${updatedUser.phoneVerified} persisted to cache');
-        } else {
-          // Backend returned 200 but no user body — refresh from /api/auth/me
-          try {
-            final meRes = await _dio.get(ApiEndpoints.me);
-            if (meRes.data != null && meRes.data['success'] == true) {
-              final meUser = UserModel.fromJson(
-                meRes.data['data'] as Map<String, dynamic>,
-              );
-              await _storage.write(key: _userKey, value: jsonEncode(meUser.toJson()));
-              debugPrint('[AuthService] verifyOtp(): refreshed user from /me, phoneVerified=${meUser.phoneVerified}');
-            }
-          } catch (meErr) {
-            debugPrint('[AuthService] verifyOtp(): /me refresh failed: $meErr');
+        // ALWAYS re-fetch the canonical user from the backend using the current Firebase session.
+        // Do NOT trust the user object returned by verifyOtp, to prevent any identity hijacking races.
+        try {
+          final meRes = await _dio.get(ApiEndpoints.me);
+          if (meRes.data != null && meRes.data['success'] == true) {
+            final canonicalUser = UserModel.fromJson(
+              meRes.data['data'] as Map<String, dynamic>,
+            );
+            
+            debugPrint('[AUDIT] verifyOtp canonical user ID: ${canonicalUser.id}');
+            debugPrint('[AUDIT] verifyOtp canonical email: ${canonicalUser.email}');
+            debugPrint('[AUDIT] verifyOtp canonical role: ${canonicalUser.role}');
+            debugPrint('[AUDIT] verifyOtp canonical phoneVerified: ${canonicalUser.phoneVerified}');
+            
+            await _storage.write(key: _userKey, value: jsonEncode(canonicalUser.toJson()));
+            debugPrint('[AuthService] verifyOtp(): canonical state persisted to cache');
+          } else {
+             throw Exception("Failed to fetch canonical user after OTP verification");
           }
+        } catch (meErr) {
+          debugPrint('[AuthService] verifyOtp(): /me refresh failed: $meErr');
+          return false;
         }
+        
+        debugPrint('[AUDIT] AFTER OTP: Firebase UID = ${FirebaseAuth.instance.currentUser?.uid}');
+        debugPrint('[AUDIT] AFTER OTP: Firebase email = ${FirebaseAuth.instance.currentUser?.email}');
+        
+        final postCache = await getCachedUser();
+        debugPrint('[AUDIT] AFTER OTP: AuthProvider/Cached user ID = ${postCache?.id}');
+        debugPrint('[AUDIT] AFTER OTP: Backend email = ${postCache?.email}');
+        debugPrint('[AUDIT] AFTER OTP: Backend role = ${postCache?.role}');
+        
         return true;
       }
       return false;

@@ -28,42 +28,41 @@ class LogoutHelper {
     
     debugPrint('[LOGOUT] performLogout started');
     
-    final navigator = Navigator.of(context);
-    final profileProv = context.read<ProfileProvider>();
-    final equipmentProv = context.read<EquipmentProvider>();
-    final donationProv = context.read<DonationProvider>();
-    final requestProv = context.read<RequestProvider>();
-    final hospitalProv = context.read<HospitalProvider>();
-    final notifProv = context.read<NotificationProvider>();
-    final menuChatbotProv = context.read<MenuChatbotProvider>();
-    final chatbotProv = context.read<ChatbotProvider>();
-    final globalSearchProv = context.read<GlobalSearchProvider>();
-    final rentalProv = context.read<RentalProvider>();
-    final trackingProv = context.read<TrackingProvider>();
-    final chatProv = context.read<ChatProvider>();
-    final emergencyAlertProv = context.read<EmergencyAlertProvider>();
-    final dashboardProv = context.read<DashboardProvider>();
-    final authProv = context.read<AuthProvider>();
-    
     try {
-      // Disconnect sockets, stop tracking, clear local provider state
-      profileProv.clear();
-      equipmentProv.clear();
-      donationProv.clear();
-      requestProv.clear();
-      hospitalProv.clear();
-      notifProv.clear();
-      menuChatbotProv.clear();
-      chatbotProv.clear();
-      globalSearchProv.clear();
-      rentalProv.clear();
-      trackingProv.clear();
-      chatProv.clear();
-      emergencyAlertProv.clear();
-      dashboardProv.clear();
+      final navigator = Navigator.of(context);
+      
+      // We must get auth provider first; if it's missing, we have a bigger problem
+      final authProv = context.read<AuthProvider>();
+      
+      // Safely clear other providers (some might be scoped and not present at the root)
+      void safeClear<T extends dynamic>(void Function(T) clearFn) {
+        try {
+          clearFn(context.read<T>());
+        } catch (_) {
+          // Provider not found in this context, safely ignore
+        }
+      }
+      
+      safeClear<ProfileProvider>((p) => p.clear());
+      safeClear<EquipmentProvider>((p) => p.clear());
+      safeClear<DonationProvider>((p) => p.clear());
+      safeClear<RequestProvider>((p) => p.clear());
+      safeClear<HospitalProvider>((p) => p.clear());
+      safeClear<NotificationProvider>((p) => p.clear());
+      safeClear<MenuChatbotProvider>((p) => p.clear());
+      safeClear<ChatbotProvider>((p) => p.clear());
+      safeClear<GlobalSearchProvider>((p) => p.clear());
+      safeClear<RentalProvider>((p) => p.clear());
+      safeClear<TrackingProvider>((p) => p.clear());
+      safeClear<ChatProvider>((p) => p.clear());
+      safeClear<EmergencyAlertProvider>((p) => p.clear());
+      safeClear<DashboardProvider>((p) => p.clear());
+      
+      debugPrint('[LOGOUT] providers cleared safely');
       
       await authProv.logout(); // This clears cached role/user and calls Firebase signOut
       
+      debugPrint('[LOGOUT] navigation completed');
       navigator.pushAndRemoveUntil(
         AppPageTransitions.slideRight(const LoginScreen()),
         (route) => false, // Remove authenticated navigation history
@@ -71,10 +70,12 @@ class LogoutHelper {
     } catch (e) {
       debugPrint('[LOGOUT] performLogout error: $e');
       // Force navigation to login on error
-      navigator.pushAndRemoveUntil(
-        AppPageTransitions.slideRight(const LoginScreen()),
-        (route) => false,
-      );
+      if (context.mounted) {
+         Navigator.of(context).pushAndRemoveUntil(
+          AppPageTransitions.slideRight(const LoginScreen()),
+          (route) => false,
+        );
+      }
     } finally {
       _isLoggingOut = false;
     }

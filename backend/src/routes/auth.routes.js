@@ -188,7 +188,7 @@ router.post("/send-otp", sendOtpController);
 router.post("/resend-otp", sendOtpController);
 
 // Verify OTP
-router.post("/verify-otp", verifyOtpController);
+router.post("/verify-otp", protect, verifyOtpController);
 
 // Forgot Password Flow
 router.post("/forgot-password/send-otp", forgotPasswordSendController);

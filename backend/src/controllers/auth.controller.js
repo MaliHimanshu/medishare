@@ -134,7 +134,7 @@ const verifyOtpController = async (req, res) => {
   try {
     const data = otpVerifySchema.parse(req.body);
     const { destination, type } = resolveOtpTarget(data);
-    const result = await verifyOtp(destination, data.otp, type);
+    const result = await verifyOtp(destination, data.otp, type, req.user?.id);
 
     if (!result.success) {
       return res.status(400).json({

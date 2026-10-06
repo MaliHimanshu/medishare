@@ -32,6 +32,7 @@ const SAFE_USER_SELECT = {
   name: true,
   email: true,
   phone: true,
+  phoneVerified: true,
   address: true,
   role: true,
   organizationName: true,

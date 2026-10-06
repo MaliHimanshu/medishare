@@ -312,6 +312,7 @@ class AuthProvider extends ChangeNotifier {
       debugPrint('[LOGOUT] Error in clearAuth: $e');
     }
     _user = null;
+    debugPrint('[LOGOUT] AuthProvider status = unauthenticated');
     _setStatus(AuthStatus.unauthenticated);
     debugPrint('[LOGOUT] Navigation to login ready');
   }
